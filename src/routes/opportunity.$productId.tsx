@@ -186,12 +186,13 @@ function OpportunityPage() {
         {handoff ? (
           <div className="mt-4 rounded-2xl border border-accent/40 bg-accent/10 p-3">
             <div className="text-sm font-semibold text-accent">در صف بررسی انسانی</div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              شمارهٔ پیگیری {handoff.reference} — زمان تخمینی پاسخ {faMonths(0).replace(/.*/, "")}
-              {handoff.etaMinutes} دقیقه. این صف در نسخهٔ نمایشی شبیه‌سازی شده است.
+            <p className="num mt-1 text-xs text-muted-foreground">
+              شمارهٔ پیگیری {handoff.id} — جایگاه {toPersianDigits(handoff.queuePosition)} در صف.
+              این صف در نسخهٔ نمایشی شبیه‌سازی شده است.
             </p>
           </div>
         ) : (
+
           <button
             type="button"
             onClick={requestHandoff}
