@@ -14,7 +14,9 @@ import {
   faPercent,
   formatToman,
   formatTomanCompact,
+  toPersianDigits,
 } from "@/lib/money";
+
 
 export const Route = createFileRoute("/opportunity/$productId")({
   head: () => ({
