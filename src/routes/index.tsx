@@ -1,24 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/app-shell";
+import { ConciergeExperience } from "@/features/concierge/concierge-experience";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "تسهیل‌رادار — یک جمله بگو، مسیر وامت را ببین" },
+      {
+        name: "description",
+        content:
+          "بدون ثبت‌نام بگو چه مبلغی و برای چه می‌خواهی؛ تسهیل‌رادار مسیرهای وام و اعتبار را می‌سنجد، بن‌بست‌ها را حذف می‌کند و دلیل هر تصمیم را نشان می‌دهد.",
+      },
+      { property: "og:title", content: "تسهیل‌رادار — ناوبر هوشمند وام و اعتبار" },
+      {
+        property: "og:description",
+        content: "یک جمله بنویس یا بگو تا مسیرهای واقعی وام و اعتبارت را با دلیل ببینی.",
+      },
+    ],
+  }),
+  component: HomePage,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function HomePage() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
+    <AppShell>
+      <ConciergeExperience />
+    </AppShell>
   );
 }
