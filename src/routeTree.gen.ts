@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RadarRouteImport } from './routes/radar'
 import { Route as OpportunitiesRouteImport } from './routes/opportunities'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OpportunityProductIdRouteImport } from './routes/opportunity.$productId'
 
 const RadarRoute = RadarRouteImport.update({
   id: '/radar',
@@ -28,35 +29,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OpportunityProductIdRoute = OpportunityProductIdRouteImport.update({
+  id: '/opportunity/$productId',
+  path: '/opportunity/$productId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/opportunities': typeof OpportunitiesRoute
   '/radar': typeof RadarRoute
+  '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/opportunities': typeof OpportunitiesRoute
   '/radar': typeof RadarRoute
+  '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/opportunities': typeof OpportunitiesRoute
   '/radar': typeof RadarRoute
+  '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/opportunities' | '/radar'
+  fullPaths: '/' | '/opportunities' | '/radar' | '/opportunity/$productId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/opportunities' | '/radar'
-  id: '__root__' | '/' | '/opportunities' | '/radar'
+  to: '/' | '/opportunities' | '/radar' | '/opportunity/$productId'
+  id: '__root__' | '/' | '/opportunities' | '/radar' | '/opportunity/$productId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   OpportunitiesRoute: typeof OpportunitiesRoute
   RadarRoute: typeof RadarRoute
+  OpportunityProductIdRoute: typeof OpportunityProductIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +92,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/opportunity/$productId': {
+      id: '/opportunity/$productId'
+      path: '/opportunity/$productId'
+      fullPath: '/opportunity/$productId'
+      preLoaderRoute: typeof OpportunityProductIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +106,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   OpportunitiesRoute: OpportunitiesRoute,
   RadarRoute: RadarRoute,
+  OpportunityProductIdRoute: OpportunityProductIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
