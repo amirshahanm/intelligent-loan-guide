@@ -84,11 +84,11 @@ function OpportunityPage() {
     setRequesting(true);
     track({ name: "handoff_requested", productId: match.productId, channel: "in_app" });
     const result = await providers.handoff.request({
-      productId: match.productId,
-      partnerName: match.partnerName,
+      anonSessionId: state.anonSessionId,
+      match,
+      summary: match.matchedBecause.slice(0, 2).join(" · "),
     });
-    update((s) => ({ ...s, handoffs: [...s.handoffs, result] }));
-    setRequesting(false);
+
   };
 
   return (
