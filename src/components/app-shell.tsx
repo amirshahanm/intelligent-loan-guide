@@ -7,10 +7,8 @@ const NAV = [
   { to: "/", label: "شروع" },
   { to: "/radar", label: "رادار" },
   { to: "/opportunities", label: "فرصت‌ها" },
-  { to: "/credit", label: "اعتبار" },
-  { to: "/profile", label: "پروفایل" },
-  { to: "/partners", label: "شبکهٔ همکاران" },
 ] as const;
+
 
 export function DemoBanner() {
   if (!anyMock) return null;
