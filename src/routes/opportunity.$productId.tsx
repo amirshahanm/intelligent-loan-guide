@@ -90,8 +90,10 @@ function OpportunityPage() {
       match,
       summary: match.matchedBecause.slice(0, 2).join(" · "),
     });
-
+    update((s) => ({ ...s, handoffs: [...s.handoffs, result] }));
+    setRequesting(false);
   };
+
 
   return (
     <AppShell className="space-y-5">
