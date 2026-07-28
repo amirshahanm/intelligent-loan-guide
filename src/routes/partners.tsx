@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import * as React from "react";
 import { AppShell } from "@/components/app-shell";
 import { ProvenanceChip, SectionTitle } from "@/components/provenance";
-import { PARTNERS, PRODUCTS, partnerById } from "@/core/catalog";
+import { PARTNERS, PRODUCTS } from "@/core/catalog";
 import { catalogFact } from "@/core/types";
 import { PURPOSE_FA } from "@/core/labels";
 import { faDays, faMonths, faPercent, formatTomanCompact, toPersianDigits } from "@/lib/money";

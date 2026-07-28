@@ -16,6 +16,7 @@ import { Route as OpportunitiesRouteImport } from './routes/opportunities'
 import { Route as CreditRouteImport } from './routes/credit'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as OpportunityProductIdRouteImport } from './routes/opportunity.$productId'
+import { Route as HandoffHandoffIdRouteImport } from './routes/handoff.$handoffId'
 
 const RadarRoute = RadarRouteImport.update({
   id: '/radar',
@@ -52,6 +53,11 @@ const OpportunityProductIdRoute = OpportunityProductIdRouteImport.update({
   path: '/opportunity/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HandoffHandoffIdRoute = HandoffHandoffIdRouteImport.update({
+  id: '/handoff/$handoffId',
+  path: '/handoff/$handoffId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -60,6 +66,7 @@ export interface FileRoutesByFullPath {
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
+  '/handoff/$handoffId': typeof HandoffHandoffIdRoute
   '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +76,7 @@ export interface FileRoutesByTo {
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
+  '/handoff/$handoffId': typeof HandoffHandoffIdRoute
   '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
 export interface FileRoutesById {
@@ -79,6 +87,7 @@ export interface FileRoutesById {
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
+  '/handoff/$handoffId': typeof HandoffHandoffIdRoute
   '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +99,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/profile'
     | '/radar'
+    | '/handoff/$handoffId'
     | '/opportunity/$productId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/profile'
     | '/radar'
+    | '/handoff/$handoffId'
     | '/opportunity/$productId'
   id:
     | '__root__'
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/profile'
     | '/radar'
+    | '/handoff/$handoffId'
     | '/opportunity/$productId'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +130,7 @@ export interface RootRouteChildren {
   PartnersRoute: typeof PartnersRoute
   ProfileRoute: typeof ProfileRoute
   RadarRoute: typeof RadarRoute
+  HandoffHandoffIdRoute: typeof HandoffHandoffIdRoute
   OpportunityProductIdRoute: typeof OpportunityProductIdRoute
 }
 
@@ -172,6 +185,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpportunityProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/handoff/$handoffId': {
+      id: '/handoff/$handoffId'
+      path: '/handoff/$handoffId'
+      fullPath: '/handoff/$handoffId'
+      preLoaderRoute: typeof HandoffHandoffIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -182,6 +202,7 @@ const rootRouteChildren: RootRouteChildren = {
   PartnersRoute: PartnersRoute,
   ProfileRoute: ProfileRoute,
   RadarRoute: RadarRoute,
+  HandoffHandoffIdRoute: HandoffHandoffIdRoute,
   OpportunityProductIdRoute: OpportunityProductIdRoute,
 }
 export const routeTree = rootRouteImport
