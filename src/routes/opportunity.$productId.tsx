@@ -188,14 +188,20 @@ function OpportunityPage() {
         </ul>
 
         {handoff ? (
-          <div className="mt-4 rounded-2xl border border-accent/40 bg-accent/10 p-3">
+          <Link
+            to="/handoff/$handoffId"
+            params={{ handoffId: handoff.id }}
+            className="mt-4 block rounded-2xl border border-accent/40 bg-accent/10 p-3"
+          >
             <div className="text-sm font-semibold text-accent">در صف بررسی انسانی</div>
             <p className="num mt-1 text-xs text-muted-foreground">
               شمارهٔ پیگیری {handoff.id} — جایگاه {toPersianDigits(handoff.queuePosition)} در صف.
               این صف در نسخهٔ نمایشی شبیه‌سازی شده است.
             </p>
-          </div>
+            <span className="mt-2 block text-[11px] text-accent">پیگیری وضعیت ←</span>
+          </Link>
         ) : (
+
 
           <button
             type="button"
