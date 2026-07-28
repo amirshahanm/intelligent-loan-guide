@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
-import { AuthorityBadge, ProvenanceChip, SectionTitle } from "@/components/provenance";
+import { ProvenanceChip, SectionTitle } from "@/components/provenance";
 import { providers } from "@/lib/providers";
 import type { CreditResult } from "@/lib/providers";
 import { useSession } from "@/lib/session";
@@ -104,7 +104,10 @@ export function CreditJourney() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-lg font-bold">اعتبارسنجی</h1>
-        <AuthorityBadge computedBy={result ? "server-authoritative" : "client-preview"} />
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-warn/40 bg-warn/10 px-2.5 py-1 text-[10px] text-warn">
+          <span className="size-1.5 rounded-full bg-warn" />
+          دادهٔ اعتباری شبیه‌سازی‌شده
+        </span>
       </div>
 
       <div className="rounded-2xl border border-warn/40 bg-warn/10 p-3 text-[11px] leading-5 text-warn">

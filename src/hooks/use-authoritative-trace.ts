@@ -17,7 +17,8 @@ export function useAuthoritativeTrace(): {
 } {
   const { state, trace } = useSession();
   const confirm = useServerFn(confirmReasoning);
-  const ready = hasCoreSlots(state.slots);
+  // Confirm as soon as the engine has anything meaningful to reason about.
+  const ready = Boolean(state.slots.amount) || hasCoreSlots(state.slots);
 
   const key = React.useMemo(() => JSON.stringify(state.slots), [state.slots]);
 
