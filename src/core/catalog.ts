@@ -98,10 +98,10 @@ export const PRODUCTS: Product[] = [
       maxAmount: millionToman(300),
       allowedEmployment: ["salaried"],
       requiresCollateral: null,
-      requiresGuarantor: ["payroll"],
+      requiresGuarantor: ["payroll", "business"],
       minIncomeBand: "under_20",
       maxDebtLoad: "light",
-      allowedPurposes: ["personal", "marriage", "education", "debt", "car"],
+      allowedPurposes: ["personal", "marriage", "education", "debt", "car", "business"],
     },
   },
   {
