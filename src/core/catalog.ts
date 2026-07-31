@@ -36,7 +36,7 @@ export const PRODUCTS: Product[] = [
     rules: {
       minAmount: millionToman(100),
       maxAmount: millionToman(2000),
-      allowedEmployment: ["business_owner", "self_employed"],
+      allowedEmployment: ["business_owner", "self_employed", "salaried"],
       requiresCollateral: null,
       requiresGuarantor: ["business", "payroll"],
       minIncomeBand: "20_50",
@@ -56,7 +56,7 @@ export const PRODUCTS: Product[] = [
     rules: {
       minAmount: millionToman(30),
       maxAmount: millionToman(400),
-      allowedEmployment: ["business_owner", "self_employed"],
+      allowedEmployment: ["business_owner", "self_employed", "salaried"],
       requiresCollateral: null,
       requiresGuarantor: null,
       minIncomeBand: "under_20",
@@ -98,10 +98,10 @@ export const PRODUCTS: Product[] = [
       maxAmount: millionToman(300),
       allowedEmployment: ["salaried"],
       requiresCollateral: null,
-      requiresGuarantor: ["payroll"],
+      requiresGuarantor: ["payroll", "business"],
       minIncomeBand: "under_20",
       maxDebtLoad: "light",
-      allowedPurposes: ["personal", "marriage", "education", "debt", "car"],
+      allowedPurposes: ["personal", "marriage", "education", "debt", "car", "business"],
     },
   },
   {
@@ -262,7 +262,7 @@ export const PRODUCTS: Product[] = [
       requiresGuarantor: ["payroll", "business"],
       minIncomeBand: "20_50",
       maxDebtLoad: "heavy",
-      allowedPurposes: ["debt", "personal"],
+      allowedPurposes: ["debt", "personal", "business"],
     },
   },
 ];

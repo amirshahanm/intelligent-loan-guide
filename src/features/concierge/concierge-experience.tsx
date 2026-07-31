@@ -122,7 +122,7 @@ export function ConciergeExperience() {
                     id: messageId(),
                     role: "concierge",
                     kind: "text",
-                    text: "کافی است. مسیرها را بررسی کردم — نتیجه پایین آمده است.",
+                    text: "بررسی کامل شد. یک پیشنهاد اصلی و سه مسیر نزدیک برای پرونده‌ات پیدا کردم.",
                   },
                 ] as const)),
           ],
