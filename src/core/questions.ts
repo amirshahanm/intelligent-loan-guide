@@ -7,7 +7,17 @@
  */
 
 import type { IntentSlots, SlotKey } from "./types";
-import { COLLATERAL_FA, DEBT_FA, EMPLOYMENT_FA, GUARANTOR_FA, INCOME_FA, PURPOSE_FA, URGENCY_FA } from "./labels";
+import {
+  ADVERSE_FA,
+  COLLATERAL_FA,
+  DEBT_FA,
+  EMPLOYMENT_FA,
+  GUARANTOR_FA,
+  INCOME_FA,
+  PURPOSE_FA,
+  TURNOVER_FA,
+  URGENCY_FA,
+} from "./labels";
 
 export type QuestionOption = { value: string; label: string };
 
@@ -71,20 +81,36 @@ export const QUESTIONS: Question[] = [
     weight: 70,
   },
   {
+    id: "q_debt",
+    slot: "debtLoad",
+    text: "مجموع اقساط و بدهی ماهانه‌ات تقریباً چقدر است؟",
+    kind: "options",
+    options: opts(DEBT_FA),
+    weight: 68,
+  },
+  {
+    id: "q_turnover",
+    slot: "bankTurnover",
+    text: "میانگین گردش حساب ماهانه‌ات چقدر است؟",
+    kind: "options",
+    options: opts(TURNOVER_FA),
+    weight: 66,
+  },
+  {
+    id: "q_adverse",
+    slot: "adverseHistory",
+    text: "سابقه چک برگشتی یا بدهی معوق داری؟",
+    kind: "options",
+    options: opts(ADVERSE_FA),
+    weight: 64,
+  },
+  {
     id: "q_purpose",
     slot: "purpose",
     text: "این مبلغ را برای چه می‌خواهی؟",
     kind: "options",
     options: opts(PURPOSE_FA),
     weight: 65,
-  },
-  {
-    id: "q_debt",
-    slot: "debtLoad",
-    text: "الان قسط یا بدهی جاری داری؟",
-    kind: "options",
-    options: opts(DEBT_FA),
-    weight: 50,
   },
   {
     id: "q_urgency",
@@ -98,10 +124,27 @@ export const QUESTIONS: Question[] = [
 
 /** Next unanswered question, ranked by unblocking weight. Null when ready. */
 export function nextQuestion(slots: IntentSlots, asked: string[]): Question | null {
+  if (isAssessmentComplete(slots)) return null;
   const candidates = QUESTIONS.filter(
     (q) => slots[q.slot] === undefined && !asked.includes(q.id),
   ).sort((a, b) => b.weight - a.weight);
   return candidates[0] ?? null;
+}
+
+/** The full assessment sequence. The result section stays hidden until all are answered. */
+export const ASSESSMENT_SLOTS: SlotKey[] = [
+  "amount",
+  "employment",
+  "guarantor",
+  "collateral",
+  "incomeBand",
+  "debtLoad",
+  "bankTurnover",
+  "adverseHistory",
+];
+
+export function isAssessmentComplete(slots: IntentSlots): boolean {
+  return ASSESSMENT_SLOTS.every((s) => slots[s] !== undefined);
 }
 
 /** Slots required before the engine result is considered decision-grade. */
