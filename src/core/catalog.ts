@@ -36,7 +36,7 @@ export const PRODUCTS: Product[] = [
     rules: {
       minAmount: millionToman(100),
       maxAmount: millionToman(2000),
-      allowedEmployment: ["business_owner", "self_employed"],
+      allowedEmployment: ["business_owner", "self_employed", "salaried"],
       requiresCollateral: null,
       requiresGuarantor: ["business", "payroll"],
       minIncomeBand: "20_50",
