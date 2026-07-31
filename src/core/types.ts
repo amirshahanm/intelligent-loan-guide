@@ -91,7 +91,9 @@ export type Collateral = "property" | "vehicle" | "deposit" | "none" | "unknown"
 export type Guarantor = "payroll" | "business" | "none" | "unknown";
 export type Urgency = "immediate" | "weeks" | "flexible" | "unknown";
 export type IncomeBand = "under_20" | "20_50" | "50_100" | "over_100" | "unknown";
-export type DebtLoad = "none" | "light" | "heavy" | "unknown";
+export type DebtLoad = "none" | "light" | "moderate" | "heavy" | "unknown";
+export type BankTurnover = "under_50" | "50_150" | "150_300" | "over_300" | "unknown";
+export type AdverseHistory = "none" | "resolved" | "active" | "unsure" | "unknown";
 
 export type SlotKey =
   | "amount"
@@ -101,6 +103,8 @@ export type SlotKey =
   | "guarantor"
   | "incomeBand"
   | "debtLoad"
+  | "bankTurnover"
+  | "adverseHistory"
   | "urgency"
   | "region";
 
@@ -113,6 +117,8 @@ export type IntentSlots = {
   guarantor?: Fact<Guarantor>;
   incomeBand?: Fact<IncomeBand>;
   debtLoad?: Fact<DebtLoad>;
+  bankTurnover?: Fact<BankTurnover>;
+  adverseHistory?: Fact<AdverseHistory>;
   urgency?: Fact<Urgency>;
   region?: Fact<string>;
 };

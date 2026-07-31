@@ -1,4 +1,6 @@
 import type {
+  AdverseHistory,
+  BankTurnover,
   Collateral,
   DebtLoad,
   Employment,
@@ -62,9 +64,26 @@ export const INCOME_FA: Record<IncomeBand, string> = {
 };
 
 export const DEBT_FA: Record<DebtLoad, string> = {
-  none: "بدون بدهی",
-  light: "بدهی سبک",
-  heavy: "بدهی سنگین",
+  none: "بدون قسط",
+  light: "زیر ۱۰ میلیون تومان",
+  moderate: "۱۰ تا ۳۰ میلیون تومان",
+  heavy: "بیشتر از ۳۰ میلیون تومان",
+  unknown: "نامشخص",
+};
+
+export const TURNOVER_FA: Record<BankTurnover, string> = {
+  under_50: "زیر ۵۰ میلیون تومان",
+  "50_150": "۵۰ تا ۱۵۰ میلیون تومان",
+  "150_300": "۱۵۰ تا ۳۰۰ میلیون تومان",
+  over_300: "بیشتر از ۳۰۰ میلیون تومان",
+  unknown: "نامشخص",
+};
+
+export const ADVERSE_FA: Record<AdverseHistory, string> = {
+  none: "ندارم",
+  resolved: "قبلاً داشتم و رفع شده",
+  active: "در حال حاضر دارم",
+  unsure: "مطمئن نیستم",
   unknown: "نامشخص",
 };
 
@@ -75,7 +94,9 @@ export const SLOT_FA: Record<SlotKey, string> = {
   collateral: "وثیقه",
   guarantor: "ضامن",
   incomeBand: "درآمد ماهانه",
-  debtLoad: "بدهی جاری",
+  debtLoad: "اقساط و بدهی ماهانه",
+  bankTurnover: "گردش حساب ماهانه",
+  adverseHistory: "سابقهٔ چک یا بدهی معوق",
   urgency: "فوریت",
   region: "استان",
 };
