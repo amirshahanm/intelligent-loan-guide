@@ -29,7 +29,7 @@ import { COLLATERAL_FA, DEBT_FA, EMPLOYMENT_FA, GUARANTOR_FA, INCOME_FA, PURPOSE
 import { formatTomanCompact } from "@/lib/money";
 
 const INCOME_ORDER: IncomeBand[] = ["unknown", "under_20", "20_50", "50_100", "over_100"];
-const DEBT_ORDER: DebtLoad[] = ["none", "light", "heavy"];
+const DEBT_ORDER: DebtLoad[] = ["none", "light", "moderate", "heavy"];
 
 function incomeRank(b: IncomeBand | undefined): number {
   return b ? INCOME_ORDER.indexOf(b) : 0;
@@ -103,7 +103,7 @@ export function evaluateReadiness(slots: IntentSlots): Readiness {
   const debt = slots.debtLoad?.value;
   dims.push({
     dimension: "debt_load",
-    score: debt === "none" ? 100 : debt === "light" ? 70 : debt === "heavy" ? 25 : 50,
+    score: debt === "none" ? 100 : debt === "light" ? 70 : debt === "moderate" ? 45 : debt === "heavy" ? 25 : 50,
     label: debt ? DEBT_FA[debt] : "بدهی نامشخص",
     blocker: debt === "heavy" ? "بار بدهی فعلی بالاست" : undefined,
   });

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { extractSlots, mergeSlots } from "@/core/extract";
-import { hasCoreSlots, nextQuestion, QUESTIONS } from "@/core/questions";
+import { hasCoreSlots, isAssessmentComplete, nextQuestion, QUESTIONS } from "@/core/questions";
 import type { IntentSlots, SlotKey } from "@/core/types";
 import { fact, userStated } from "@/core/types";
 import { messageId, useSession, slotKeys } from "@/lib/session";
@@ -152,6 +152,20 @@ export function ConciergeExperience() {
   }, [state.messages.length]);
 
   const ready = hasCoreSlots(state.slots);
+  const complete = isAssessmentComplete(state.slots);
+  const [analyzing, setAnalyzing] = React.useState(false);
+  const wasComplete = React.useRef(false);
+
+  React.useEffect(() => {
+    if (complete && !wasComplete.current) {
+      wasComplete.current = true;
+      setAnalyzing(true);
+      const t = setTimeout(() => setAnalyzing(false), 1800);
+      return () => clearTimeout(t);
+    }
+    if (!complete) wasComplete.current = false;
+  }, [complete]);
+
   const lastQuestionId = React.useMemo(() => {
     for (let i = state.messages.length - 1; i >= 0; i--) {
       const m = state.messages[i];
@@ -291,7 +305,13 @@ export function ConciergeExperience() {
         </div>
       ) : null}
 
-      {started ? (
+      {analyzing ? (
+        <p className="anim-resolve rounded-2xl border border-border bg-surface px-4 py-3 text-center text-sm text-muted-foreground">
+          در حال تحلیل توان بازپرداخت، اعتبار و فرصت‌های مناسب…
+        </p>
+      ) : null}
+
+      {complete && !analyzing ? (
         <section className="space-y-3">
           <AuthorityBadge computedBy={confirmed ? "server-authoritative" : trace.computedBy} />
           <RadarTally trace={trace} />

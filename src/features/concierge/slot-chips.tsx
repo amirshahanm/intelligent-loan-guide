@@ -1,5 +1,6 @@
 import type { IntentSlots, SlotKey } from "@/core/types";
 import {
+  ADVERSE_FA,
   COLLATERAL_FA,
   DEBT_FA,
   EMPLOYMENT_FA,
@@ -7,6 +8,7 @@ import {
   INCOME_FA,
   PURPOSE_FA,
   SLOT_FA,
+  TURNOVER_FA,
   URGENCY_FA,
 } from "@/core/labels";
 import { formatTomanCompact } from "@/lib/money";
@@ -28,6 +30,10 @@ export function slotDisplayValue(slots: IntentSlots, key: SlotKey): string | nul
       return slots.incomeBand ? INCOME_FA[slots.incomeBand.value] : null;
     case "debtLoad":
       return slots.debtLoad ? DEBT_FA[slots.debtLoad.value] : null;
+    case "bankTurnover":
+      return slots.bankTurnover ? TURNOVER_FA[slots.bankTurnover.value] : null;
+    case "adverseHistory":
+      return slots.adverseHistory ? ADVERSE_FA[slots.adverseHistory.value] : null;
     case "urgency":
       return slots.urgency ? URGENCY_FA[slots.urgency.value] : null;
     case "region":
@@ -45,6 +51,8 @@ const ORDER: SlotKey[] = [
   "collateral",
   "incomeBand",
   "debtLoad",
+  "bankTurnover",
+  "adverseHistory",
   "urgency",
   "region",
 ];
