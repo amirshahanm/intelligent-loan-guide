@@ -262,7 +262,7 @@ export const PRODUCTS: Product[] = [
       requiresGuarantor: ["payroll", "business"],
       minIncomeBand: "20_50",
       maxDebtLoad: "heavy",
-      allowedPurposes: ["debt", "personal"],
+      allowedPurposes: ["debt", "personal", "business"],
     },
   },
 ];
