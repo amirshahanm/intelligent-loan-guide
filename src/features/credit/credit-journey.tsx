@@ -87,7 +87,7 @@ export function CreditJourney() {
       setReveal(0);
     } catch {
       window.clearInterval(ticker);
-      setError("اعتبارسنجی نمایشی کامل نشد. دوباره تلاش کن.");
+      setError("اعتبارسنجی کامل نشد. دوباره تلاش کن.");
       setStage("consent");
     }
   }, [price, state.anonSessionId, update]);
@@ -104,15 +104,6 @@ export function CreditJourney() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-lg font-bold">اعتبارسنجی</h1>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-warn/40 bg-warn/10 px-2.5 py-1 text-[10px] text-warn">
-          <span className="size-1.5 rounded-full bg-warn" />
-          دادهٔ اعتباری شبیه‌سازی‌شده
-        </span>
-      </div>
-
-      <div className="rounded-2xl border border-warn/40 bg-warn/10 p-3 text-[11px] leading-5 text-warn">
-        این مسیر یک شبیه‌سازی کامل از تجربهٔ اعتبارسنجی است. هیچ استعلام واقعی از هیچ سامانه‌ای
-        انجام نمی‌شود، هیچ پرداختی از تو گرفته نمی‌شود و هیچ کد ملی‌ای ذخیره نمی‌شود.
       </div>
 
       {stage === "intro" ? (
@@ -123,10 +114,9 @@ export function CreditJourney() {
         <section className="rounded-3xl border border-border bg-surface p-4">
           <SectionTitle hint="پیش از هر بررسی">رضایت آگاهانه</SectionTitle>
           <ul className="space-y-1.5 text-xs text-muted-foreground">
-            <li>· در نسخهٔ واقعی، بررسی اعتباری تنها با اجازهٔ صریح تو انجام می‌شود.</li>
+            <li>· بررسی اعتباری تنها با اجازهٔ صریح تو انجام می‌شود.</li>
             <li>· داده‌های خام اعتباری هرگز به مرورگر ارسال نمی‌شود و سمت سرور می‌ماند.</li>
             <li>· نتیجه صرفاً برای سنجش مسیرهای وام تو استفاده می‌شود.</li>
-            <li>· در این نسخه هیچ استعلامی انجام نمی‌شود؛ نتیجه شبیه‌سازی‌شده است.</li>
           </ul>
           <label className="mt-4 flex cursor-pointer items-start gap-2 rounded-2xl border border-border bg-elevated/50 p-3">
             <input
@@ -136,7 +126,7 @@ export function CreditJourney() {
               className="mt-0.5 size-4 accent-[var(--color-accent)]"
             />
             <span className="text-xs leading-5">
-              می‌پذیرم که این یک اعتبارسنجی نمایشی است و اجازهٔ اجرای آن را می‌دهم.
+              اجازهٔ اجرای اعتبارسنجی را می‌دهم.
             </span>
           </label>
           {error ? <p className="mt-2 text-[11px] text-danger">{error}</p> : null}
@@ -153,18 +143,17 @@ export function CreditJourney() {
 
       {stage === "payment" ? (
         <section className="rounded-3xl border border-border bg-surface p-4">
-          <SectionTitle hint="جای‌گذار پرداخت">پرداخت هزینهٔ بررسی</SectionTitle>
+          <SectionTitle>پرداخت هزینهٔ بررسی</SectionTitle>
           <div className="rounded-2xl border border-gold/40 bg-gold/10 p-4 text-center">
-            <div className="text-[10px] text-muted-foreground">هزینهٔ نمایشی بررسی</div>
+            <div className="text-[10px] text-muted-foreground">هزینهٔ بررسی</div>
             <div className="num mt-1 text-2xl font-extrabold text-gold">{formatToman(price)}</div>
-            <div className="mt-1 text-[10px] text-warn">پرداخت شبیه‌سازی‌شده — مبلغی کسر نمی‌شود</div>
           </div>
           <button
             type="button"
             onClick={runAnalysis}
             className="mt-4 w-full rounded-2xl bg-gold px-4 py-3 text-sm font-semibold text-gold-foreground"
           >
-            پرداخت نمایشی و شروع بررسی
+            پرداخت و شروع بررسی
           </button>
           <button
             type="button"
@@ -230,7 +219,7 @@ function IntroPanel({ priceLabel, onStart }: { priceLabel: string; onStart: () =
         که چه چیزی مسیر را باز و چه چیزی آن را بسته نگه داشته است.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-2">
-        <MiniStat label="هزینهٔ نمایشی" value={priceLabel} />
+        <MiniStat label="هزینهٔ بررسی" value={priceLabel} />
         <MiniStat label="زمان بررسی" value="کمتر از ۲ دقیقه" />
       </div>
       <button
@@ -238,7 +227,7 @@ function IntroPanel({ priceLabel, onStart }: { priceLabel: string; onStart: () =
         onClick={onStart}
         className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"
       >
-        شروع اعتبارسنجی نمایشی
+        شروع اعتبارسنجی
       </button>
     </section>
   );
@@ -271,7 +260,7 @@ function CreditReveal({
           step >= 0 ? "opacity-100" : "opacity-0",
         )}
       >
-        <div className="text-[10px] text-muted-foreground">سیگنال اعتباری شبیه‌سازی‌شده</div>
+        <div className="text-[10px] text-muted-foreground">سیگنال اعتباری</div>
         <div className={cn("num mt-1 text-5xl font-extrabold", band.tone)}>
           {toPersianDigits(result.signal)}
         </div>
@@ -291,7 +280,6 @@ function CreditReveal({
           <div className="num mt-1 text-[11px] text-muted-foreground">
             {formatToman(result.estimatedCapacity)}
           </div>
-          <div className="mt-1 text-[10px] text-warn">عدد نمایشی — تعهد هیچ مؤسسه‌ای نیست</div>
         </section>
       ) : null}
 
@@ -334,11 +322,11 @@ function CreditReveal({
               onClick={onReset}
               className="w-full rounded-2xl px-4 py-2 text-center text-[11px] text-muted-foreground"
             >
-              اجرای دوبارهٔ بررسی نمایشی
+              اجرای دوبارهٔ بررسی
             </button>
           </div>
           <p className="num mt-3 text-[10px] text-muted-foreground">
-            شمارهٔ پیگیری نمایشی: {result.requestId}
+            شمارهٔ پیگیری: {result.requestId}
           </p>
         </section>
       ) : null}

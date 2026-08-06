@@ -35,7 +35,6 @@ export function ProvenanceChip({
       )}
     >
       <span>{SOURCE_FA[provenance.source]}</span>
-      {provenance.demo ? <span className="text-warn">· نمونه</span> : null}
       {showFreshness ? (
         <span className="text-muted-foreground num">· {faRelativeTime(provenance.asOf)}</span>
       ) : null}

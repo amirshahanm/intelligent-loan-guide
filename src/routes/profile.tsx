@@ -117,7 +117,7 @@ function ProfilePage() {
       </div>
 
       <section className="rounded-3xl border border-border bg-surface p-4">
-        <SectionTitle hint={state.creditResult ? "نمایشی" : undefined}>سیگنال اعتباری</SectionTitle>
+        <SectionTitle>سیگنال اعتباری</SectionTitle>
         {state.creditResult ? (
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -146,7 +146,7 @@ function ProfilePage() {
               to="/credit"
               className="rounded-full bg-gold px-4 py-2 text-xs font-semibold text-gold-foreground"
             >
-              اعتبارسنجی نمایشی
+              اعتبارسنجی
             </Link>
           </div>
         )}

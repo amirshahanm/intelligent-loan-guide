@@ -153,9 +153,6 @@ export function RadarCanvas({
       </div>
 
       <RadarTally trace={trace} />
-      <p className="mt-3 text-center text-[10px] text-muted-foreground">
-        هر نقطه یک مسیر واقعی در موتور استدلال است؛ هیچ فعالیت نمایشی ساختگی نمایش داده نمی‌شود.
-      </p>
       <ul className="mt-3 flex flex-wrap justify-center gap-3 text-[10px] text-muted-foreground">
         <li className="flex items-center gap-1">
           <span className="size-2 rounded-full bg-gold" /> پیشنهاد اصلی
