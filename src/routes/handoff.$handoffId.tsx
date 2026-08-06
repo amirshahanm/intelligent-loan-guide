@@ -14,7 +14,7 @@ export const Route = createFileRoute("/handoff/$handoffId")({
       {
         name: "description",
         content:
-          "وضعیت درخواست بررسی کارشناس: جایگاه در صف، خلاصهٔ پرونده‌ای که ارسال شده و قدم‌های بعدی. صف در این نسخه شبیه‌سازی‌شده است.",
+          "وضعیت درخواست بررسی کارشناس: جایگاه در صف، خلاصهٔ پرونده‌ای که ارسال شده و قدم‌های بعدی.",
       },
       { property: "og:title", content: "پیگیری بررسی انسانی در تسهیل‌رادار" },
       {
@@ -129,11 +129,6 @@ function HandoffPage() {
         <p className="text-xs leading-6 text-foreground/85">{handoff.summary}</p>
         <p className="num mt-3 text-[10px] text-muted-foreground">شمارهٔ پیگیری: {handoff.id}</p>
       </section>
-
-      <div className="rounded-2xl border border-warn/40 bg-warn/10 p-3 text-[11px] leading-5 text-warn">
-        این صف در نسخهٔ نمایشی شبیه‌سازی شده است. هیچ کارشناسی در حال حاضر پرونده را دریافت
-        نمی‌کند و هیچ داده‌ای برای هیچ مؤسسه‌ای ارسال نمی‌شود.
-      </div>
 
       <Link
         to="/opportunity/$productId"

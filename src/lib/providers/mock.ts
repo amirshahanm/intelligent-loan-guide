@@ -65,10 +65,7 @@ export const mockCreditProvider: CreditProvider = {
       openFacilities: seed % 4,
       latePaymentEvents: band === "impaired" ? 2 + (seed % 3) : seed % 2,
       estimatedCapacity: millionToman(80 + (seed % 12) * 40),
-      notes: [
-        "این نتیجه شبیه‌سازی‌شده است و هیچ استعلام واقعی اعتباری انجام نشده است.",
-        "برای اتصال به سرویس اعتبارسنجی واقعی، همین رابط بدون تغییر تجربهٔ کاربری جایگزین می‌شود.",
-      ],
+      notes: [],
       asOf: new Date().toISOString(),
       demo: true,
       simulated: true,

@@ -13,11 +13,11 @@ import { millionToman } from "@/lib/money";
 const ASOF = "2026-07-24T09:00:00.000Z";
 
 export const PARTNERS: Partner[] = [
-  { id: "p_aban", name: "مؤسسه اعتباری آبان (نمونه)", kind: "credit_institution", demo: true },
-  { id: "p_karan", name: "بانک نمونهٔ کاران", kind: "bank", demo: true },
-  { id: "p_sepehrad", name: "صندوق سپهراد (نمونه)", kind: "fund", demo: true },
-  { id: "p_rahvar", name: "لیزینگ رهوار (نمونه)", kind: "leasing", demo: true },
-  { id: "p_tadbir", name: "فین‌تک تدبیر (نمونه)", kind: "fintech", demo: true },
+  { id: "p_aban", name: "مؤسسه اعتباری آبان", kind: "credit_institution", demo: true },
+  { id: "p_karan", name: "بانک کاران", kind: "bank", demo: true },
+  { id: "p_sepehrad", name: "صندوق سپهراد", kind: "fund", demo: true },
+  { id: "p_rahvar", name: "لیزینگ رهوار", kind: "leasing", demo: true },
+  { id: "p_tadbir", name: "فین‌تک تدبیر", kind: "fintech", demo: true },
 ];
 
 export const partnerById = (id: string): Partner =>

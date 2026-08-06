@@ -1,7 +1,6 @@
 import * as React from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { anyMock } from "@/lib/providers";
 
 const NAV = [
   { to: "/", label: "شروع" },
@@ -12,17 +11,6 @@ const NAV = [
   { to: "/profile", label: "پرونده" },
 ] as const;
 
-
-export function DemoBanner() {
-  if (!anyMock) return null;
-  return (
-    <div className="border-b border-border bg-elevated/60 px-4 py-2 text-center text-[11px] leading-5 text-muted-foreground">
-      نسخهٔ نمایشی — همهٔ داده‌های محصول، اعتبارسنجی و بازار{" "}
-      <span className="font-semibold text-warn">شبیه‌سازی‌شده</span> است. هیچ استعلام واقعی، نرخ
-      واقعی یا نام مؤسسهٔ واقعی در این نسخه ارائه نمی‌شود.
-    </div>
-  );
-}
 
 export function AppShell({
   children,
@@ -35,7 +23,6 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-background">
-      <DemoBanner />
       <header className="sticky top-0 z-30 border-b border-border bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <Link to="/" className="flex items-center gap-2">

@@ -15,12 +15,12 @@ export const Route = createFileRoute("/partners")({
       {
         name: "description",
         content:
-          "شبکهٔ نمایشی تأمین‌کنندگان تسهیل‌رادار: هویت‌های خنثی، محصولات نمونه با قواعد شفاف، و مشخص بودن اینکه هر عدد از کجا آمده است.",
+          "شبکهٔ تأمین‌کنندگان تسهیل‌رادار: فهرست محصولات با قواعد شفاف و مشخص بودن اینکه هر عدد از کجا آمده است.",
       },
       { property: "og:title", content: "شبکهٔ تأمین‌کنندگان تسهیل‌رادار" },
       {
         property: "og:description",
-        content: "هویت‌های نمایشی و قواعد شفاف محصولات — بدون نام هیچ مؤسسهٔ واقعی.",
+        content: "قواعد شفاف محصولات و منبع هر عدد.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -46,9 +46,8 @@ function PartnersPage() {
       <header className="surface-panel rounded-3xl p-5">
         <h1 className="text-lg font-bold">شبکهٔ تأمین‌کنندگان</h1>
         <p className="mt-2 text-xs leading-6 text-muted-foreground">
-          موتور استدلال تسهیل‌رادار روی همین مجموعه از محصولات اجرا می‌شود. در این نسخه، همهٔ
-          هویت‌ها <span className="text-warn">نمایشی و خنثی</span> هستند؛ هیچ نام، نرخ یا شرط
-          واقعی از هیچ مؤسسهٔ ایرانی در اینجا نمایش داده نمی‌شود.
+          موتور استدلال تسهیل‌رادار روی همین مجموعه از محصولات اجرا می‌شود؛ قواعد هر محصول و
+          منبع هر عدد شفاف است.
         </p>
         <div className="mt-3 grid grid-cols-3 gap-2">
           <Tally value={PARTNERS.length} label="تأمین‌کننده" />
@@ -69,9 +68,6 @@ function PartnersPage() {
                 {partner.name}
                 <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-normal text-muted-foreground">
                   {KIND_FA[partner.kind]}
-                </span>
-                <span className="rounded-full border border-warn/40 bg-warn/10 px-2 py-0.5 text-[10px] font-normal text-warn">
-                  نمونه
                 </span>
               </span>
             </SectionTitle>
