@@ -136,9 +136,13 @@ export function ConciergeExperience() {
     update((s) => {
       const asked = s.askedQuestionIds;
       if (asked.length === 0) return s;
+      const lastMsg = s.messages[s.messages.length - 1];
+      const viewingLast =
+        lastMsg && lastMsg.role === "concierge" && lastMsg.kind === "question";
       const lastQ = QUESTIONS.find((q) => q.id === asked[asked.length - 1]);
       const lastAnswered = lastQ ? s.slots[lastQ.slot] !== undefined : false;
-      const targetIdx = lastAnswered ? asked.length - 1 : asked.length - 2;
+      const targetIdx =
+        lastAnswered && !viewingLast ? asked.length - 1 : asked.length - 2;
       if (targetIdx < 0) return s;
       const targetId = asked[targetIdx];
       const slots: IntentSlots = { ...s.slots };
