@@ -132,6 +132,32 @@ export function ConciergeExperience() {
     [update],
   );
 
+  const goBack = React.useCallback(() => {
+    update((s) => {
+      const asked = s.askedQuestionIds;
+      if (asked.length === 0) return s;
+      const lastQ = QUESTIONS.find((q) => q.id === asked[asked.length - 1]);
+      const lastAnswered = lastQ ? s.slots[lastQ.slot] !== undefined : false;
+      const targetIdx = lastAnswered ? asked.length - 1 : asked.length - 2;
+      if (targetIdx < 0) return s;
+      const targetId = asked[targetIdx];
+      const slots: IntentSlots = { ...s.slots };
+      for (const id of asked.slice(targetIdx + 1)) {
+        const q = QUESTIONS.find((x) => x.id === id);
+        if (q) delete slots[q.slot];
+      }
+      const at = s.messages.findIndex(
+        (m) => m.role === "concierge" && m.kind === "question" && m.questionId === targetId,
+      );
+      return {
+        ...s,
+        slots,
+        askedQuestionIds: asked.slice(0, targetIdx + 1),
+        messages: at >= 0 ? s.messages.slice(0, at + 1) : s.messages,
+      };
+    });
+  }, [update]);
+
   const reAsk = React.useCallback(
     (key: SlotKey) => {
       const question = QUESTIONS.find((q) => q.slot === key);
@@ -165,6 +191,14 @@ export function ConciergeExperience() {
     }
     if (!complete) wasComplete.current = false;
   }, [complete]);
+
+  const canGoBack = React.useMemo(() => {
+    const asked = state.askedQuestionIds;
+    if (asked.length === 0) return false;
+    const lastQ = QUESTIONS.find((q) => q.id === asked[asked.length - 1]);
+    const lastAnswered = lastQ ? state.slots[lastQ.slot] !== undefined : false;
+    return (lastAnswered ? asked.length - 1 : asked.length - 2) >= 0;
+  }, [state.askedQuestionIds, state.slots]);
 
   const lastQuestionId = React.useMemo(() => {
     for (let i = state.messages.length - 1; i >= 0; i--) {
@@ -230,6 +264,10 @@ export function ConciergeExperience() {
                   key={message.id}
                   question={question}
                   index={index > 0 ? index : 1}
+                  selected={state.slots[question.slot]?.value as string | number | undefined}
+                  onBack={
+                    canGoBack && message.questionId === lastQuestionId ? goBack : undefined
+                  }
                   onAnswer={(value, label) => answer(question.id, value, label)}
                 />
               );
@@ -242,6 +280,7 @@ export function ConciergeExperience() {
 
       <SlotChips slots={state.slots} onEdit={reAsk} />
 
+      {complete ? null : (
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -288,6 +327,7 @@ export function ConciergeExperience() {
           </p>
         ) : null}
       </form>
+      )}
 
       {!started ? (
         <div className="space-y-2">
@@ -316,6 +356,15 @@ export function ConciergeExperience() {
           <AuthorityBadge computedBy={confirmed ? "server-authoritative" : trace.computedBy} />
           <RadarTally trace={trace} />
           <div className="flex gap-2">
+            {canGoBack ? (
+              <button
+                type="button"
+                onClick={goBack}
+                className="rounded-2xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-muted-foreground"
+              >
+                مرحله قبل
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={() => navigate({ to: "/radar" })}
