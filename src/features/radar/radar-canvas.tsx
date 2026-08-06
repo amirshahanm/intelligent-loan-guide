@@ -97,16 +97,16 @@ export function RadarCanvas({
               stroke={color(node.outcome)}
               strokeOpacity={node.outcome === "eliminated" ? 0.18 : 0.5}
               strokeWidth="1"
-              className="anim-connect"
-              style={{ animationDelay: `${i * 40}ms` }}
+              className={node.outcome === "eliminated" ? undefined : "anim-connect"}
+              style={node.outcome === "eliminated" ? undefined : { animationDelay: `${i * 40}ms` }}
             />
           ))}
 
           {nodes.map((node, i) => (
             <g
               key={node.id}
-              className="anim-detect cursor-pointer"
-              style={{ animationDelay: `${i * 45}ms` }}
+              className={node.outcome === "eliminated" ? "cursor-pointer" : "anim-detect cursor-pointer"}
+              style={node.outcome === "eliminated" ? undefined : { animationDelay: `${i * 45}ms` }}
               onClick={() => onSelect?.(node.id)}
             >
               <title>{`${node.label} — ${node.note}`}</title>
@@ -116,6 +116,12 @@ export function RadarCanvas({
                 r={node.outcome === "primary" ? 9 : node.outcome === "near" ? 6 : 4}
                 fill={color(node.outcome)}
                 fillOpacity={node.outcome === "eliminated" ? 0.35 : 1}
+                className={node.outcome === "near" ? "anim-node-pulse" : undefined}
+                style={
+                  node.outcome === "near"
+                    ? { transformOrigin: `${node.x}px ${node.y}px`, animationDelay: `${i * 120}ms` }
+                    : undefined
+                }
               />
               {node.outcome === "primary" ? (
                 <circle
@@ -124,15 +130,25 @@ export function RadarCanvas({
                   r="16"
                   fill="none"
                   stroke="var(--color-gold)"
-                  strokeOpacity="0.5"
-                  className="anim-pulse-node"
+                  strokeWidth="2"
+                  className="anim-gold-glow"
                   style={{ transformOrigin: `${node.x}px ${node.y}px` }}
                 />
               ) : null}
             </g>
           ))}
 
+          <circle
+            cx="160"
+            cy="160"
+            r="9"
+            fill="var(--color-foreground)"
+            className="anim-breathe"
+            style={{ transformOrigin: "160px 160px" }}
+            fillOpacity="0.18"
+          />
           <circle cx="160" cy="160" r="5" fill="var(--color-foreground)" fillOpacity="0.7" />
+
         </svg>
       </div>
 
