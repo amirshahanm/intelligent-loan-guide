@@ -11,10 +11,14 @@ export function QuestionCard({
   question,
   onAnswer,
   index,
+  selected,
+  onBack,
 }: {
   question: Question;
   onAnswer: (value: string | number, label: string) => void;
   index: number;
+  selected?: string | number;
+  onBack?: () => void;
 }) {
   const [amountText, setAmountText] = React.useState("");
 
@@ -70,6 +74,7 @@ export function QuestionCard({
               className={cn(
                 "rounded-2xl border border-border bg-elevated px-3 py-3 text-sm text-foreground transition-colors",
                 "hover:border-accent/60 hover:bg-accent/10",
+                selected === option.value && "border-accent bg-accent/15 text-accent",
               )}
             >
               {option.label}
@@ -77,6 +82,16 @@ export function QuestionCard({
           ))}
         </div>
       )}
+
+      {onBack ? (
+        <button
+          type="button"
+          onClick={onBack}
+          className="mt-3 rounded-2xl border border-border bg-elevated px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
+        >
+          مرحله قبل
+        </button>
+      ) : null}
     </div>
   );
 }
