@@ -199,10 +199,14 @@ export function ConciergeExperience() {
   const canGoBack = React.useMemo(() => {
     const asked = state.askedQuestionIds;
     if (asked.length === 0) return false;
+    const lastMsg = state.messages[state.messages.length - 1];
+    const viewingLast = Boolean(
+      lastMsg && lastMsg.role === "concierge" && lastMsg.kind === "question",
+    );
     const lastQ = QUESTIONS.find((q) => q.id === asked[asked.length - 1]);
     const lastAnswered = lastQ ? state.slots[lastQ.slot] !== undefined : false;
-    return (lastAnswered ? asked.length - 1 : asked.length - 2) >= 0;
-  }, [state.askedQuestionIds, state.slots]);
+    return (lastAnswered && !viewingLast ? asked.length - 1 : asked.length - 2) >= 0;
+  }, [state.askedQuestionIds, state.slots, state.messages]);
 
   const lastQuestionId = React.useMemo(() => {
     for (let i = state.messages.length - 1; i >= 0; i--) {
