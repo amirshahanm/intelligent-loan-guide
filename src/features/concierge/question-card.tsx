@@ -29,8 +29,20 @@ export function QuestionCard({
 
   return (
     <div className="anim-resolve rounded-3xl border border-border bg-surface p-4">
-      <div className="mb-1 text-[10px] text-accent">
-        پرسش {toPersianDigits(index)} · موتور تصمیم
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <span className="text-[10px] text-accent">
+          پرسش {toPersianDigits(index)} · موتور تصمیم
+        </span>
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-elevated px-2.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
+          >
+            <BackArrowIcon />
+            مرحله قبل
+          </button>
+        ) : null}
       </div>
       <div className="text-base font-semibold text-foreground">{question.text}</div>
       {question.helper ? (
