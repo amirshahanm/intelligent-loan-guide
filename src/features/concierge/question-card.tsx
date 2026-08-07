@@ -37,7 +37,7 @@ export function QuestionCard({
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex h-8 items-center gap-1 rounded-xl border border-border bg-elevated px-2.5 text-[11px] font-semibold text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border bg-elevated px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
           >
             <BackArrowIcon />
             مرحله قبل
