@@ -286,6 +286,16 @@ export function ConciergeExperience() {
         </div>
       ) : null}
 
+      {complete && canGoBack ? (
+        <button
+          type="button"
+          onClick={goBack}
+          className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
+        >
+          مرحله قبل
+        </button>
+      ) : null}
+
       <SlotChips slots={state.slots} onEdit={reAsk} />
 
       {complete ? null : (
@@ -364,15 +374,6 @@ export function ConciergeExperience() {
           <AuthorityBadge computedBy={confirmed ? "server-authoritative" : trace.computedBy} />
           <RadarTally trace={trace} />
           <div className="flex gap-2">
-            {canGoBack ? (
-              <button
-                type="button"
-                onClick={goBack}
-                className="rounded-2xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-muted-foreground"
-              >
-                مرحله قبل
-              </button>
-            ) : null}
             <button
               type="button"
               onClick={() => navigate({ to: "/radar" })}
