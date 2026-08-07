@@ -95,15 +95,14 @@ export function QuestionCard({
         </div>
       )}
 
-      {onBack ? (
-        <button
-          type="button"
-          onClick={onBack}
-          className="mt-3 rounded-2xl border border-border bg-elevated px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
-        >
-          مرحله قبل
-        </button>
-      ) : null}
     </div>
+  );
+}
+
+function BackArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-3.5">
+      <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
