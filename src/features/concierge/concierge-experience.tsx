@@ -229,8 +229,9 @@ export function ConciergeExperience() {
     );
     const lastQ = QUESTIONS.find((q) => q.id === asked[asked.length - 1]);
     const lastAnswered = lastQ ? state.slots[lastQ.slot] !== undefined : false;
-    return (lastAnswered && !viewingLast ? asked.length - 1 : asked.length - 2) >= 0;
-  }, [state.askedQuestionIds, state.slots, state.messages]);
+    const idx = lastAnswered && !viewingLast ? asked.length - 1 : asked.length - 2;
+    return idx >= 0 || state.intents.length > 0;
+  }, [state.askedQuestionIds, state.slots, state.messages, state.intents]);
 
   const lastQuestionId = React.useMemo(() => {
     for (let i = state.messages.length - 1; i >= 0; i--) {
