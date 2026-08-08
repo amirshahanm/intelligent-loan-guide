@@ -29,7 +29,7 @@ export function AppShell({
             <RadarMark />
             <span className="text-base font-bold tracking-tight">تسهیل‌رادار</span>
           </Link>
-          <nav className="ms-auto flex items-center gap-1 overflow-x-auto">
+          <nav className="no-scrollbar ms-auto flex items-center gap-1 overflow-x-auto">
             {NAV.map((item) => (
               <Link
                 key={item.to}

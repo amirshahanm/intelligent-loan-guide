@@ -143,7 +143,31 @@ export function ConciergeExperience() {
       const lastAnswered = lastQ ? s.slots[lastQ.slot] !== undefined : false;
       const targetIdx =
         lastAnswered && !viewingLast ? asked.length - 1 : asked.length - 2;
-      if (targetIdx < 0) return s;
+      if (targetIdx < 0) {
+        // Step back to the initial request stage (same history, no new state).
+        const lastIntent = s.intents[s.intents.length - 1];
+        if (!lastIntent) return s;
+        const slots: IntentSlots = { ...s.slots };
+        for (const id of asked) {
+          const q = QUESTIONS.find((x) => x.id === id);
+          if (q) delete slots[q.slot];
+        }
+        let at = -1;
+        for (let i = s.messages.length - 1; i >= 0; i--) {
+          const m = s.messages[i];
+          if (m.role === "user" && m.kind === "text" && m.text === lastIntent.text) {
+            at = i;
+            break;
+          }
+        }
+        return {
+          ...s,
+          slots,
+          askedQuestionIds: [],
+          intents: s.intents.slice(0, -1),
+          messages: at >= 0 ? s.messages.slice(0, at) : [],
+        };
+      }
       const targetId = asked[targetIdx];
       const slots: IntentSlots = { ...s.slots };
       for (const id of asked.slice(targetIdx + 1)) {
@@ -205,8 +229,9 @@ export function ConciergeExperience() {
     );
     const lastQ = QUESTIONS.find((q) => q.id === asked[asked.length - 1]);
     const lastAnswered = lastQ ? state.slots[lastQ.slot] !== undefined : false;
-    return (lastAnswered && !viewingLast ? asked.length - 1 : asked.length - 2) >= 0;
-  }, [state.askedQuestionIds, state.slots, state.messages]);
+    const idx = lastAnswered && !viewingLast ? asked.length - 1 : asked.length - 2;
+    return idx >= 0 || state.intents.length > 0;
+  }, [state.askedQuestionIds, state.slots, state.messages, state.intents]);
 
   const lastQuestionId = React.useMemo(() => {
     for (let i = state.messages.length - 1; i >= 0; i--) {
