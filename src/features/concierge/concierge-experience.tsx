@@ -315,7 +315,7 @@ export function ConciergeExperience() {
         </div>
       ) : null}
 
-      {complete && canGoBack ? (
+      {canGoBack && (complete || lastQuestionId === null) ? (
         <button
           type="button"
           onClick={goBack}
