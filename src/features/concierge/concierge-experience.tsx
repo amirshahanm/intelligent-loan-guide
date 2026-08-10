@@ -135,7 +135,7 @@ export function ConciergeExperience() {
   const goBack = React.useCallback(() => {
     update((s) => {
       const asked = s.askedQuestionIds;
-      if (asked.length === 0) return s;
+      if (asked.length === 0 && s.intents.length === 0) return s;
       const lastMsg = s.messages[s.messages.length - 1];
       const viewingLast =
         lastMsg && lastMsg.role === "concierge" && lastMsg.kind === "question";
