@@ -184,7 +184,11 @@ export function ConciergeExperience() {
         messages: at >= 0 ? s.messages.slice(0, at + 1) : s.messages,
       };
     });
-  }, [update]);
+    if (state.askedQuestionIds.length === 0) {
+      const lastIntent = state.intents[state.intents.length - 1];
+      if (lastIntent) setDraft(lastIntent.text);
+    }
+  }, [update, state.askedQuestionIds, state.intents]);
 
   const reAsk = React.useCallback(
     (key: SlotKey) => {
