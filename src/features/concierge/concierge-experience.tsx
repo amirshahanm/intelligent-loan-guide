@@ -353,15 +353,16 @@ export function ConciergeExperience() {
             <button
               type="button"
               onClick={voice.listening ? voice.stop : voice.start}
-              aria-label={voice.listening ? "پایان ضبط" : "گفتن با صدا"}
+              aria-label={voice.listening ? "توقف ضبط" : "گفتن با صدا"}
+              title={voice.listening ? "توقف ضبط" : "گفتن با صدا"}
               className={cn(
                 "grid size-11 shrink-0 place-items-center rounded-2xl border transition-colors",
                 voice.listening
-                  ? "border-danger/50 bg-danger/15 text-danger"
+                  ? "border-danger/50 bg-danger/15 text-danger animate-pulse"
                   : "border-border bg-elevated text-muted-foreground hover:text-foreground",
               )}
             >
-              <MicIcon />
+              {voice.listening ? <StopIcon /> : <MicIcon />}
             </button>
           ) : null}
           <button
