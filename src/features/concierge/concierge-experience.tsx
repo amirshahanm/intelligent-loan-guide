@@ -91,11 +91,7 @@ export function ConciergeExperience() {
     [update],
   );
 
-  const voice = useVoiceInput(
-    React.useCallback((text: string) => {
-      setDraft((current) => (current.trim() ? `${current.trim()} ${text}` : text));
-    }, []),
-  );
+  const voice = useVoiceInput((text) => applyText(text, "voice"));
 
   const answer = React.useCallback(
     (questionId: string, value: string | number, label: string) => {
@@ -353,16 +349,15 @@ export function ConciergeExperience() {
             <button
               type="button"
               onClick={voice.listening ? voice.stop : voice.start}
-              aria-label={voice.listening ? "توقف ضبط" : "گفتن با صدا"}
-              title={voice.listening ? "توقف ضبط" : "گفتن با صدا"}
+              aria-label={voice.listening ? "پایان ضبط" : "گفتن با صدا"}
               className={cn(
                 "grid size-11 shrink-0 place-items-center rounded-2xl border transition-colors",
                 voice.listening
-                  ? "border-danger/50 bg-danger/15 text-danger animate-pulse"
+                  ? "border-danger/50 bg-danger/15 text-danger"
                   : "border-border bg-elevated text-muted-foreground hover:text-foreground",
               )}
             >
-              {voice.listening ? <StopIcon /> : <MicIcon />}
+              <MicIcon />
             </button>
           ) : null}
           <button
@@ -440,14 +435,6 @@ function MicIcon() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-5">
       <rect x="9" y="3" width="6" height="11" rx="3" />
       <path d="M5 11a7 7 0 0 0 14 0M12 18v3" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function StopIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="size-4">
-      <rect x="6" y="6" width="12" height="12" rx="2" />
     </svg>
   );
 }
