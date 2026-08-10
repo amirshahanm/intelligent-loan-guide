@@ -91,7 +91,11 @@ export function ConciergeExperience() {
     [update],
   );
 
-  const voice = useVoiceInput((text) => applyText(text, "voice"));
+  const voice = useVoiceInput(
+    React.useCallback((text: string) => {
+      setDraft((current) => (current.trim() ? `${current.trim()} ${text}` : text));
+    }, []),
+  );
 
   const answer = React.useCallback(
     (questionId: string, value: string | number, label: string) => {
