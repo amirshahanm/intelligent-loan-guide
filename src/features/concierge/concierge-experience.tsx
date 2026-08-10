@@ -135,7 +135,7 @@ export function ConciergeExperience() {
   const goBack = React.useCallback(() => {
     update((s) => {
       const asked = s.askedQuestionIds;
-      if (asked.length === 0) return s;
+      if (asked.length === 0 && s.intents.length === 0) return s;
       const lastMsg = s.messages[s.messages.length - 1];
       const viewingLast =
         lastMsg && lastMsg.role === "concierge" && lastMsg.kind === "question";
@@ -184,7 +184,11 @@ export function ConciergeExperience() {
         messages: at >= 0 ? s.messages.slice(0, at + 1) : s.messages,
       };
     });
-  }, [update]);
+    if (state.askedQuestionIds.length === 0) {
+      const lastIntent = state.intents[state.intents.length - 1];
+      if (lastIntent) setDraft(lastIntent.text);
+    }
+  }, [update, state.askedQuestionIds, state.intents]);
 
   const reAsk = React.useCallback(
     (key: SlotKey) => {
@@ -222,7 +226,7 @@ export function ConciergeExperience() {
 
   const canGoBack = React.useMemo(() => {
     const asked = state.askedQuestionIds;
-    if (asked.length === 0) return false;
+    if (asked.length === 0) return state.intents.length > 0;
     const lastMsg = state.messages[state.messages.length - 1];
     const viewingLast = Boolean(
       lastMsg && lastMsg.role === "concierge" && lastMsg.kind === "question",
@@ -311,7 +315,7 @@ export function ConciergeExperience() {
         </div>
       ) : null}
 
-      {complete && canGoBack ? (
+      {canGoBack && (complete || lastQuestionId === null) ? (
         <button
           type="button"
           onClick={goBack}
