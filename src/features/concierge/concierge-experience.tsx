@@ -226,7 +226,7 @@ export function ConciergeExperience() {
 
   const canGoBack = React.useMemo(() => {
     const asked = state.askedQuestionIds;
-    if (asked.length === 0) return false;
+    if (asked.length === 0) return state.intents.length > 0;
     const lastMsg = state.messages[state.messages.length - 1];
     const viewingLast = Boolean(
       lastMsg && lastMsg.role === "concierge" && lastMsg.kind === "question",
