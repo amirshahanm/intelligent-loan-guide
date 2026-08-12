@@ -86,7 +86,10 @@ check("known capacity earns 10", lowCapacity.total === 10);
 const clarityOnly = scoreLeadLiquidity({ exact_amount: "known", deadline: "known" });
 check("clarity total", clarityOnly.total === 20);
 check("clarity never unmet", clarityOnly.unmetFactors.length === 0);
-check("clarity unknowns still missing", clarityOnly.missingFactors.includes("installment_capacity"));
+check(
+  "clarity unknowns still missing",
+  clarityOnly.missingFactors.includes("installment_capacity"),
+);
 
 /* --- Condition semantics ------------------------------------------ */
 
