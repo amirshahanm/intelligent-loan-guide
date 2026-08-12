@@ -139,8 +139,6 @@ export const ASSESSMENT_SLOTS: SlotKey[] = [
   "collateral",
   "incomeBand",
   "debtLoad",
-  "bankTurnover",
-  "adverseHistory",
 ];
 
 export function isAssessmentComplete(slots: IntentSlots): boolean {

@@ -41,7 +41,9 @@ const slotsSchema = z.object({
   collateral: factOf(z.enum(["property", "vehicle", "deposit", "none", "unknown"])),
   guarantor: factOf(z.enum(["payroll", "business", "none", "unknown"])),
   incomeBand: factOf(z.enum(["under_20", "20_50", "50_100", "over_100", "unknown"])),
-  debtLoad: factOf(z.enum(["none", "light", "heavy", "unknown"])),
+  debtLoad: factOf(z.enum(["none", "light", "moderate", "heavy", "unknown"])),
+  bankTurnover: factOf(z.enum(["under_50", "50_150", "150_300", "over_300", "unknown"])),
+  adverseHistory: factOf(z.enum(["none", "resolved", "active", "unsure", "unknown"])),
   urgency: factOf(z.enum(["immediate", "weeks", "flexible", "unknown"])),
   region: factOf(z.string().max(40)),
 });
