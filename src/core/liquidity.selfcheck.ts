@@ -83,4 +83,6 @@ if (failures.length) {
   console.error("liquidity self-check FAILED:\n - " + failures.join("\n - "));
   process.exit(1);
 }
-console.log(`liquidity self-check passed (${LIQUIDITY_FACTORS.length} factors, max ${LIQUIDITY_MAX_SCORE})`);
+console.log(
+  `liquidity self-check passed (${LIQUIDITY_FACTORS.length} factors, max ${LIQUIDITY_MAX_SCORE})`,
+);
