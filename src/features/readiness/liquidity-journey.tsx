@@ -15,14 +15,15 @@ export function LiquidityJourney() {
   const { state, update } = useSession();
   const input = React.useMemo(
     () => ({
-      ...knownLiquidityFacts(state.slots, Boolean(state.creditResult)),
+      // Phase 1 CreditResult is simulated and is deliberately not a verified review signal.
+      ...knownLiquidityFacts(state.slots),
       ...state.liquidity,
     }),
-    [state.slots, state.creditResult, state.liquidity],
+    [state.slots, state.liquidity],
   );
   const result = React.useMemo(() => scoreLeadLiquidity(input), [input]);
   const question = nextLiquidityQuestion(input, state.liquiditySkippedFactors);
-  const action = liquidityNextAction(result);
+  const action = liquidityNextAction(result, state.liquiditySkippedFactors);
   const started = React.useRef(false);
   const viewed = React.useRef<string | null>(null);
 
@@ -205,8 +206,7 @@ export function LiquidityJourney() {
                   پاسخ دادن به این فاکتور
                 </button>
               ) : null}
-              {factor.known &&
-              !(factor.key in knownLiquidityFacts(state.slots, Boolean(state.creditResult))) ? (
+              {factor.known && !(factor.key in knownLiquidityFacts(state.slots)) ? (
                 <button
                   type="button"
                   onClick={() =>

@@ -131,14 +131,11 @@ check(
 );
 
 // Journey asks only still-unknown liquidity facts and reuses only identical facts.
-const reused = knownLiquidityFacts(
-  {
-    amount: fact(1_000_000_000, userConfirmed()),
-    guarantor: fact("none", userConfirmed()),
-    collateral: fact("none", userConfirmed()),
-  },
-  false,
-);
+const reused = knownLiquidityFacts({
+  amount: fact(1_000_000_000, userConfirmed()),
+  guarantor: fact("none", userConfirmed()),
+  collateral: fact("none", userConfirmed()),
+});
 check("amount presence does not prove exactness", reused.exact_amount === undefined);
 check("complete confirmed no-guarantee situation is known", reused.guarantee_situation === "known");
 check("journey does not infer deadline", reused.deadline === undefined);
@@ -151,13 +148,10 @@ check(
   liquidityNextAction(scoreLeadLiquidity(reused)).key === "exact_amount",
 );
 
-const unknownGuarantee = knownLiquidityFacts(
-  {
-    guarantor: fact("unknown", userConfirmed()),
-    collateral: fact("none", userConfirmed()),
-  },
-  false,
-);
+const unknownGuarantee = knownLiquidityFacts({
+  guarantor: fact("unknown", userConfirmed()),
+  collateral: fact("none", userConfirmed()),
+});
 check(
   "unknown slot value does not establish guarantee situation",
   unknownGuarantee.guarantee_situation === undefined,
@@ -182,6 +176,44 @@ const migrated = normalizeLiquidityJourneyState({ anonSessionId: "legacy" });
 check("legacy session gets empty liquidity", Object.keys(migrated.liquidity).length === 0);
 check("legacy session gets empty asked factors", migrated.liquidityAskedFactors.length === 0);
 check("legacy session gets empty skipped factors", migrated.liquiditySkippedFactors.length === 0);
+
+// Demo credit output is not a verified review signal and cannot be passed to
+// the typed boundary; absence of the explicit attestation keeps it missing.
+const simulatedCreditFacts = knownLiquidityFacts({});
+check(
+  "simulated credit result does not imply review",
+  simulatedCreditFacts.credit_status_reviewed === undefined &&
+    scoreLeadLiquidity(simulatedCreditFacts).missingFactors.includes("credit_status_reviewed"),
+);
+
+const verifiedCreditFacts = knownLiquidityFacts(
+  {},
+  {
+    reviewed: true,
+    source: "verified_provider",
+    asOf: "2026-08-14T00:00:00.000Z",
+  },
+);
+check(
+  "explicit verified review is reused",
+  verifiedCreditFacts.credit_status_reviewed === "reviewed",
+);
+
+const manualCreditClarification = scoreLeadLiquidity({
+  ...simulatedCreditFacts,
+  credit_status_reviewed: "reviewed",
+});
+check(
+  "manual credit clarification still works",
+  manualCreditClarification.factors.find((factor) => factor.key === "credit_status_reviewed")
+    ?.awarded === 15 &&
+    !manualCreditClarification.missingFactors.includes("credit_status_reviewed"),
+);
+
+check(
+  "next action skips explicitly skipped factor",
+  liquidityNextAction(scoreLeadLiquidity({}), ["exact_amount"]).key === "deadline",
+);
 
 if (failures.length) {
   console.error("liquidity self-check FAILED:\n - " + failures.join("\n - "));

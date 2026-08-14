@@ -10,6 +10,17 @@ import {
 
 export type LiquidityAnswer = "known" | "reviewed" | true | false;
 
+/**
+ * Trusted integration boundary for a future production credit provider.
+ * Demo results, UI completion, scores, and estimated capacity cannot satisfy
+ * this contract. The provider adapter must explicitly attest to a real review.
+ */
+export type VerifiedCreditReview = {
+  reviewed: true;
+  source: "verified_provider";
+  asOf: string;
+};
+
 export type LiquidityQuestion = {
   key: LiquidityFactorKey;
   text: string;
@@ -86,7 +97,10 @@ const QUESTIONS: Record<LiquidityFactorKey, Omit<LiquidityQuestion, "key">> = {
 };
 
 /** Reuses only facts with identical semantics; never infers liquidity from mere slot presence. */
-export function knownLiquidityFacts(slots: IntentSlots, creditReviewed: boolean): LiquidityInput {
+export function knownLiquidityFacts(
+  slots: IntentSlots,
+  creditReview?: VerifiedCreditReview,
+): LiquidityInput {
   const guarantor = slots.guarantor?.value;
   const collateral = slots.collateral?.value;
   const guaranteeSituationComplete =
@@ -98,7 +112,9 @@ export function knownLiquidityFacts(slots: IntentSlots, creditReviewed: boolean)
   return {
     // IntentSlots has no explicit "amount is exact" evidence. Presence alone is insufficient.
     ...(guaranteeSituationComplete ? { guarantee_situation: "known" as const } : {}),
-    ...(creditReviewed ? { credit_status_reviewed: "reviewed" as const } : {}),
+    ...(creditReview?.reviewed === true && creditReview.source === "verified_provider"
+      ? { credit_status_reviewed: "reviewed" as const }
+      : {}),
   };
 }
 
@@ -116,8 +132,11 @@ export type LiquidityNextAction = {
   detail: string;
 };
 
-export function liquidityNextAction(result: LiquidityResult): LiquidityNextAction {
-  const missing = result.missingFactors[0];
+export function liquidityNextAction(
+  result: LiquidityResult,
+  skipped: readonly LiquidityFactorKey[] = [],
+): LiquidityNextAction {
+  const missing = result.missingFactors.find((key) => !skipped.includes(key));
   if (missing)
     return {
       key: missing,
