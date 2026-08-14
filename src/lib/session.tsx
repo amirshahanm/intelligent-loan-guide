@@ -3,6 +3,8 @@ import type { CapturedIntent, IntentSlots, ReasoningTrace, SlotKey } from "@/cor
 import { runReasoning } from "@/core/engine";
 import { bindAnalyticsSession, track } from "@/lib/analytics";
 import type { CreditResult, Handoff } from "@/lib/providers";
+import type { LiquidityFactorKey, LiquidityInput } from "@/core/liquidity";
+import { normalizeLiquidityJourneyState } from "@/lib/session-migration";
 
 /**
  * No-Login First session store.
@@ -33,6 +35,9 @@ export type SessionState = {
   creditResult?: CreditResult;
   handoffs: Handoff[];
   viewedProductIds: string[];
+  liquidity: LiquidityInput;
+  liquidityAskedFactors: LiquidityFactorKey[];
+  liquiditySkippedFactors: LiquidityFactorKey[];
 };
 
 const STORAGE_KEY = "tashilradar.session.v1";
@@ -54,6 +59,9 @@ function initialState(): SessionState {
     askedQuestionIds: [],
     handoffs: [],
     viewedProductIds: [],
+    liquidity: {},
+    liquidityAskedFactors: [],
+    liquiditySkippedFactors: [],
   };
 }
 
@@ -76,7 +84,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
-        const parsed = JSON.parse(raw) as SessionState;
+        const parsed = normalizeLiquidityJourneyState(JSON.parse(raw) as SessionState);
         const ageMs = Date.now() - new Date(parsed.lastSeenAt ?? parsed.createdAt).getTime();
         setState({ ...parsed, lastSeenAt: new Date().toISOString() });
         bindAnalyticsSession(parsed.anonSessionId);

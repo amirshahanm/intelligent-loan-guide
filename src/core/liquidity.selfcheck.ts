@@ -11,6 +11,13 @@ import {
   scoreLeadLiquidity,
   type LiquidityInput,
 } from "./liquidity";
+import {
+  knownLiquidityFacts,
+  liquidityNextAction,
+  nextLiquidityQuestion,
+} from "./liquidity-journey";
+import { fact, userConfirmed } from "./types";
+import { normalizeLiquidityJourneyState } from "../lib/session-migration";
 
 const failures: string[] = [];
 function check(name: string, condition: boolean) {
@@ -121,6 +128,109 @@ check(
   "deterministic",
   JSON.stringify(scoreLeadLiquidity(ALL_SATISFIED)) ===
     JSON.stringify(scoreLeadLiquidity(ALL_SATISFIED)),
+);
+
+// Journey asks only still-unknown liquidity facts and reuses only identical facts.
+const reused = knownLiquidityFacts({
+  amount: fact(1_000_000_000, userConfirmed()),
+  guarantor: fact("none", userConfirmed()),
+  collateral: fact("none", userConfirmed()),
+});
+check("amount presence does not prove exactness", reused.exact_amount === undefined);
+check("complete confirmed no-guarantee situation is known", reused.guarantee_situation === "known");
+check("journey does not infer deadline", reused.deadline === undefined);
+check(
+  "exact amount remains the next question",
+  nextLiquidityQuestion(reused)?.key === "exact_amount",
+);
+check(
+  "next action names exactness as first missing factor",
+  liquidityNextAction(scoreLeadLiquidity(reused)).key === "exact_amount",
+);
+
+const unknownGuarantee = knownLiquidityFacts({
+  guarantor: fact("unknown", userConfirmed()),
+  collateral: fact("none", userConfirmed()),
+});
+check(
+  "unknown slot value does not establish guarantee situation",
+  unknownGuarantee.guarantee_situation === undefined,
+);
+
+const skippedResult = scoreLeadLiquidity(reused);
+check(
+  "skipping advances to next missing factor",
+  nextLiquidityQuestion(reused, ["exact_amount"])?.key === "deadline",
+);
+check("skipped factor stays missing", skippedResult.missingFactors.includes("exact_amount"));
+check(
+  "skipped factor awards zero",
+  skippedResult.factors.find((f) => f.key === "exact_amount")?.awarded === 0,
+);
+check(
+  "skipped factor never becomes unmet",
+  !skippedResult.unmetFactors.includes("exact_amount" as never),
+);
+
+const migrated = normalizeLiquidityJourneyState({ anonSessionId: "legacy" });
+check("legacy session gets empty liquidity", Object.keys(migrated.liquidity).length === 0);
+check("legacy session gets empty asked factors", migrated.liquidityAskedFactors.length === 0);
+check("legacy session gets empty skipped factors", migrated.liquiditySkippedFactors.length === 0);
+
+// Demo credit output is not a verified review signal and cannot be passed to
+// the typed boundary; absence of the explicit attestation keeps it missing.
+const simulatedCreditFacts = knownLiquidityFacts({});
+check(
+  "simulated credit result does not imply review",
+  simulatedCreditFacts.credit_status_reviewed === undefined &&
+    scoreLeadLiquidity(simulatedCreditFacts).missingFactors.includes("credit_status_reviewed"),
+);
+
+const verifiedCreditFacts = knownLiquidityFacts(
+  {},
+  {
+    reviewed: true,
+    source: "verified_provider",
+    asOf: "2026-08-14T00:00:00.000Z",
+  },
+);
+check(
+  "explicit verified review is reused",
+  verifiedCreditFacts.credit_status_reviewed === "reviewed",
+);
+
+const manualCreditClarification = scoreLeadLiquidity({
+  ...simulatedCreditFacts,
+  credit_status_reviewed: "reviewed",
+});
+check(
+  "manual credit clarification still works",
+  manualCreditClarification.factors.find((factor) => factor.key === "credit_status_reviewed")
+    ?.awarded === 15 &&
+    !manualCreditClarification.missingFactors.includes("credit_status_reviewed"),
+);
+
+check(
+  "next action skips explicitly skipped factor",
+  liquidityNextAction(scoreLeadLiquidity({}), ["exact_amount"]).key === "deadline",
+);
+
+const allMissing = scoreLeadLiquidity({});
+const allMissingKeys = [...allMissing.missingFactors];
+const skippedAllAction = liquidityNextAction(allMissing, allMissingKeys);
+check("all missing skipped is not ready", skippedAllAction.key === "review_skipped");
+check(
+  "skipping all preserves missing factors",
+  allMissing.missingFactors.length === LIQUIDITY_FACTORS.length,
+);
+check("skipping all preserves score", allMissing.total === scoreLeadLiquidity({}).total);
+
+const trulyReady = scoreLeadLiquidity(ALL_SATISFIED);
+check(
+  "no missing and no unmet is ready",
+  trulyReady.missingFactors.length === 0 &&
+    trulyReady.unmetFactors.length === 0 &&
+    liquidityNextAction(trulyReady).key === "ready",
 );
 
 if (failures.length) {
