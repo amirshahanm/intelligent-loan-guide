@@ -20,7 +20,7 @@ export type LiquidityQuestion = {
 const QUESTIONS: Record<LiquidityFactorKey, Omit<LiquidityQuestion, "key">> = {
   exact_amount: {
     text: "مبلغ دقیق موردنیازت مشخص است؟",
-    helper: "خود مبلغ را قبلاً ثبت کرده‌ایم؛ فقط اگر هنوز تقریبی است بگو.",
+    helper: "مبلغ تقریبی کافی نیست؛ فقط اگر عدد نهایی را مشخص کرده‌ای تأیید کن.",
     options: [{ label: "بله، دقیق است", value: "known" }],
   },
   deadline: {
@@ -85,17 +85,28 @@ const QUESTIONS: Record<LiquidityFactorKey, Omit<LiquidityQuestion, "key">> = {
   },
 };
 
-/** Reuses only facts with identical semantics; never infers liquidity from income, urgency, or match data. */
+/** Reuses only facts with identical semantics; never infers liquidity from mere slot presence. */
 export function knownLiquidityFacts(slots: IntentSlots, creditReviewed: boolean): LiquidityInput {
+  const guarantor = slots.guarantor?.value;
+  const collateral = slots.collateral?.value;
+  const guaranteeSituationComplete =
+    guarantor !== undefined &&
+    guarantor !== "unknown" &&
+    collateral !== undefined &&
+    collateral !== "unknown";
+
   return {
-    ...(slots.amount ? { exact_amount: "known" as const } : {}),
-    ...(slots.guarantor || slots.collateral ? { guarantee_situation: "known" as const } : {}),
+    // IntentSlots has no explicit "amount is exact" evidence. Presence alone is insufficient.
+    ...(guaranteeSituationComplete ? { guarantee_situation: "known" as const } : {}),
     ...(creditReviewed ? { credit_status_reviewed: "reviewed" as const } : {}),
   };
 }
 
-export function nextLiquidityQuestion(input: LiquidityInput): LiquidityQuestion | null {
-  const missing = scoreLeadLiquidity(input).missingFactors[0];
+export function nextLiquidityQuestion(
+  input: LiquidityInput,
+  skipped: readonly LiquidityFactorKey[] = [],
+): LiquidityQuestion | null {
+  const missing = scoreLeadLiquidity(input).missingFactors.find((key) => !skipped.includes(key));
   return missing ? { key: missing, ...QUESTIONS[missing] } : null;
 }
 

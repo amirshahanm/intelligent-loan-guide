@@ -17,6 +17,7 @@ import {
   nextLiquidityQuestion,
 } from "./liquidity-journey";
 import { fact, userConfirmed } from "./types";
+import { normalizeLiquidityJourneyState } from "../lib/session-migration";
 
 const failures: string[] = [];
 function check(name: string, condition: boolean) {
@@ -131,17 +132,56 @@ check(
 
 // Journey asks only still-unknown liquidity facts and reuses only identical facts.
 const reused = knownLiquidityFacts(
-  { amount: fact(1_000_000_000, userConfirmed()), guarantor: fact("none", userConfirmed()) },
+  {
+    amount: fact(1_000_000_000, userConfirmed()),
+    guarantor: fact("none", userConfirmed()),
+    collateral: fact("none", userConfirmed()),
+  },
   false,
 );
-check("journey reuses exact amount", reused.exact_amount === "known");
-check("confirmed no guarantor is known, not negative", reused.guarantee_situation === "known");
+check("amount presence does not prove exactness", reused.exact_amount === undefined);
+check("complete confirmed no-guarantee situation is known", reused.guarantee_situation === "known");
 check("journey does not infer deadline", reused.deadline === undefined);
-check("next question skips reused amount", nextLiquidityQuestion(reused)?.key === "deadline");
 check(
-  "next action names first missing factor",
-  liquidityNextAction(scoreLeadLiquidity(reused)).key === "deadline",
+  "exact amount remains the next question",
+  nextLiquidityQuestion(reused)?.key === "exact_amount",
 );
+check(
+  "next action names exactness as first missing factor",
+  liquidityNextAction(scoreLeadLiquidity(reused)).key === "exact_amount",
+);
+
+const unknownGuarantee = knownLiquidityFacts(
+  {
+    guarantor: fact("unknown", userConfirmed()),
+    collateral: fact("none", userConfirmed()),
+  },
+  false,
+);
+check(
+  "unknown slot value does not establish guarantee situation",
+  unknownGuarantee.guarantee_situation === undefined,
+);
+
+const skippedResult = scoreLeadLiquidity(reused);
+check(
+  "skipping advances to next missing factor",
+  nextLiquidityQuestion(reused, ["exact_amount"])?.key === "deadline",
+);
+check("skipped factor stays missing", skippedResult.missingFactors.includes("exact_amount"));
+check(
+  "skipped factor awards zero",
+  skippedResult.factors.find((f) => f.key === "exact_amount")?.awarded === 0,
+);
+check(
+  "skipped factor never becomes unmet",
+  !skippedResult.unmetFactors.includes("exact_amount" as never),
+);
+
+const migrated = normalizeLiquidityJourneyState({ anonSessionId: "legacy" });
+check("legacy session gets empty liquidity", Object.keys(migrated.liquidity).length === 0);
+check("legacy session gets empty asked factors", migrated.liquidityAskedFactors.length === 0);
+check("legacy session gets empty skipped factors", migrated.liquiditySkippedFactors.length === 0);
 
 if (failures.length) {
   console.error("liquidity self-check FAILED:\n - " + failures.join("\n - "));

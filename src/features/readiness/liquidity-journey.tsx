@@ -6,7 +6,7 @@ import {
   nextLiquidityQuestion,
   type LiquidityAnswer,
 } from "@/core/liquidity-journey";
-import { fitBand, track } from "@/lib/analytics";
+import { track } from "@/lib/analytics";
 import { useSession } from "@/lib/session";
 import { toPersianDigits } from "@/lib/money";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ export function LiquidityJourney() {
     [state.slots, state.creditResult, state.liquidity],
   );
   const result = React.useMemo(() => scoreLeadLiquidity(input), [input]);
-  const question = nextLiquidityQuestion(input);
+  const question = nextLiquidityQuestion(input, state.liquiditySkippedFactors);
   const action = liquidityNextAction(result);
   const started = React.useRef(false);
   const viewed = React.useRef<string | null>(null);
@@ -42,21 +42,40 @@ export function LiquidityJourney() {
     track({
       name: "liquidity_result_viewed",
       status: result.status,
-      scoreBand: fitBand(result.total),
     });
     track({ name: "liquidity_next_action_viewed", factor: action.key });
   }, [action.key, result.status, result.total]);
+
+  React.useEffect(() => {
+    if (!question || state.liquidityAskedFactors.includes(question.key)) return;
+    update((current) => ({
+      ...current,
+      liquidityAskedFactors: [...current.liquidityAskedFactors, question.key],
+    }));
+    track({ name: "liquidity_factor_asked", factor: question.key });
+  }, [question, state.liquidityAskedFactors, update]);
 
   const answer = (key: LiquidityFactorKey, value: LiquidityAnswer) => {
     update((current) => ({
       ...current,
       liquidity: { ...current.liquidity, [key]: value } as LiquidityInput,
+      liquiditySkippedFactors: current.liquiditySkippedFactors.filter((factor) => factor !== key),
     }));
     track({
       name: "liquidity_factor_answered",
       factor: key,
       answer: value === false ? "negative" : value === true ? "positive" : "clarified",
     });
+  };
+
+  const skip = (key: LiquidityFactorKey) => {
+    update((current) => ({
+      ...current,
+      liquiditySkippedFactors: current.liquiditySkippedFactors.includes(key)
+        ? current.liquiditySkippedFactors
+        : [...current.liquiditySkippedFactors, key],
+    }));
+    track({ name: "liquidity_factor_answered", factor: key, answer: "skipped" });
   };
 
   return (
@@ -115,15 +134,29 @@ export function LiquidityJourney() {
               </button>
             ))}
           </div>
-          <p className="mt-3 text-[11px] text-muted-foreground">
-            اگر مطمئن نیستی، پاسخی ثبت نکن؛ «نامشخص» هرگز پاسخ منفی محسوب نمی‌شود.
+          <button
+            type="button"
+            onClick={() => skip(question.key)}
+            className="mt-3 w-full rounded-2xl border border-border px-4 py-3 text-xs font-semibold text-muted-foreground"
+          >
+            فعلاً نامشخص است
+          </button>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            با رد کردن، امتیازی کم نمی‌شود؛ این فاکتور نامشخص می‌ماند و بعداً قابل پاسخ است.
           </p>
         </section>
-      ) : (
+      ) : result.missingFactors.length === 0 ? (
         <section className="anim-resolve rounded-3xl border border-accent/35 bg-accent/10 p-5">
           <p className="text-sm font-bold text-accent">همهٔ فاکتورهای آمادگی اجرا روشن‌اند</p>
           <p className="mt-1 text-xs text-muted-foreground">
             پرونده حذف نمی‌شود و پاسخ‌ها را هر زمان می‌توانی بازبینی کنی.
+          </p>
+        </section>
+      ) : (
+        <section className="anim-resolve rounded-3xl border border-signal/35 bg-signal/10 p-5">
+          <p className="text-sm font-bold text-signal">پرسش‌های باقی‌مانده فعلاً رد شده‌اند</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            این فاکتورها همچنان نامشخص و بدون امتیازند؛ از فهرست زیر هرکدام را خواستی بازبینی کن.
           </p>
         </section>
       )}
@@ -156,6 +189,22 @@ export function LiquidityJourney() {
                 </span>
               </div>
               <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{factor.reason}</p>
+              {!factor.known && state.liquiditySkippedFactors.includes(factor.key) ? (
+                <button
+                  type="button"
+                  onClick={() =>
+                    update((current) => ({
+                      ...current,
+                      liquiditySkippedFactors: current.liquiditySkippedFactors.filter(
+                        (key) => key !== factor.key,
+                      ),
+                    }))
+                  }
+                  className="mt-2 text-[10px] text-signal"
+                >
+                  پاسخ دادن به این فاکتور
+                </button>
+              ) : null}
               {factor.known &&
               !(factor.key in knownLiquidityFacts(state.slots, Boolean(state.creditResult))) ? (
                 <button
