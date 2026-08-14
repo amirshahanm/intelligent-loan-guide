@@ -215,6 +215,24 @@ check(
   liquidityNextAction(scoreLeadLiquidity({}), ["exact_amount"]).key === "deadline",
 );
 
+const allMissing = scoreLeadLiquidity({});
+const allMissingKeys = [...allMissing.missingFactors];
+const skippedAllAction = liquidityNextAction(allMissing, allMissingKeys);
+check("all missing skipped is not ready", skippedAllAction.key === "review_skipped");
+check(
+  "skipping all preserves missing factors",
+  allMissing.missingFactors.length === LIQUIDITY_FACTORS.length,
+);
+check("skipping all preserves score", allMissing.total === scoreLeadLiquidity({}).total);
+
+const trulyReady = scoreLeadLiquidity(ALL_SATISFIED);
+check(
+  "no missing and no unmet is ready",
+  trulyReady.missingFactors.length === 0 &&
+    trulyReady.unmetFactors.length === 0 &&
+    liquidityNextAction(trulyReady).key === "ready",
+);
+
 if (failures.length) {
   console.error("liquidity self-check FAILED:\n - " + failures.join("\n - "));
   process.exit(1);

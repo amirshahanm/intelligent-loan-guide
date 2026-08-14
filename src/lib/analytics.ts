@@ -35,7 +35,7 @@ export type AnalyticsEvent =
     }
   | {
       name: "liquidity_next_action_viewed";
-      factor: import("@/core/liquidity").LiquidityFactorKey | "ready";
+      factor: import("@/core/liquidity").LiquidityFactorKey | "review_skipped" | "ready";
     };
 
 export type FitBand = "low" | "medium" | "high";

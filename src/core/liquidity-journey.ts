@@ -127,7 +127,7 @@ export function nextLiquidityQuestion(
 }
 
 export type LiquidityNextAction = {
-  key: LiquidityFactorKey | "ready";
+  key: LiquidityFactorKey | "review_skipped" | "ready";
   label: string;
   detail: string;
 };
@@ -142,6 +142,13 @@ export function liquidityNextAction(
       key: missing,
       label: `روشن‌کردن «${LIQUIDITY_FACTORS.find((f) => f.key === missing)!.label}»`,
       detail: "این پرسش، نزدیک‌ترین گام برای شفاف‌ترشدن آمادگی اجراست.",
+    };
+  if (result.missingFactors.length > 0)
+    return {
+      key: "review_skipped",
+      label: "بازبینی موارد نامشخص",
+      detail:
+        "چند فاکتور هنوز نامشخص است و فعلاً از آن‌ها گذشته‌ای؛ هر زمان آماده بودی می‌توانی دوباره بررسی‌شان کنی.",
     };
   const unmet = result.unmetFactors[0] as ConditionFactorKey | undefined;
   if (unmet)
