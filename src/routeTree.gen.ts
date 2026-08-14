@@ -9,33 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RadarRouteImport } from './routes/radar'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as PartnersRouteImport } from './routes/partners'
-import { Route as OpportunitiesRouteImport } from './routes/opportunities'
-import { Route as CreditRouteImport } from './routes/credit'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as OpportunityProductIdRouteImport } from './routes/opportunity.$productId'
+import { Route as CreditRouteImport } from './routes/credit'
+import { Route as OpportunitiesRouteImport } from './routes/opportunities'
+import { Route as PartnersRouteImport } from './routes/partners'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as RadarRouteImport } from './routes/radar'
+import { Route as ReadinessRouteImport } from './routes/readiness'
 import { Route as HandoffHandoffIdRouteImport } from './routes/handoff.$handoffId'
+import { Route as OpportunityProductIdRouteImport } from './routes/opportunity.$productId'
 
-const RadarRoute = RadarRouteImport.update({
-  id: '/radar',
-  path: '/radar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PartnersRoute = PartnersRouteImport.update({
-  id: '/partners',
-  path: '/partners',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpportunitiesRoute = OpportunitiesRouteImport.update({
-  id: '/opportunities',
-  path: '/opportunities',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreditRoute = CreditRouteImport.update({
@@ -43,19 +29,39 @@ const CreditRoute = CreditRouteImport.update({
   path: '/credit',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const OpportunitiesRoute = OpportunitiesRouteImport.update({
+  id: '/opportunities',
+  path: '/opportunities',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OpportunityProductIdRoute = OpportunityProductIdRouteImport.update({
-  id: '/opportunity/$productId',
-  path: '/opportunity/$productId',
+const PartnersRoute = PartnersRouteImport.update({
+  id: '/partners',
+  path: '/partners',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RadarRoute = RadarRouteImport.update({
+  id: '/radar',
+  path: '/radar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReadinessRoute = ReadinessRouteImport.update({
+  id: '/readiness',
+  path: '/readiness',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HandoffHandoffIdRoute = HandoffHandoffIdRouteImport.update({
   id: '/handoff/$handoffId',
   path: '/handoff/$handoffId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpportunityProductIdRoute = OpportunityProductIdRouteImport.update({
+  id: '/opportunity/$productId',
+  path: '/opportunity/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -66,6 +72,7 @@ export interface FileRoutesByFullPath {
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
+  '/readiness': typeof ReadinessRoute
   '/handoff/$handoffId': typeof HandoffHandoffIdRoute
   '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
@@ -76,6 +83,7 @@ export interface FileRoutesByTo {
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
+  '/readiness': typeof ReadinessRoute
   '/handoff/$handoffId': typeof HandoffHandoffIdRoute
   '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
@@ -87,6 +95,7 @@ export interface FileRoutesById {
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
+  '/readiness': typeof ReadinessRoute
   '/handoff/$handoffId': typeof HandoffHandoffIdRoute
   '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
@@ -99,6 +108,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/profile'
     | '/radar'
+    | '/readiness'
     | '/handoff/$handoffId'
     | '/opportunity/$productId'
   fileRoutesByTo: FileRoutesByTo
@@ -109,6 +119,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/profile'
     | '/radar'
+    | '/readiness'
     | '/handoff/$handoffId'
     | '/opportunity/$productId'
   id:
@@ -119,6 +130,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/profile'
     | '/radar'
+    | '/readiness'
     | '/handoff/$handoffId'
     | '/opportunity/$productId'
   fileRoutesById: FileRoutesById
@@ -130,38 +142,18 @@ export interface RootRouteChildren {
   PartnersRoute: typeof PartnersRoute
   ProfileRoute: typeof ProfileRoute
   RadarRoute: typeof RadarRoute
+  ReadinessRoute: typeof ReadinessRoute
   HandoffHandoffIdRoute: typeof HandoffHandoffIdRoute
   OpportunityProductIdRoute: typeof OpportunityProductIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/radar': {
-      id: '/radar'
-      path: '/radar'
-      fullPath: '/radar'
-      preLoaderRoute: typeof RadarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/partners': {
-      id: '/partners'
-      path: '/partners'
-      fullPath: '/partners'
-      preLoaderRoute: typeof PartnersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/opportunities': {
-      id: '/opportunities'
-      path: '/opportunities'
-      fullPath: '/opportunities'
-      preLoaderRoute: typeof OpportunitiesRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/credit': {
@@ -171,18 +163,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CreditRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/opportunities': {
+      id: '/opportunities'
+      path: '/opportunities'
+      fullPath: '/opportunities'
+      preLoaderRoute: typeof OpportunitiesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/opportunity/$productId': {
-      id: '/opportunity/$productId'
-      path: '/opportunity/$productId'
-      fullPath: '/opportunity/$productId'
-      preLoaderRoute: typeof OpportunityProductIdRouteImport
+    '/partners': {
+      id: '/partners'
+      path: '/partners'
+      fullPath: '/partners'
+      preLoaderRoute: typeof PartnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/radar': {
+      id: '/radar'
+      path: '/radar'
+      fullPath: '/radar'
+      preLoaderRoute: typeof RadarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/readiness': {
+      id: '/readiness'
+      path: '/readiness'
+      fullPath: '/readiness'
+      preLoaderRoute: typeof ReadinessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/handoff/$handoffId': {
@@ -190,6 +203,13 @@ declare module '@tanstack/react-router' {
       path: '/handoff/$handoffId'
       fullPath: '/handoff/$handoffId'
       preLoaderRoute: typeof HandoffHandoffIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/opportunity/$productId': {
+      id: '/opportunity/$productId'
+      path: '/opportunity/$productId'
+      fullPath: '/opportunity/$productId'
+      preLoaderRoute: typeof OpportunityProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -202,6 +222,7 @@ const rootRouteChildren: RootRouteChildren = {
   PartnersRoute: PartnersRoute,
   ProfileRoute: ProfileRoute,
   RadarRoute: RadarRoute,
+  ReadinessRoute: ReadinessRoute,
   HandoffHandoffIdRoute: HandoffHandoffIdRoute,
   OpportunityProductIdRoute: OpportunityProductIdRoute,
 }

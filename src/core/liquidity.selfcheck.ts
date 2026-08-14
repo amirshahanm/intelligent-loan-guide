@@ -11,6 +11,12 @@ import {
   scoreLeadLiquidity,
   type LiquidityInput,
 } from "./liquidity";
+import {
+  knownLiquidityFacts,
+  liquidityNextAction,
+  nextLiquidityQuestion,
+} from "./liquidity-journey";
+import { fact, userConfirmed } from "./types";
 
 const failures: string[] = [];
 function check(name: string, condition: boolean) {
@@ -121,6 +127,20 @@ check(
   "deterministic",
   JSON.stringify(scoreLeadLiquidity(ALL_SATISFIED)) ===
     JSON.stringify(scoreLeadLiquidity(ALL_SATISFIED)),
+);
+
+// Journey asks only still-unknown liquidity facts and reuses only identical facts.
+const reused = knownLiquidityFacts(
+  { amount: fact(1_000_000_000, userConfirmed()), guarantor: fact("none", userConfirmed()) },
+  false,
+);
+check("journey reuses exact amount", reused.exact_amount === "known");
+check("confirmed no guarantor is known, not negative", reused.guarantee_situation === "known");
+check("journey does not infer deadline", reused.deadline === undefined);
+check("next question skips reused amount", nextLiquidityQuestion(reused)?.key === "deadline");
+check(
+  "next action names first missing factor",
+  liquidityNextAction(scoreLeadLiquidity(reused)).key === "deadline",
 );
 
 if (failures.length) {

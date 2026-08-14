@@ -7,10 +7,10 @@ const NAV = [
   { to: "/radar", label: "رادار" },
   { to: "/opportunities", label: "فرصت‌ها" },
   { to: "/credit", label: "اعتبارسنجی" },
+  { to: "/readiness", label: "آمادگی اجرا" },
   { to: "/partners", label: "شبکه" },
   { to: "/profile", label: "پرونده" },
 ] as const;
-
 
 export function AppShell({
   children,

@@ -77,8 +77,8 @@ function ProfilePage() {
           </div>
         </div>
         <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
-          این شناسه فقط برای پیوستگی تجربهٔ توست و مجوز دسترسی نیست. با فعال‌شدن حساب کاربری،
-          مالکیت پرونده سمت سرور احراز و منتقل می‌شود.
+          این شناسه فقط برای پیوستگی تجربهٔ توست و مجوز دسترسی نیست. با فعال‌شدن حساب کاربری، مالکیت
+          پرونده سمت سرور احراز و منتقل می‌شود.
         </p>
       </section>
 
@@ -115,6 +115,16 @@ function ProfilePage() {
           </div>
         </section>
       </div>
+
+      <Link
+        to="/readiness"
+        className="block rounded-3xl border border-accent/35 bg-accent/10 p-4 transition-colors hover:bg-accent/15"
+      >
+        <div className="text-sm font-bold text-accent">سنجش آمادگی اجرا</div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          چند واقعیتِ هنوز نامشخص را روشن کن و امتیاز، عوامل و بهترین اقدام بعدی را ببین.
+        </p>
+      </Link>
 
       <section className="rounded-3xl border border-border bg-surface p-4">
         <SectionTitle>سیگنال اعتباری</SectionTitle>

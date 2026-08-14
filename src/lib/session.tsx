@@ -3,6 +3,7 @@ import type { CapturedIntent, IntentSlots, ReasoningTrace, SlotKey } from "@/cor
 import { runReasoning } from "@/core/engine";
 import { bindAnalyticsSession, track } from "@/lib/analytics";
 import type { CreditResult, Handoff } from "@/lib/providers";
+import type { LiquidityInput } from "@/core/liquidity";
 
 /**
  * No-Login First session store.
@@ -33,6 +34,7 @@ export type SessionState = {
   creditResult?: CreditResult;
   handoffs: Handoff[];
   viewedProductIds: string[];
+  liquidity: LiquidityInput;
 };
 
 const STORAGE_KEY = "tashilradar.session.v1";
@@ -54,6 +56,7 @@ function initialState(): SessionState {
     askedQuestionIds: [],
     handoffs: [],
     viewedProductIds: [],
+    liquidity: {},
   };
 }
 
