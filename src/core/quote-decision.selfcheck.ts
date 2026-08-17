@@ -111,6 +111,54 @@ check(
   decide([sameTimeA, sameTimeB]).selectedQuote?.quote.id ===
     decide([sameTimeB, sameTimeA]).selectedQuote?.quote.id,
 );
+const newerLive: Quote = { ...live, id: "newer_live", observedAt: "2026-08-15T11:30:00Z" };
+const olderLiveWithExpiry: Quote = {
+  ...live,
+  id: "older_live",
+  expiresAt: "2099-01-01T00:00:00Z",
+};
+check(
+  "irrelevant future expiry cannot make older live evidence win",
+  decide([olderLiveWithExpiry, newerLive]).selectedQuote?.quote.id === "newer_live",
+);
+check(
+  "timezone-less expiry cannot manipulate live selection",
+  decide([{ ...olderLiveWithExpiry, expiresAt: "2099-01-01T00:00:00" }, newerLive]).selectedQuote
+    ?.quote.id === "newer_live",
+);
+const newerObservation: Quote = {
+  ...observation,
+  id: "newer_observation",
+  observedAt: "2026-08-15T11:00:00Z",
+};
+const olderObservationWithExpiry: Quote = {
+  ...observation,
+  id: "older_observation",
+  observedAt: "2026-08-15T09:00:00Z",
+  expiresAt: "2099-01-01T00:00:00Z",
+};
+check(
+  "irrelevant expiry cannot manipulate observation selection",
+  decide([olderObservationWithExpiry, newerObservation]).selectedQuote?.quote.id ===
+    "newer_observation",
+);
+check(
+  "expiry regression is independent of input order",
+  decide([newerLive, olderLiveWithExpiry]).selectedQuote?.quote.id ===
+    decide([olderLiveWithExpiry, newerLive]).selectedQuote?.quote.id,
+);
+const invalidA: Quote = { ...live, id: "invalid_a", observedAt: "not-a-time" };
+const invalidZ: Quote = {
+  ...live,
+  id: "invalid_z",
+  observedAt: "9999-01-01T00:00:00Z",
+  expiresAt: "9999-01-01T00:00:00Z",
+};
+check(
+  "invalid timestamps provide no ranking advantage",
+  decide([invalidZ, invalidA]).selectedQuote?.quote.id === "invalid_a" &&
+    decide([invalidA, invalidZ]).selectedQuote?.quote.id === "invalid_a",
+);
 check("incomplete evidence still has next action", Boolean(decide([observation]).nextAction));
 check(
   "unknown is not rejection",

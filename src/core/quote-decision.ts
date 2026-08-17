@@ -132,9 +132,10 @@ const stateRank: Record<EffectiveQuoteState, number> = {
 };
 
 /**
- * Financial-usability ordering (highest first): valid effective state, trusted
- * confirmation, later expiry, newer observation, then lexicographically smaller
- * quote ID. Input order is the final fallback only for duplicate IDs.
+ * Financial-usability ordering (highest first): validity, effective state,
+ * authoritative expiry for EXECUTABLE/EXPIRED evidence, validated observation
+ * recency, then code-unit-ordered quote ID. Invalid candidates skip all temporal
+ * fields. Input order is the final fallback only for duplicate IDs.
  */
 function compareCandidates(
   left: { evaluation: QuoteEvaluation; index: number },
@@ -144,19 +145,23 @@ function compareCandidates(
   const r = right.evaluation;
   const valid = Number(r.valid) - Number(l.valid);
   if (valid) return valid;
+  if (!l.valid && !r.valid) {
+    const id = l.quote.id < r.quote.id ? -1 : l.quote.id > r.quote.id ? 1 : 0;
+    return id || left.index - right.index;
+  }
   const state = stateRank[r.effectiveState] - stateRank[l.effectiveState];
   if (state) return state;
-  // Only a state already confirmed by Quote Intelligence counts as trusted;
-  // mere presence/completeness of a runtime confirmation object never does.
-  const trusted =
-    Number(r.effectiveState !== "MARKET_OBSERVATION" && r.valid) -
-    Number(l.effectiveState !== "MARKET_OBSERVATION" && l.valid);
-  if (trusted) return trusted;
-  const expiry = timeRank(r.quote.expiresAt) - timeRank(l.quote.expiresAt);
-  if (expiry) return expiry;
-  const recency = timeRank(r.quote.observedAt) - timeRank(l.quote.observedAt);
-  if (recency) return recency;
-  const id = l.quote.id.localeCompare(r.quote.id);
+  if (l.valid && r.valid) {
+    const expiryIsAuthoritative =
+      l.effectiveState === "EXECUTABLE" || l.effectiveState === "EXPIRED";
+    if (expiryIsAuthoritative) {
+      const expiry = timeRank(r.quote.expiresAt) - timeRank(l.quote.expiresAt);
+      if (expiry) return expiry;
+    }
+    const recency = timeRank(r.quote.observedAt) - timeRank(l.quote.observedAt);
+    if (recency) return recency;
+  }
+  const id = l.quote.id < r.quote.id ? -1 : l.quote.id > r.quote.id ? 1 : 0;
   return id || left.index - right.index;
 }
 
