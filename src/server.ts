@@ -2,7 +2,8 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
-import { assertConfiguredProviderSafety, parseDeploymentMode } from "./lib/providers";
+import { assertServerProviderSafety } from "./lib/providers/server-registry.server";
+import { parseDeploymentMode } from "./lib/providers/safety";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -49,7 +50,7 @@ export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const deploymentMode = parseDeploymentMode(process.env.TASHILRADAR_DEPLOYMENT_MODE);
-      assertConfiguredProviderSafety(deploymentMode);
+      assertServerProviderSafety(deploymentMode);
 
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
