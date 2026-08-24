@@ -18,7 +18,9 @@ export interface ProductCatalogProvider {
 export type CreditRequest = {
   anonSessionId: string;
   consentGiven: boolean;
-  /** Server persistence continuity. A bare anonymous id is never authority. */
+};
+
+export type CreditExecutionContinuity = {
   sessionId: string;
   sessionCapability: string;
   caseId: string;
@@ -60,7 +62,6 @@ export interface PaymentProvider {
   confirm(intentId: string): Promise<PaymentIntent>;
 }
 
-/** SMS is transport only; OTP lifecycle/verification is server-owned. */
 export interface SmsProvider {
   readonly id: string;
   readonly isMock: boolean;
