@@ -40,8 +40,7 @@ export function RadarCanvas({
     const entries = trace.steps.filter((s) => s.outcome !== "evaluating");
     const total = entries.length;
     return entries.map((step, index) => {
-      const radius =
-        step.outcome === "primary" ? 42 : step.outcome === "near" ? 92 : 138;
+      const radius = step.outcome === "primary" ? 42 : step.outcome === "near" ? 92 : 138;
       const angle = angleFor(step.productId, index, total);
       return {
         id: step.productId,
@@ -105,7 +104,9 @@ export function RadarCanvas({
           {nodes.map((node, i) => (
             <g
               key={node.id}
-              className={node.outcome === "eliminated" ? "cursor-pointer" : "anim-detect cursor-pointer"}
+              className={
+                node.outcome === "eliminated" ? "cursor-pointer" : "anim-detect cursor-pointer"
+              }
               style={node.outcome === "eliminated" ? undefined : { animationDelay: `${i * 45}ms` }}
               onClick={() => onSelect?.(node.id)}
             >
@@ -148,7 +149,6 @@ export function RadarCanvas({
             fillOpacity="0.18"
           />
           <circle cx="160" cy="160" r="5" fill="var(--color-foreground)" fillOpacity="0.7" />
-
         </svg>
       </div>
 
@@ -182,8 +182,13 @@ export function RadarTally({ trace }: { trace: ReasoningTrace }) {
   return (
     <div className="grid grid-cols-4 gap-2">
       {items.map((item) => (
-        <div key={item.label} className="rounded-2xl border border-border bg-elevated/50 p-2 text-center">
-          <div className={cn("num text-xl font-bold", item.tone)}>{toPersianDigits(item.value)}</div>
+        <div
+          key={item.label}
+          className="rounded-2xl border border-border bg-elevated/50 p-2 text-center"
+        >
+          <div className={cn("num text-xl font-bold", item.tone)}>
+            {toPersianDigits(item.value)}
+          </div>
           <div className="mt-0.5 text-[10px] text-muted-foreground">{item.label}</div>
         </div>
       ))}

@@ -43,9 +43,7 @@ export type AuthoritativeDecisionEnvelope = {
   persistableRoutes: PersistableRoute[];
 };
 
-export function persistenceCapabilityStatus(
-  status: CapabilityStatus,
-): PersistenceCapabilityStatus {
+export function persistenceCapabilityStatus(status: CapabilityStatus): PersistenceCapabilityStatus {
   switch (status) {
     case "ACTIVE":
       return "active";
@@ -108,7 +106,8 @@ export function toPersistableRoutes(
             {
               kind: "capture_demand",
               status: match.route.capabilityStatus,
-              messageFa: "این مسیر هنوز اتصال اجرایی کامل ندارد؛ نیاز کاربر بدون ادعای اجرای زنده ثبت می‌شود.",
+              messageFa:
+                "این مسیر هنوز اتصال اجرایی کامل ندارد؛ نیاز کاربر بدون ادعای اجرای زنده ثبت می‌شود.",
             },
           ],
     demo: Boolean(match.route.demo),

@@ -13,7 +13,14 @@ export function ReadinessPanel({ readiness }: { readiness: Readiness }) {
       <div className="flex items-center gap-4">
         <div className="relative grid size-20 shrink-0 place-items-center">
           <svg viewBox="0 0 80 80" className="size-20 -rotate-90">
-            <circle cx="40" cy="40" r="34" fill="none" stroke="var(--color-border)" strokeWidth="6" />
+            <circle
+              cx="40"
+              cy="40"
+              r="34"
+              fill="none"
+              stroke="var(--color-border)"
+              strokeWidth="6"
+            />
             <circle
               cx="40"
               cy="40"
@@ -33,8 +40,8 @@ export function ReadinessPanel({ readiness }: { readiness: Readiness }) {
         <div>
           <h2 className="text-sm font-semibold text-foreground">آمادگی پرونده</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            این عدد قضاوت دربارهٔ تو نیست؛ نشان می‌دهد پرونده‌ات چقدر برای بررسی کامل است و کدام
-            بخش را می‌شود بهتر کرد.
+            این عدد قضاوت دربارهٔ تو نیست؛ نشان می‌دهد پرونده‌ات چقدر برای بررسی کامل است و کدام بخش
+            را می‌شود بهتر کرد.
           </p>
         </div>
       </div>

@@ -25,7 +25,14 @@ import type {
   ReasoningTrace,
   SlotKey,
 } from "./types";
-import { COLLATERAL_FA, DEBT_FA, EMPLOYMENT_FA, GUARANTOR_FA, INCOME_FA, PURPOSE_FA } from "./labels";
+import {
+  COLLATERAL_FA,
+  DEBT_FA,
+  EMPLOYMENT_FA,
+  GUARANTOR_FA,
+  INCOME_FA,
+  PURPOSE_FA,
+} from "./labels";
 import { formatTomanCompact } from "@/lib/money";
 
 const INCOME_ORDER: IncomeBand[] = ["unknown", "under_20", "20_50", "50_100", "over_100"];
@@ -68,7 +75,13 @@ export function evaluateReadiness(slots: IntentSlots): Readiness {
             ? 65
             : 40;
   const stability =
-    employment === "salaried" ? 15 : employment === "business_owner" ? 10 : employment === "unemployed" ? -25 : 0;
+    employment === "salaried"
+      ? 15
+      : employment === "business_owner"
+        ? 10
+        : employment === "unemployed"
+          ? -25
+          : 0;
   dims.push({
     dimension: "income",
     score: clamp(incomeScore + stability),
@@ -80,7 +93,15 @@ export function evaluateReadiness(slots: IntentSlots): Readiness {
   dims.push({
     dimension: "collateral",
     score:
-      collateral === "property" ? 100 : collateral === "vehicle" ? 70 : collateral === "deposit" ? 80 : collateral === "none" ? 10 : 35,
+      collateral === "property"
+        ? 100
+        : collateral === "vehicle"
+          ? 70
+          : collateral === "deposit"
+            ? 80
+            : collateral === "none"
+              ? 10
+              : 35,
     label: collateral ? COLLATERAL_FA[collateral] : "وثیقه نامشخص",
     blocker: collateral === "none" ? "وثیقه‌ای در دسترس نیست" : undefined,
   });
@@ -88,7 +109,14 @@ export function evaluateReadiness(slots: IntentSlots): Readiness {
   const guarantor = slots.guarantor?.value;
   dims.push({
     dimension: "guarantor",
-    score: guarantor === "payroll" ? 100 : guarantor === "business" ? 80 : guarantor === "none" ? 10 : 35,
+    score:
+      guarantor === "payroll"
+        ? 100
+        : guarantor === "business"
+          ? 80
+          : guarantor === "none"
+            ? 10
+            : 35,
     label: guarantor ? GUARANTOR_FA[guarantor] : "ضامن نامشخص",
     blocker: guarantor === "none" ? "ضامنی معرفی نشده است" : undefined,
   });
@@ -103,7 +131,16 @@ export function evaluateReadiness(slots: IntentSlots): Readiness {
   const debt = slots.debtLoad?.value;
   dims.push({
     dimension: "debt_load",
-    score: debt === "none" ? 100 : debt === "light" ? 70 : debt === "moderate" ? 45 : debt === "heavy" ? 25 : 50,
+    score:
+      debt === "none"
+        ? 100
+        : debt === "light"
+          ? 70
+          : debt === "moderate"
+            ? 45
+            : debt === "heavy"
+              ? 25
+              : 50,
     label: debt ? DEBT_FA[debt] : "بدهی نامشخص",
     blocker: debt === "heavy" ? "بار بدهی فعلی بالاست" : undefined,
   });
@@ -177,7 +214,11 @@ function evaluateProduct(product: Product, slots: IntentSlots): Evaluation {
       matchedBecause.push(`وضعیت شغلی «${EMPLOYMENT_FA[employment]}» پذیرفته می‌شود.`);
     }
   } else {
-    gaps.push({ ruleId: "employment_unknown", message: "وضعیت شغلی هنوز مشخص نیست.", distance: 0.5 });
+    gaps.push({
+      ruleId: "employment_unknown",
+      message: "وضعیت شغلی هنوز مشخص نیست.",
+      distance: 0.5,
+    });
   }
 
   if (r.requiresCollateral) {
@@ -244,7 +285,11 @@ function evaluateProduct(product: Product, slots: IntentSlots): Evaluation {
       });
     }
   } else if (incomeRank(r.minIncomeBand) > 1) {
-    gaps.push({ ruleId: "income_unknown", message: "بازهٔ درآمد برای این محصول تعیین‌کننده است.", distance: 0.4 });
+    gaps.push({
+      ruleId: "income_unknown",
+      message: "بازهٔ درآمد برای این محصول تعیین‌کننده است.",
+      distance: 0.4,
+    });
   }
 
   const debt = slots.debtLoad?.value;
@@ -404,7 +449,8 @@ export function runReasoning(slots: IntentSlots, options: RunOptions = {}): Reas
     const reachable: IRR = amount
       ? Math.min(amount, e.product.rules.maxAmount)
       : e.product.rules.maxAmount;
-    const tier: Match["tier"] = e.gaps.length === 0 && index === 0 && score >= 60 ? "primary" : "near";
+    const tier: Match["tier"] =
+      e.gaps.length === 0 && index === 0 && score >= 60 ? "primary" : "near";
     steps.push({
       phase: tier === "primary" ? "resolve" : "connect",
       productId: e.product.id,
@@ -414,7 +460,7 @@ export function runReasoning(slots: IntentSlots, options: RunOptions = {}): Reas
       note:
         tier === "primary"
           ? "بهترین تطابق بر اساس شرایط فعلی"
-          : e.gaps[0]?.message ?? "مسیر نزدیک، نیازمند تکمیل اطلاعات",
+          : (e.gaps[0]?.message ?? "مسیر نزدیک، نیازمند تکمیل اطلاعات"),
     });
     return {
       productId: e.product.id,

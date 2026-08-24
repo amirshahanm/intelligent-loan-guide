@@ -30,9 +30,7 @@ export function QuestionCard({
   return (
     <div className="anim-resolve rounded-3xl border border-border bg-surface p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-[10px] text-accent">
-          پرسش {toPersianDigits(index)} · موتور تصمیم
-        </span>
+        <span className="text-[10px] text-accent">پرسش {toPersianDigits(index)} · موتور تصمیم</span>
         {onBack ? (
           <button
             type="button"
@@ -94,7 +92,6 @@ export function QuestionCard({
           ))}
         </div>
       )}
-
     </div>
   );
 }
