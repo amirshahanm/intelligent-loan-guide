@@ -7,10 +7,9 @@ import type { IntentSlots } from "@/core/types";
  * Server-authoritative re-evaluation.
  *
  * The client may run the same deterministic engine for instant preview, but
- * the server owns authoritative confirmation. When explicitly requested at a
- * real value gate, the same result is also persisted atomically to the V2
- * financial OS backend. Anonymous persisted sessions are bound to a separate
- * capability token; a bare session UUID is never sufficient to resume writes.
+ * the server owns authoritative confirmation. Raw need text is used only by
+ * the typed understanding layer to select the broader route world; it never
+ * overrides deterministic financial eligibility or arithmetic.
  */
 
 const provenanceSchema = z.object({
@@ -74,7 +73,7 @@ export const confirmReasoning = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }) => {
     const slots = data.slots as IntentSlots;
-    const envelope = buildAuthoritativeDecisionEnvelope(slots);
+    const envelope = buildAuthoritativeDecisionEnvelope(slots, data.context?.needText);
 
     const persistence = data.context?.persist
       ? await (async () => {
