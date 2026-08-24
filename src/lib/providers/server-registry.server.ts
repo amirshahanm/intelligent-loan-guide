@@ -12,7 +12,12 @@ import {
   unavailablePaymentProvider,
   unavailableSmsProvider,
 } from "./unavailable.server";
-import { assertProviderSafety, listMockProviderKeys, parseDeploymentMode, type DeploymentMode } from "./safety";
+import {
+  assertProviderSafety,
+  listMockProviderKeys,
+  parseDeploymentMode,
+  type DeploymentMode,
+} from "./safety";
 import type {
   CreditProvider,
   HandoffProvider,
