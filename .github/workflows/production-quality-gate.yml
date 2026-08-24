@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   quality-gate:
-    name: Core checks, lint and production build
+    name: Core checks, trust boundaries, lint and production build
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -42,6 +42,9 @@ jobs:
 
       - name: Quote decision self-check
         run: bun run src/core/quote-decision.selfcheck.ts
+
+      - name: Provider safety self-check
+        run: bun run src/lib/providers/safety.selfcheck.ts
 
       - name: Lint
         run: bun run lint
