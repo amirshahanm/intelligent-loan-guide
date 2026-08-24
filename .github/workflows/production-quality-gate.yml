@@ -43,6 +43,12 @@ jobs:
       - name: Quote decision self-check
         run: bun run src/core/quote-decision.selfcheck.ts
 
+      - name: Provenance truth-boundary self-check
+        run: bun run src/core/provenance.selfcheck.ts
+
+      - name: Universal route discovery self-check
+        run: bun run src/core/opportunity-routes.selfcheck.ts
+
       - name: Provider safety self-check
         run: bun run src/lib/providers/safety.selfcheck.ts
 
