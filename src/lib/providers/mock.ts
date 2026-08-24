@@ -34,6 +34,8 @@ function seedFrom(input: string): number {
 /* ---------------- Catalog ---------------- */
 
 export const mockCatalogProvider: ProductCatalogProvider = {
+  id: "mock_catalog",
+  isMock: true,
   async listPartners() {
     await delay(60);
     return PARTNERS;
