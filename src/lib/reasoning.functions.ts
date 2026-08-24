@@ -77,8 +77,16 @@ export const confirmReasoning = createServerFn({ method: "POST" })
 
     const persistence = data.context?.persist
       ? await (async () => {
-          const { persistAuthoritativeDecision } =
-            await import("@/lib/decision-persistence.server");
+          const [{ persistAuthoritativeDecision }, { consumeDecisionPersistenceLimit }] =
+            await Promise.all([
+              import("@/lib/decision-persistence.server"),
+              import("@/lib/request-guard.server"),
+            ]);
+
+          await consumeDecisionPersistenceLimit({
+            existingSession: Boolean(data.context?.sessionId),
+          });
+
           return persistAuthoritativeDecision({
             slots,
             envelope,
