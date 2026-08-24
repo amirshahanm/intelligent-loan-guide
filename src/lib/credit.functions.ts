@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
-import { sha256Hex } from "@/lib/decision-persistence.server";
 
 const paymentAmountSchema = z.object({
   amountIrr: z.number().int().positive().max(10_000_000_000_000),
@@ -20,6 +19,13 @@ const creditExecutionSchema = z.object({
 });
 
 type BackendConfig = { url: string; secret: string };
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 function backendConfig(): BackendConfig {
   const url =
