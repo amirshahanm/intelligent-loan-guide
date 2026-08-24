@@ -79,7 +79,7 @@ export function universalNeedFromText(
       return {
         kind: rule.kind,
         targetAmount,
-        source: "ai_structured",
+        source: "deterministic_text",
         confidence: rule.confidence,
       };
     }
