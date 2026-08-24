@@ -108,8 +108,5 @@ export const executeCreditCheck = createServerFn({ method: "POST" })
     return serverProviders.credit.check({
       anonSessionId: data.anonSessionId,
       consentGiven: true,
-      sessionId: data.sessionId,
-      sessionCapability: data.sessionCapability,
-      caseId: data.caseId,
     });
   });
