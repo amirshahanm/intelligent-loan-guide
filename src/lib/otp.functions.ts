@@ -20,7 +20,9 @@ function normalizeIranPhone(input: string): string {
 
 function backendConfig(): { url: string; secret: string; pepper: string } {
   const url =
-    process.env.TASHILRADAR_SUPABASE_URL ?? process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+    process.env.TASHILRADAR_SUPABASE_URL ??
+    process.env.SUPABASE_URL ??
+    process.env.VITE_SUPABASE_URL;
   const secret =
     process.env.TASHILRADAR_SUPABASE_SERVICE_ROLE_KEY ??
     process.env.SUPABASE_SERVICE_ROLE_KEY ??
@@ -65,7 +67,11 @@ async function rpc<T>(name: string, body: Record<string, unknown>): Promise<T> {
   });
   if (!response.ok) {
     const bodyText = await response.text();
-    console.error("OTP backend RPC failed", { name, status: response.status, body: bodyText.slice(0, 300) });
+    console.error("OTP backend RPC failed", {
+      name,
+      status: response.status,
+      body: bodyText.slice(0, 300),
+    });
     throw new Error("otp_backend_failure");
   }
   return (await response.json()) as T;
@@ -91,11 +97,14 @@ export const requestOtp = createServerFn({ method: "POST" })
     const codeHash = await hmacHex(config.pepper, `otp:${phoneHash}:${code}`);
     const ttlSeconds = 120;
 
-    const issued = await rpc<{ challenge_id: string; expires_at: string }>("tr_issue_otp_challenge", {
-      p_phone_hash: phoneHash,
-      p_code_hash: codeHash,
-      p_ttl_seconds: ttlSeconds,
-    });
+    const issued = await rpc<{ challenge_id: string; expires_at: string }>(
+      "tr_issue_otp_challenge",
+      {
+        p_phone_hash: phoneHash,
+        p_code_hash: codeHash,
+        p_ttl_seconds: ttlSeconds,
+      },
+    );
 
     const { serverProviders } = await import("@/lib/providers/server-registry.server");
     const delivery = await serverProviders.sms.sendOtp(phone, code);
@@ -114,8 +123,6 @@ export const requestOtp = createServerFn({ method: "POST" })
       demo: serverProviders.sms.isMock,
     };
 
-    // Development ergonomics only. A production deployment is already forbidden
-    // from using a mock SMS provider, and never returns the OTP itself.
     if (serverProviders.sms.isMock && deploymentMode() !== "production") result.demoCode = code;
     return result;
   });
