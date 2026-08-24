@@ -49,6 +49,9 @@ jobs:
       - name: Universal route discovery self-check
         run: bun run src/core/opportunity-routes.selfcheck.ts
 
+      - name: Persian universal need understanding self-check
+        run: bun run src/core/universal-need-extract.selfcheck.ts
+
       - name: Authoritative decision envelope self-check
         run: bun run src/core/decision-envelope.selfcheck.ts
 
