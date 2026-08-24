@@ -17,7 +17,9 @@ function isProduction(): boolean {
 
 function config(): { url: string; serviceKey: string; fingerprintSecret: string } | null {
   const url =
-    process.env.TASHILRADAR_SUPABASE_URL ?? process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+    process.env.TASHILRADAR_SUPABASE_URL ??
+    process.env.SUPABASE_URL ??
+    process.env.VITE_SUPABASE_URL;
   const serviceKey =
     process.env.TASHILRADAR_SUPABASE_SERVICE_ROLE_KEY ??
     process.env.SUPABASE_SERVICE_ROLE_KEY ??
@@ -75,7 +77,9 @@ export async function consumeRequestLimit({
   }
 
   if (!/^[a-z0-9_:-]{3,80}$/i.test(scope)) throw new Error("invalid_rate_limit_scope");
-  if (!Number.isInteger(limit) || limit < 1 || limit > 500) throw new Error("invalid_rate_limit_limit");
+  if (!Number.isInteger(limit) || limit < 1 || limit > 500) {
+    throw new Error("invalid_rate_limit_limit");
+  }
   if (!Number.isInteger(windowSeconds) || windowSeconds < 30 || windowSeconds > 86400) {
     throw new Error("invalid_rate_limit_window");
   }
