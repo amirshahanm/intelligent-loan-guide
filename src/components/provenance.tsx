@@ -29,7 +29,7 @@ export function ProvenanceChip({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border border-border bg-elevated/60 px-2 py-0.5 text-[10px] leading-4",
+        "inline-flex flex-wrap items-center gap-1 rounded-full border border-border bg-elevated/60 px-2 py-0.5 text-[10px] leading-4",
         tone,
         className,
       )}
@@ -37,6 +37,11 @@ export function ProvenanceChip({
       <span>{SOURCE_FA[provenance.source]}</span>
       {showFreshness ? (
         <span className="text-muted-foreground num">· {faRelativeTime(provenance.asOf)}</span>
+      ) : null}
+      {provenance.demo ? (
+        <span className="rounded-full border border-warn/35 bg-warn/10 px-1.5 py-px font-medium text-warn">
+          داده آزمایشی
+        </span>
       ) : null}
     </span>
   );
