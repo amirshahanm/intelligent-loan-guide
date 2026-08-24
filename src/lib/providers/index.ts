@@ -4,7 +4,7 @@ import {
   createCreditPaymentIntent,
   executeCreditCheck,
 } from "@/lib/credit.functions";
-import { mockCatalogProvider, mockHandoffProvider, mockSmsProvider } from "./mock";
+import { mockCatalogProvider } from "./mock";
 import type {
   CreditProvider,
   HandoffProvider,
@@ -13,28 +13,67 @@ import type {
   SmsProvider,
 } from "./types";
 
-/**
- * Browser-safe provider facade.
- *
- * Sensitive provider execution is never owned by React. Credit/payment calls
- * cross TanStack server-function boundaries; the authoritative adapter registry
- * lives in `server-registry.server.ts`.
- *
- * Catalog/SMS/Handoff remain Phase-1 mock paths and are explicitly blocked from
- * production by the server registry safety gate until migrated or replaced.
- */
+type StoredSession = {
+  backend?: {
+    sessionId?: string;
+    caseId?: string;
+  };
+};
+
+function browserContinuity(): { sessionId: string; sessionCapability: string; caseId: string } {
+  if (typeof window === "undefined") throw new Error("browser_continuity_unavailable");
+  const raw = window.localStorage.getItem("tashilradar.session.v1");
+  const sessionCapability = window.sessionStorage.getItem("tashilradar.backend.capability.v1");
+  const parsed = raw ? (JSON.parse(raw) as StoredSession) : null;
+  const sessionId = parsed?.backend?.sessionId;
+  const caseId = parsed?.backend?.caseId;
+  if (!sessionId || !caseId || !sessionCapability) {
+    throw new Error("server_confirmed_case_required");
+  }
+  return { sessionId, sessionCapability, caseId };
+}
+
+/** Browser-safe facade: all sensitive provider work crosses a server function. */
 const creditFacade: CreditProvider = {
   id: "server_credit_facade",
-  isMock: true,
+  isMock: false,
   priceIrr: () => millionToman(0.089),
-  check: (request) => executeCreditCheck({ data: request }),
+  check: (request) =>
+    executeCreditCheck({
+      data: {
+        ...request,
+        ...browserContinuity(),
+      },
+    }),
 };
 
 const paymentFacade: PaymentProvider = {
   id: "server_payment_facade",
-  isMock: true,
+  isMock: false,
   createIntent: (amountIrr) => createCreditPaymentIntent({ data: { amountIrr } }),
   confirm: (intentId) => confirmCreditPaymentIntent({ data: { intentId } }),
+};
+
+const serverOnlySmsFacade: SmsProvider = {
+  id: "server_only_sms",
+  isMock: false,
+  async sendOtp() {
+    throw new Error("sms_server_boundary_required");
+  },
+};
+
+const serverOnlyHandoffFacade: HandoffProvider = {
+  id: "server_only_handoff",
+  isMock: false,
+  async request() {
+    throw new Error("handoff_server_boundary_required");
+  },
+  async get() {
+    throw new Error("handoff_server_boundary_required");
+  },
+  async list() {
+    throw new Error("handoff_server_boundary_required");
+  },
 };
 
 export const providers: {
@@ -47,11 +86,10 @@ export const providers: {
   catalog: mockCatalogProvider,
   credit: creditFacade,
   payment: paymentFacade,
-  sms: mockSmsProvider,
-  handoff: mockHandoffProvider,
+  sms: serverOnlySmsFacade,
+  handoff: serverOnlyHandoffFacade,
 };
 
-/** Current public/demo facade state. Authoritative safety is checked server-side. */
 export const mockProviderKeys = Object.entries(providers)
   .filter(([, provider]) => provider.isMock)
   .map(([key]) => key);
