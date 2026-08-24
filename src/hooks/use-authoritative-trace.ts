@@ -11,6 +11,7 @@ type ConfirmedTrace = ReasoningTrace & {
     | {
         status: "persisted";
         sessionId: string;
+        sessionCapability: string;
         caseId: string;
         decisionRunId: string;
         reused: boolean;
@@ -18,11 +19,6 @@ type ConfirmedTrace = ReasoningTrace & {
     | { status: "disabled"; reason: string };
 };
 
-/**
- * Client preview renders instantly; the server re-runs the same engine on the
- * submitted snapshot and its verdict replaces the preview when it lands.
- * Persistence only starts once the assessment reaches the real decision gate.
- */
 export function useAuthoritativeTrace(): {
   trace: ReasoningTrace;
   confirming: boolean;
@@ -46,6 +42,7 @@ export function useAuthoritativeTrace(): {
           slots: state.slots as IntentSlots,
           context: {
             sessionId: state.backend?.sessionId ?? null,
+            sessionCapability: state.backend?.sessionCapability ?? null,
             caseId: state.backend?.caseId ?? null,
             needText: latestIntentText,
             persist: complete,
@@ -61,6 +58,7 @@ export function useAuthoritativeTrace(): {
     update((current) => {
       if (
         current.backend?.sessionId === persistence.sessionId &&
+        current.backend?.sessionCapability === persistence.sessionCapability &&
         current.backend?.caseId === persistence.caseId &&
         current.backend?.decisionRunId === persistence.decisionRunId
       ) {
@@ -70,6 +68,7 @@ export function useAuthoritativeTrace(): {
         ...current,
         backend: {
           sessionId: persistence.sessionId,
+          sessionCapability: persistence.sessionCapability,
           caseId: persistence.caseId,
           decisionRunId: persistence.decisionRunId,
         },
