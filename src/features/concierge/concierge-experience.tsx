@@ -51,7 +51,8 @@ export function ConciergeExperience() {
       update((s) => {
         const merged = mergeSlots(s.slots, extracted);
         const question = nextQuestion(merged, s.askedQuestionIds);
-        if (question) track({ name: "question_asked", questionId: question.id, slot: question.slot });
+        if (question)
+          track({ name: "question_asked", questionId: question.id, slot: question.slot });
         track({ name: "reasoning_started", slotCount: slotKeys(merged).length });
         return {
           ...s,
@@ -61,9 +62,7 @@ export function ConciergeExperience() {
             ...s.intents,
             { id: messageId(), text: trimmed, channel, at: new Date().toISOString() },
           ],
-          askedQuestionIds: question
-            ? [...s.askedQuestionIds, question.id]
-            : s.askedQuestionIds,
+          askedQuestionIds: question ? [...s.askedQuestionIds, question.id] : s.askedQuestionIds,
           messages: [
             ...s.messages,
             { id: messageId(), role: "user", kind: "text", text: trimmed, channel },
@@ -105,7 +104,8 @@ export function ConciergeExperience() {
           [question.slot]: fact(value as never, userStated(0.95)),
         };
         const upcoming = nextQuestion(merged, s.askedQuestionIds);
-        if (upcoming) track({ name: "question_asked", questionId: upcoming.id, slot: upcoming.slot });
+        if (upcoming)
+          track({ name: "question_asked", questionId: upcoming.id, slot: upcoming.slot });
         return {
           ...s,
           slots: merged,
@@ -131,6 +131,62 @@ export function ConciergeExperience() {
     },
     [update],
   );
+
+  const goBack = React.useCallback(() => {
+    update((s) => {
+      const asked = s.askedQuestionIds;
+      if (asked.length === 0 && s.intents.length === 0) return s;
+      const lastMsg = s.messages[s.messages.length - 1];
+      const viewingLast = lastMsg && lastMsg.role === "concierge" && lastMsg.kind === "question";
+      const lastQ = QUESTIONS.find((q) => q.id === asked[asked.length - 1]);
+      const lastAnswered = lastQ ? s.slots[lastQ.slot] !== undefined : false;
+      const targetIdx = lastAnswered && !viewingLast ? asked.length - 1 : asked.length - 2;
+      if (targetIdx < 0) {
+        // Step back to the initial request stage (same history, no new state).
+        const lastIntent = s.intents[s.intents.length - 1];
+        if (!lastIntent) return s;
+        const slots: IntentSlots = { ...s.slots };
+        for (const id of asked) {
+          const q = QUESTIONS.find((x) => x.id === id);
+          if (q) delete slots[q.slot];
+        }
+        let at = -1;
+        for (let i = s.messages.length - 1; i >= 0; i--) {
+          const m = s.messages[i];
+          if (m.role === "user" && m.kind === "text" && m.text === lastIntent.text) {
+            at = i;
+            break;
+          }
+        }
+        return {
+          ...s,
+          slots,
+          askedQuestionIds: [],
+          intents: s.intents.slice(0, -1),
+          messages: at >= 0 ? s.messages.slice(0, at) : [],
+        };
+      }
+      const targetId = asked[targetIdx];
+      const slots: IntentSlots = { ...s.slots };
+      for (const id of asked.slice(targetIdx + 1)) {
+        const q = QUESTIONS.find((x) => x.id === id);
+        if (q) delete slots[q.slot];
+      }
+      const at = s.messages.findIndex(
+        (m) => m.role === "concierge" && m.kind === "question" && m.questionId === targetId,
+      );
+      return {
+        ...s,
+        slots,
+        askedQuestionIds: asked.slice(0, targetIdx + 1),
+        messages: at >= 0 ? s.messages.slice(0, at + 1) : s.messages,
+      };
+    });
+    if (state.askedQuestionIds.length === 0) {
+      const lastIntent = state.intents[state.intents.length - 1];
+      if (lastIntent) setDraft(lastIntent.text);
+    }
+  }, [update, state.askedQuestionIds, state.intents]);
 
   const reAsk = React.useCallback(
     (key: SlotKey) => {
@@ -165,6 +221,19 @@ export function ConciergeExperience() {
     }
     if (!complete) wasComplete.current = false;
   }, [complete]);
+
+  const canGoBack = React.useMemo(() => {
+    const asked = state.askedQuestionIds;
+    if (asked.length === 0) return state.intents.length > 0;
+    const lastMsg = state.messages[state.messages.length - 1];
+    const viewingLast = Boolean(
+      lastMsg && lastMsg.role === "concierge" && lastMsg.kind === "question",
+    );
+    const lastQ = QUESTIONS.find((q) => q.id === asked[asked.length - 1]);
+    const lastAnswered = lastQ ? state.slots[lastQ.slot] !== undefined : false;
+    const idx = lastAnswered && !viewingLast ? asked.length - 1 : asked.length - 2;
+    return idx >= 0 || state.intents.length > 0;
+  }, [state.askedQuestionIds, state.slots, state.messages, state.intents]);
 
   const lastQuestionId = React.useMemo(() => {
     for (let i = state.messages.length - 1; i >= 0; i--) {
@@ -230,6 +299,8 @@ export function ConciergeExperience() {
                   key={message.id}
                   question={question}
                   index={index > 0 ? index : 1}
+                  selected={state.slots[question.slot]?.value as string | number | undefined}
+                  onBack={canGoBack && message.questionId === lastQuestionId ? goBack : undefined}
                   onAnswer={(value, label) => answer(question.id, value, label)}
                 />
               );
@@ -240,54 +311,66 @@ export function ConciergeExperience() {
         </div>
       ) : null}
 
+      {canGoBack && (complete || lastQuestionId === null) ? (
+        <button
+          type="button"
+          onClick={goBack}
+          className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
+        >
+          مرحله قبل
+        </button>
+      ) : null}
+
       <SlotChips slots={state.slots} onEdit={reAsk} />
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          applyText(draft, "typed");
-        }}
-        className="sticky bottom-3 z-20"
-      >
-        <div className="flex items-end gap-2 rounded-3xl border border-border bg-surface/95 p-2 backdrop-blur-xl">
-          <textarea
-            value={voice.listening ? voice.interim : draft}
-            onChange={(e) => setDraft(e.target.value)}
-            readOnly={voice.listening}
-            rows={2}
-            placeholder={voice.listening ? "در حال شنیدن…" : "مثلاً: ۲۰۰ میلیون برای خرید ماشین"}
-            className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
-            aria-label="خواسته‌ات را بنویس"
-          />
-          {voice.supported ? (
+      {complete ? null : (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            applyText(draft, "typed");
+          }}
+          className="sticky bottom-3 z-20"
+        >
+          <div className="flex items-end gap-2 rounded-3xl border border-border bg-surface/95 p-2 backdrop-blur-xl">
+            <textarea
+              value={voice.listening ? voice.interim : draft}
+              onChange={(e) => setDraft(e.target.value)}
+              readOnly={voice.listening}
+              rows={2}
+              placeholder={voice.listening ? "در حال شنیدن…" : "مثلاً: ۲۰۰ میلیون برای خرید ماشین"}
+              className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+              aria-label="خواسته‌ات را بنویس"
+            />
+            {voice.supported ? (
+              <button
+                type="button"
+                onClick={voice.listening ? voice.stop : voice.start}
+                aria-label={voice.listening ? "پایان ضبط" : "گفتن با صدا"}
+                className={cn(
+                  "grid size-11 shrink-0 place-items-center rounded-2xl border transition-colors",
+                  voice.listening
+                    ? "border-danger/50 bg-danger/15 text-danger"
+                    : "border-border bg-elevated text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <MicIcon />
+              </button>
+            ) : null}
             <button
-              type="button"
-              onClick={voice.listening ? voice.stop : voice.start}
-              aria-label={voice.listening ? "پایان ضبط" : "گفتن با صدا"}
-              className={cn(
-                "grid size-11 shrink-0 place-items-center rounded-2xl border transition-colors",
-                voice.listening
-                  ? "border-danger/50 bg-danger/15 text-danger"
-                  : "border-border bg-elevated text-muted-foreground hover:text-foreground",
-              )}
+              type="submit"
+              disabled={!draft.trim()}
+              className="h-11 shrink-0 rounded-2xl bg-accent px-4 text-sm font-semibold text-accent-foreground disabled:opacity-40"
             >
-              <MicIcon />
+              بفرست
             </button>
+          </div>
+          {voice.supported ? (
+            <p className="mt-1 px-2 text-[10px] text-muted-foreground">
+              صدا فقط در مرورگر خودت پردازش می‌شود و هیچ فایل صوتی ذخیره یا ارسال نمی‌شود.
+            </p>
           ) : null}
-          <button
-            type="submit"
-            disabled={!draft.trim()}
-            className="h-11 shrink-0 rounded-2xl bg-accent px-4 text-sm font-semibold text-accent-foreground disabled:opacity-40"
-          >
-            بفرست
-          </button>
-        </div>
-        {voice.supported ? (
-          <p className="mt-1 px-2 text-[10px] text-muted-foreground">
-            صدا فقط در مرورگر خودت پردازش می‌شود و هیچ فایل صوتی ذخیره یا ارسال نمی‌شود.
-          </p>
-        ) : null}
-      </form>
+        </form>
+      )}
 
       {!started ? (
         <div className="space-y-2">

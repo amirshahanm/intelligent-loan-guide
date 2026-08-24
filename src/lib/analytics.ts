@@ -18,7 +18,25 @@ export type AnalyticsEvent =
   | { name: "recommendation_viewed"; productId: string }
   | { name: "credit_started"; simulated: true }
   | { name: "handoff_requested"; productId: string; channel: "in_app" }
-  | { name: "return_session"; ageBand: "today" | "week" | "older" };
+  | { name: "return_session"; ageBand: "today" | "week" | "older" }
+  | { name: "liquidity_started"; knownCount: number }
+  | {
+      name: "liquidity_factor_asked";
+      factor: import("@/core/liquidity").LiquidityFactorKey;
+    }
+  | {
+      name: "liquidity_factor_answered";
+      factor: import("@/core/liquidity").LiquidityFactorKey;
+      answer: "positive" | "negative" | "clarified" | "skipped";
+    }
+  | {
+      name: "liquidity_result_viewed";
+      status: import("@/core/liquidity").LiquidityStatus;
+    }
+  | {
+      name: "liquidity_next_action_viewed";
+      factor: import("@/core/liquidity").LiquidityFactorKey | "review_skipped" | "ready";
+    };
 
 export type FitBand = "low" | "medium" | "high";
 

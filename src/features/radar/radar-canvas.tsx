@@ -40,8 +40,7 @@ export function RadarCanvas({
     const entries = trace.steps.filter((s) => s.outcome !== "evaluating");
     const total = entries.length;
     return entries.map((step, index) => {
-      const radius =
-        step.outcome === "primary" ? 42 : step.outcome === "near" ? 92 : 138;
+      const radius = step.outcome === "primary" ? 42 : step.outcome === "near" ? 92 : 138;
       const angle = angleFor(step.productId, index, total);
       return {
         id: step.productId,
@@ -97,16 +96,18 @@ export function RadarCanvas({
               stroke={color(node.outcome)}
               strokeOpacity={node.outcome === "eliminated" ? 0.18 : 0.5}
               strokeWidth="1"
-              className="anim-connect"
-              style={{ animationDelay: `${i * 40}ms` }}
+              className={node.outcome === "eliminated" ? undefined : "anim-connect"}
+              style={node.outcome === "eliminated" ? undefined : { animationDelay: `${i * 40}ms` }}
             />
           ))}
 
           {nodes.map((node, i) => (
             <g
               key={node.id}
-              className="anim-detect cursor-pointer"
-              style={{ animationDelay: `${i * 45}ms` }}
+              className={
+                node.outcome === "eliminated" ? "cursor-pointer" : "anim-detect cursor-pointer"
+              }
+              style={node.outcome === "eliminated" ? undefined : { animationDelay: `${i * 45}ms` }}
               onClick={() => onSelect?.(node.id)}
             >
               <title>{`${node.label} — ${node.note}`}</title>
@@ -116,6 +117,12 @@ export function RadarCanvas({
                 r={node.outcome === "primary" ? 9 : node.outcome === "near" ? 6 : 4}
                 fill={color(node.outcome)}
                 fillOpacity={node.outcome === "eliminated" ? 0.35 : 1}
+                className={node.outcome === "near" ? "anim-node-pulse" : undefined}
+                style={
+                  node.outcome === "near"
+                    ? { transformOrigin: `${node.x}px ${node.y}px`, animationDelay: `${i * 120}ms` }
+                    : undefined
+                }
               />
               {node.outcome === "primary" ? (
                 <circle
@@ -124,22 +131,28 @@ export function RadarCanvas({
                   r="16"
                   fill="none"
                   stroke="var(--color-gold)"
-                  strokeOpacity="0.5"
-                  className="anim-pulse-node"
+                  strokeWidth="2"
+                  className="anim-gold-glow"
                   style={{ transformOrigin: `${node.x}px ${node.y}px` }}
                 />
               ) : null}
             </g>
           ))}
 
+          <circle
+            cx="160"
+            cy="160"
+            r="9"
+            fill="var(--color-foreground)"
+            className="anim-breathe"
+            style={{ transformOrigin: "160px 160px" }}
+            fillOpacity="0.18"
+          />
           <circle cx="160" cy="160" r="5" fill="var(--color-foreground)" fillOpacity="0.7" />
         </svg>
       </div>
 
       <RadarTally trace={trace} />
-      <p className="mt-3 text-center text-[10px] text-muted-foreground">
-        هر نقطه یک مسیر واقعی در موتور استدلال است؛ هیچ فعالیت نمایشی ساختگی نمایش داده نمی‌شود.
-      </p>
       <ul className="mt-3 flex flex-wrap justify-center gap-3 text-[10px] text-muted-foreground">
         <li className="flex items-center gap-1">
           <span className="size-2 rounded-full bg-gold" /> پیشنهاد اصلی
@@ -169,8 +182,13 @@ export function RadarTally({ trace }: { trace: ReasoningTrace }) {
   return (
     <div className="grid grid-cols-4 gap-2">
       {items.map((item) => (
-        <div key={item.label} className="rounded-2xl border border-border bg-elevated/50 p-2 text-center">
-          <div className={cn("num text-xl font-bold", item.tone)}>{toPersianDigits(item.value)}</div>
+        <div
+          key={item.label}
+          className="rounded-2xl border border-border bg-elevated/50 p-2 text-center"
+        >
+          <div className={cn("num text-xl font-bold", item.tone)}>
+            {toPersianDigits(item.value)}
+          </div>
           <div className="mt-0.5 text-[10px] text-muted-foreground">{item.label}</div>
         </div>
       ))}

@@ -98,7 +98,10 @@ export function extractAmount(text: string): IRR | undefined {
 type Rule<T> = { value: T; any: RegExp };
 
 const PURPOSE_RULES: Rule<Purpose>[] = [
-  { value: "business", any: /کسب ?و ?کار|مغازه|کارگاه|تولیدی|سرمایه در گردش|شرکت|بیزینس|توسعه کار/ },
+  {
+    value: "business",
+    any: /کسب ?و ?کار|مغازه|کارگاه|تولیدی|سرمایه در گردش|شرکت|بیزینس|توسعه کار/,
+  },
   { value: "home", any: /مسکن|خانه|آپارتمان|ملک|رهن|ودیعه|اجاره/ },
   { value: "car", any: /خودرو|ماشین|پراید|لیزینگ خودرو/ },
   { value: "education", any: /تحصیل|دانشگاه|دانشجو|شهریه/ },
@@ -108,7 +111,10 @@ const PURPOSE_RULES: Rule<Purpose>[] = [
 ];
 
 const EMPLOYMENT_RULES: Rule<Employment>[] = [
-  { value: "business_owner", any: /مغازه دارم|کسب ?و ?کار دارم|جواز کسب|صاحب کار|کارگاه دارم|شرکت دارم|تولیدی دارم/ },
+  {
+    value: "business_owner",
+    any: /مغازه دارم|کسب ?و ?کار دارم|جواز کسب|صاحب کار|کارگاه دارم|شرکت دارم|تولیدی دارم/,
+  },
   { value: "salaried", any: /کارمند|حقوق ?بگیر|فیش حقوقی|استخدام|بیمه تامین اجتماعی دارم/ },
   { value: "self_employed", any: /آزاد کار|شغل آزاد|فریلنس|خویش ?فرما|رانند/ },
   { value: "retired", any: /بازنشسته/ },

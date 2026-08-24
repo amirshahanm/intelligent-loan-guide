@@ -1,8 +1,8 @@
 /**
  * Phase 1 mock providers.
  *
- * Deterministic (seeded by session id), realistic latency, and always
- * flagged `demo: true` / `simulated: true`. No real inquiry is ever performed.
+ * Deterministic where useful, realistic latency, and always truthfully flagged
+ * as demo/simulated. No real inquiry, payment, SMS or handoff occurs here.
  */
 
 import { PARTNERS, PRODUCTS } from "@/core/catalog";
@@ -31,9 +31,9 @@ function seedFrom(input: string): number {
   return Math.abs(h);
 }
 
-/* ---------------- Catalog ---------------- */
-
 export const mockCatalogProvider: ProductCatalogProvider = {
+  id: "mock_catalog",
+  isMock: true,
   async listPartners() {
     await delay(60);
     return PARTNERS;
@@ -45,12 +45,10 @@ export const mockCatalogProvider: ProductCatalogProvider = {
   asOf: () => PRODUCTS[0].asOf,
 };
 
-/* ---------------- Credit ---------------- */
-
 export const mockCreditProvider: CreditProvider = {
   id: "mock_credit",
   isMock: true,
-  priceIrr: () => millionToman(0.089), // demo placeholder price
+  priceIrr: () => millionToman(0.089),
   async check(request: CreditRequest): Promise<CreditResult> {
     if (!request.consentGiven) throw new Error("consent_required");
     await delay(1400);
@@ -65,18 +63,13 @@ export const mockCreditProvider: CreditProvider = {
       openFacilities: seed % 4,
       latePaymentEvents: band === "impaired" ? 2 + (seed % 3) : seed % 2,
       estimatedCapacity: millionToman(80 + (seed % 12) * 40),
-      notes: [
-        "این نتیجه شبیه‌سازی‌شده است و هیچ استعلام واقعی اعتباری انجام نشده است.",
-        "برای اتصال به سرویس اعتبارسنجی واقعی، همین رابط بدون تغییر تجربهٔ کاربری جایگزین می‌شود.",
-      ],
+      notes: [],
       asOf: new Date().toISOString(),
       demo: true,
       simulated: true,
     };
   },
 };
-
-/* ---------------- Payment ---------------- */
 
 const intents = new Map<string, PaymentIntent>();
 
@@ -108,29 +101,29 @@ export const mockPaymentProvider: PaymentProvider = {
   },
 };
 
-/* ---------------- SMS / OTP ---------------- */
-
 export const mockSmsProvider: SmsProvider = {
   id: "mock_sms",
   isMock: true,
-  async sendOtp() {
+  async sendOtp(_phone: string, _code: string) {
     await delay(400);
     return { sent: true, expiresInSeconds: 120 };
   },
-  async verifyOtp(_phone: string, code: string) {
-    await delay(400);
-    return { verified: code.length === 5 };
-  },
 };
-
-/* ---------------- Handoff (provider-agnostic queue) ---------------- */
 
 const handoffs = new Map<string, Handoff>();
 
 export const mockHandoffProvider: HandoffProvider = {
   id: "mock_handoff",
   isMock: true,
-  async request({ anonSessionId, match, summary }: { anonSessionId: string; match: Match; summary: string }) {
+  async request({
+    anonSessionId,
+    match,
+    summary,
+  }: {
+    anonSessionId: string;
+    match: Match;
+    summary: string;
+  }) {
     await delay(600);
     const id = `ho_${Date.now().toString(36)}`;
     const handoff: Handoff = {

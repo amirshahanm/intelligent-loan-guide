@@ -3,31 +3,80 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import type { IntentSlots, ReasoningTrace } from "@/core/types";
 import { confirmReasoning } from "@/lib/reasoning.functions";
-import { hasCoreSlots } from "@/core/questions";
+import { hasCoreSlots, isAssessmentComplete } from "@/core/questions";
 import { useSession } from "@/lib/session";
 
-/**
- * Client preview renders instantly; the server re-runs the same engine on the
- * submitted snapshot and its verdict replaces the preview when it lands.
- */
+type ConfirmedTrace = ReasoningTrace & {
+  persistence?:
+    | {
+        status: "persisted";
+        sessionId: string;
+        sessionCapability?: string;
+        caseId: string;
+        decisionRunId: string;
+        reused: boolean;
+      }
+    | { status: "disabled"; reason: string };
+};
+
 export function useAuthoritativeTrace(): {
   trace: ReasoningTrace;
   confirming: boolean;
   confirmed: boolean;
 } {
-  const { state, trace } = useSession();
+  const { state, update, trace } = useSession();
   const confirm = useServerFn(confirmReasoning);
-  // Confirm as soon as the engine has anything meaningful to reason about.
   const ready = Boolean(state.slots.amount) || hasCoreSlots(state.slots);
+  const complete = isAssessmentComplete(state.slots);
 
   const key = React.useMemo(() => JSON.stringify(state.slots), [state.slots]);
+  const latestIntentText = state.intents[state.intents.length - 1]?.text ?? null;
 
   const query = useQuery({
-    queryKey: ["reasoning", key],
+    queryKey: ["reasoning", key, state.status],
     enabled: ready,
     staleTime: 60_000,
-    queryFn: () => confirm({ data: { slots: state.slots as IntentSlots } }),
+    queryFn: () =>
+      confirm({
+        data: {
+          slots: state.slots as IntentSlots,
+          context: {
+            sessionId: state.backend?.sessionId ?? null,
+            sessionCapability: state.backend?.sessionCapability ?? null,
+            caseId: state.backend?.caseId ?? null,
+            needText: latestIntentText,
+            persist: complete,
+          },
+        },
+      }),
   });
+
+  React.useEffect(() => {
+    const persistence = (query.data as ConfirmedTrace | undefined)?.persistence;
+    if (!persistence || persistence.status !== "persisted") return;
+
+    update((current) => {
+      if (
+        current.backend?.sessionId === persistence.sessionId &&
+        current.backend?.sessionCapability === persistence.sessionCapability &&
+        current.backend?.caseId === persistence.caseId &&
+        current.backend?.decisionRunId === persistence.decisionRunId
+      ) {
+        return current;
+      }
+      return {
+        ...current,
+        backend: {
+          sessionId: persistence.sessionId,
+          ...(persistence.sessionCapability
+            ? { sessionCapability: persistence.sessionCapability }
+            : {}),
+          caseId: persistence.caseId,
+          decisionRunId: persistence.decisionRunId,
+        },
+      };
+    });
+  }, [query.data, update]);
 
   return {
     trace: (query.data as ReasoningTrace | undefined) ?? trace,

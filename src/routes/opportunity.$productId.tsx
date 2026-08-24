@@ -7,7 +7,7 @@ import { useAuthoritativeTrace } from "@/hooks/use-authoritative-trace";
 import { useSession } from "@/lib/session";
 import { track } from "@/lib/analytics";
 import { catalogFact, derived } from "@/core/types";
-import { providers } from "@/lib/providers";
+import { requestHandoff as requestHandoffServer } from "@/lib/handoff.functions";
 import {
   faDays,
   faMonths,
@@ -16,7 +16,6 @@ import {
   formatTomanCompact,
   toPersianDigits,
 } from "@/lib/money";
-
 
 export const Route = createFileRoute("/opportunity/$productId")({
   head: () => ({
@@ -47,6 +46,7 @@ function OpportunityPage() {
   const { trace, confirmed } = useAuthoritativeTrace();
   const [months, setMonths] = React.useState(24);
   const [requesting, setRequesting] = React.useState(false);
+  const [handoffError, setHandoffError] = React.useState<string | null>(null);
 
   const match = trace.matches.find((m) => m.productId === productId);
 
@@ -81,19 +81,41 @@ function OpportunityPage() {
 
   const handoff = state.handoffs.find((h) => h.productId === match.productId);
   const installment = monthlyPayment(match.reachableAmount, match.ratePercent, months);
+  const backendReady = Boolean(
+    state.backend?.sessionId && state.backend?.sessionCapability && state.backend?.caseId,
+  );
 
   const requestHandoff = async () => {
-    setRequesting(true);
-    track({ name: "handoff_requested", productId: match.productId, channel: "in_app" });
-    const result = await providers.handoff.request({
-      anonSessionId: state.anonSessionId,
-      match,
-      summary: match.matchedBecause.slice(0, 2).join(" · "),
-    });
-    update((s) => ({ ...s, handoffs: [...s.handoffs, result] }));
-    setRequesting(false);
-  };
+    if (!state.backend?.sessionId || !state.backend.sessionCapability || !state.backend.caseId) {
+      setHandoffError("برای ثبت امن درخواست، ابتدا تحلیل پرونده باید روی سرور نهایی شود.");
+      return;
+    }
 
+    setRequesting(true);
+    setHandoffError(null);
+    track({ name: "handoff_requested", productId: match.productId, channel: "in_app" });
+    try {
+      const result = await requestHandoffServer({
+        data: {
+          sessionId: state.backend.sessionId,
+          sessionCapability: state.backend.sessionCapability,
+          caseId: state.backend.caseId,
+          productId: match.productId,
+          anonSessionId: state.anonSessionId,
+        },
+      });
+      update((s) => ({ ...s, handoffs: [...s.handoffs, result] }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "handoff_failed";
+      setHandoffError(
+        message.includes("partner_not_configured")
+          ? "این مسیر هنوز شریک اجرایی فعال ندارد؛ درخواست جعلی ثبت نمی‌کنیم."
+          : "ثبت درخواست کامل نشد. دوباره تلاش کن.",
+      );
+    } finally {
+      setRequesting(false);
+    }
+  };
 
   return (
     <AppShell className="space-y-5">
@@ -196,21 +218,26 @@ function OpportunityPage() {
             <div className="text-sm font-semibold text-accent">در صف بررسی انسانی</div>
             <p className="num mt-1 text-xs text-muted-foreground">
               شمارهٔ پیگیری {handoff.id} — جایگاه {toPersianDigits(handoff.queuePosition)} در صف.
-              این صف در نسخهٔ نمایشی شبیه‌سازی شده است.
             </p>
             <span className="mt-2 block text-[11px] text-accent">پیگیری وضعیت ←</span>
           </Link>
         ) : (
-
-
-          <button
-            type="button"
-            onClick={requestHandoff}
-            disabled={requesting}
-            className="mt-4 w-full rounded-2xl bg-gold px-4 py-3 text-sm font-semibold text-gold-foreground disabled:opacity-50"
-          >
-            {requesting ? "در حال ثبت درخواست…" : "می‌خواهم یک کارشناس بررسی کند"}
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={requestHandoff}
+              disabled={requesting || !backendReady}
+              className="mt-4 w-full rounded-2xl bg-gold px-4 py-3 text-sm font-semibold text-gold-foreground disabled:opacity-50"
+            >
+              {requesting ? "در حال ثبت درخواست…" : "می‌خواهم یک کارشناس بررسی کند"}
+            </button>
+            {!backendReady ? (
+              <p className="mt-2 text-[10px] leading-5 text-muted-foreground">
+                این اقدام بعد از تأیید سروری پرونده فعال می‌شود.
+              </p>
+            ) : null}
+            {handoffError ? <p className="mt-2 text-[11px] text-warn">{handoffError}</p> : null}
+          </>
         )}
       </section>
     </AppShell>

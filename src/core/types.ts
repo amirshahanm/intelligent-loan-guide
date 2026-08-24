@@ -3,7 +3,7 @@
  *
  * Rules enforced by this module:
  *  - All monetary values are integer IRR (Rials). Never Toman, never strings.
- *  - Every fact carries provenance. Mock/demo facts are flagged `demo: true`.
+ *  - Every fact carries provenance. Simulated/demo facts are explicitly flagged.
  *  - This module is pure and isomorphic: no React, no DOM, no network.
  */
 
@@ -26,7 +26,7 @@ export type Provenance = {
   confidence: number;
   /** ISO timestamp of when the fact was established. */
   asOf: string;
-  /** True whenever the fact originates from a Phase 1 mock provider. */
+  /** Present only when the fact is simulated/demo rather than live authority. */
   demo?: true;
 };
 
@@ -51,17 +51,27 @@ export function derived(confidence = 1): Provenance {
   return { source: "derived", confidence, asOf: new Date().toISOString() };
 }
 
-export function catalogFact(asOf: string): Provenance {
-  return { source: "catalog", confidence: 1, asOf, demo: true };
+/**
+ * Catalog provenance defaults to demo to preserve Phase 1 behavior. Real
+ * catalog adapters must pass `demo = false` once their source is authoritative.
+ */
+export function catalogFact(asOf: string, demo = true): Provenance {
+  const base: Provenance = { source: "catalog", confidence: 1, asOf };
+  return demo ? { ...base, demo: true } : base;
 }
 
-export function providerVerified(confidence = 1): Provenance {
-  return {
+/**
+ * Provider verification defaults to demo for current mock adapters. A verified
+ * production adapter must explicitly pass `demo = false` after its response has
+ * been authenticated and validated server-side.
+ */
+export function providerVerified(confidence = 1, demo = true): Provenance {
+  const base: Provenance = {
     source: "provider_verified",
     confidence,
     asOf: new Date().toISOString(),
-    demo: true,
   };
+  return demo ? { ...base, demo: true } : base;
 }
 
 /* ------------------------------------------------------------------ */
@@ -137,10 +147,10 @@ export type CapturedIntent = {
 
 export type Partner = {
   id: string;
-  /** Neutral demo identity. Never a real institution name in Phase 1. */
+  /** Neutral demo identity in Phase 1; real adapters may omit `demo`. */
   name: string;
   kind: "bank" | "credit_institution" | "fund" | "leasing" | "fintech";
-  demo: true;
+  demo?: true;
 };
 
 export type ProductRules = {
@@ -158,7 +168,7 @@ export type Product = {
   id: string;
   partnerId: string;
   name: string;
-  /** Annual profit rate, percent. Catalog fact, demo data. */
+  /** Annual profit rate, percent. */
   ratePercent: number;
   maxTermMonths: number;
   /** Typical time to funds, days. */
@@ -167,6 +177,8 @@ export type Product = {
   asOf: string;
   rules: ProductRules;
   notes: string;
+  /** Present only when this product record is simulated/demo. */
+  demo?: true;
 };
 
 /* ------------------------------------------------------------------ */
@@ -242,7 +254,8 @@ export type Match = {
   gaps: MatchGap[];
   nextActions: NextAction[];
   asOf: string;
-  demo: true;
+  /** Present only when the match depends on simulated/demo catalog data. */
+  demo?: true;
 };
 
 export type ReasoningStep = {

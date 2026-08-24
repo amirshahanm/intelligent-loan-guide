@@ -1,0 +1,71 @@
+name: TashilRadar Production Quality Gate
+
+on:
+  push:
+    branches:
+      - production/regulator-grade-v1
+  pull_request:
+    branches:
+      - main
+      - production/regulator-grade-v1
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tashilradar-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality-gate:
+    name: Core checks, trust boundaries, persistence, lint and production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Liquidity core self-check
+        run: bun run src/core/liquidity.selfcheck.ts
+
+      - name: Quote intelligence self-check
+        run: bun run src/core/quote-intelligence.selfcheck.ts
+
+      - name: Quote decision self-check
+        run: bun run src/core/quote-decision.selfcheck.ts
+
+      - name: Provenance truth-boundary self-check
+        run: bun run src/core/provenance.selfcheck.ts
+
+      - name: Universal route discovery self-check
+        run: bun run src/core/opportunity-routes.selfcheck.ts
+
+      - name: Persian universal need understanding self-check
+        run: bun run src/core/universal-need-extract.selfcheck.ts
+
+      - name: Prequote route value self-check
+        run: bun run src/core/route-value.selfcheck.ts
+
+      - name: Authoritative decision envelope self-check
+        run: bun run src/core/decision-envelope.selfcheck.ts
+
+      - name: Decision persistence fingerprint self-check
+        run: bun run src/lib/decision-persistence.selfcheck.ts
+
+      - name: Provider safety self-check
+        run: bun run src/lib/providers/safety.selfcheck.ts
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Production build
+        run: bun run build

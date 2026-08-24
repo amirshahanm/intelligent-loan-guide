@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { AuthorityBadge, ProvenanceChip, SectionTitle } from "@/components/provenance";
 import { ReadinessPanel } from "@/features/readiness/readiness-panel";
 import { SlotChips } from "@/features/concierge/slot-chips";
+import { ClaimProfileCard } from "@/features/profile/claim-profile-card";
 import { useAuthoritativeTrace } from "@/hooks/use-authoritative-trace";
 import { useSession } from "@/lib/session";
 import { providerVerified } from "@/core/types";
@@ -77,10 +78,12 @@ function ProfilePage() {
           </div>
         </div>
         <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
-          این شناسه فقط برای پیوستگی تجربهٔ توست و مجوز دسترسی نیست. با فعال‌شدن حساب کاربری،
-          مالکیت پرونده سمت سرور احراز و منتقل می‌شود.
+          این شناسه فقط برای پیوستگی تجربهٔ توست و مجوز دسترسی نیست. با فعال‌شدن حساب کاربری، مالکیت
+          پرونده سمت سرور احراز و منتقل می‌شود.
         </p>
       </section>
+
+      <ClaimProfileCard />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ReadinessPanel readiness={trace.readiness} />
@@ -116,8 +119,18 @@ function ProfilePage() {
         </section>
       </div>
 
+      <Link
+        to="/readiness"
+        className="block rounded-3xl border border-accent/35 bg-accent/10 p-4 transition-colors hover:bg-accent/15"
+      >
+        <div className="text-sm font-bold text-accent">سنجش آمادگی اجرا</div>
+        <p className="mt-1 text-xs text-muted-foreground">
+          چند واقعیتِ هنوز نامشخص را روشن کن و امتیاز، عوامل و بهترین اقدام بعدی را ببین.
+        </p>
+      </Link>
+
       <section className="rounded-3xl border border-border bg-surface p-4">
-        <SectionTitle hint={state.creditResult ? "نمایشی" : undefined}>سیگنال اعتباری</SectionTitle>
+        <SectionTitle>سیگنال اعتباری</SectionTitle>
         {state.creditResult ? (
           <div className="flex items-center justify-between gap-3">
             <div>
@@ -146,7 +159,7 @@ function ProfilePage() {
               to="/credit"
               className="rounded-full bg-gold px-4 py-2 text-xs font-semibold text-gold-foreground"
             >
-              اعتبارسنجی نمایشی
+              اعتبارسنجی
             </Link>
           </div>
         )}
@@ -186,9 +199,10 @@ function ProfilePage() {
       <section className="rounded-3xl border border-border bg-surface p-4">
         <SectionTitle>شخصی‌سازی و داده</SectionTitle>
         <ul className="space-y-1.5 text-[11px] leading-5 text-muted-foreground">
-          <li>· همهٔ داده‌های تو روی همین مرورگر می‌ماند و به‌صورت خودکار جایی ارسال نمی‌شود.</li>
+          <li>· قبل از اتصال حساب، داده‌های محلی فقط برای ادامهٔ تجربه روی همین مرورگر نگه داشته می‌شوند.</li>
           <li>· صدا هرگز ذخیره نمی‌شود؛ فقط متن حاصل از تشخیص گفتار استفاده می‌شود.</li>
           <li>· نتایج قطعی همیشه با اجرای دوبارهٔ موتور روی سرور تأیید می‌شود.</li>
+          <li>· بعد از Claim، مالکیت پرونده و تصمیم‌ها سمت سرور به حساب احراز‌شده متصل می‌شود.</li>
         </ul>
         <button
           type="button"

@@ -11,10 +11,14 @@ export function QuestionCard({
   question,
   onAnswer,
   index,
+  selected,
+  onBack,
 }: {
   question: Question;
   onAnswer: (value: string | number, label: string) => void;
   index: number;
+  selected?: string | number;
+  onBack?: () => void;
 }) {
   const [amountText, setAmountText] = React.useState("");
 
@@ -25,8 +29,18 @@ export function QuestionCard({
 
   return (
     <div className="anim-resolve rounded-3xl border border-border bg-surface p-4">
-      <div className="mb-1 text-[10px] text-accent">
-        پرسش {toPersianDigits(index)} · موتور تصمیم
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <span className="text-[10px] text-accent">پرسش {toPersianDigits(index)} · موتور تصمیم</span>
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border bg-elevated px-3 text-xs font-semibold text-muted-foreground transition-colors hover:border-accent/60 hover:text-foreground"
+          >
+            <BackArrowIcon />
+            مرحله قبل
+          </button>
+        ) : null}
       </div>
       <div className="text-base font-semibold text-foreground">{question.text}</div>
       {question.helper ? (
@@ -70,6 +84,7 @@ export function QuestionCard({
               className={cn(
                 "rounded-2xl border border-border bg-elevated px-3 py-3 text-sm text-foreground transition-colors",
                 "hover:border-accent/60 hover:bg-accent/10",
+                selected === option.value && "border-accent bg-accent/15 text-accent",
               )}
             >
               {option.label}
@@ -78,5 +93,13 @@ export function QuestionCard({
         </div>
       )}
     </div>
+  );
+}
+
+function BackArrowIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="size-3.5">
+      <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
