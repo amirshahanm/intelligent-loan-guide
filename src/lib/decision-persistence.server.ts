@@ -40,7 +40,9 @@ function isProductionDeployment(): boolean {
 
 function backendConfig(): BackendConfig | null {
   const url =
-    process.env.TASHILRADAR_SUPABASE_URL ?? process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+    process.env.TASHILRADAR_SUPABASE_URL ??
+    process.env.SUPABASE_URL ??
+    process.env.VITE_SUPABASE_URL;
   const secret =
     process.env.TASHILRADAR_SUPABASE_SERVICE_ROLE_KEY ??
     process.env.SUPABASE_SERVICE_ROLE_KEY ??
@@ -83,7 +85,11 @@ function createCapabilityToken(): string {
     .join("");
 }
 
-async function rpc<T>(config: BackendConfig, name: string, payload: Record<string, unknown>): Promise<T> {
+async function rpc<T>(
+  config: BackendConfig,
+  name: string,
+  payload: Record<string, unknown>,
+): Promise<T> {
   const response = await fetch(`${config.url}/rest/v1/rpc/${name}`, {
     method: "POST",
     headers: {
