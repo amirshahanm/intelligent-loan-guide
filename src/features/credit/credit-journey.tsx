@@ -250,8 +250,8 @@ function IntroPanel({
         </button>
       ) : (
         <div className="mt-4 rounded-2xl border border-signal/30 bg-signal/10 p-3 text-xs leading-5 text-muted-foreground">
-          اعتبارسنجی واقعی تا اتصال سرویس معتبر غیرفعال است. تسهیل‌رادار نتیجهٔ ساختگی را جای دادهٔ واقعی
-          نمایش نمی‌دهد.
+          اعتبارسنجی واقعی تا اتصال سرویس معتبر غیرفعال است. تسهیل‌رادار نتیجهٔ ساختگی را جای دادهٔ
+          واقعی نمایش نمی‌دهد.
         </div>
       )}
       {error ? <p className="mt-2 text-[11px] text-warn">{error}</p> : null}
@@ -293,7 +293,9 @@ function CreditReveal({
         <div className={cn("mt-1 text-sm font-bold", band.tone)}>{band.label}</div>
         <p className="mt-2 text-xs text-muted-foreground">{band.note}</p>
         <div className="mt-3 flex justify-center">
-          <ProvenanceChip provenance={{ ...providerVerified(0.9, result.demo), asOf: result.asOf }} />
+          <ProvenanceChip
+            provenance={{ ...providerVerified(0.9, result.demo), asOf: result.asOf }}
+          />
         </div>
       </section>
 
