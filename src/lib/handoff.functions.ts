@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
-import { sha256Hex } from "@/lib/decision-persistence.server";
 import type { Handoff } from "@/lib/providers/types";
 
 type BackendConfig = { url: string; secret: string };
@@ -15,6 +14,13 @@ type StoredDecision = {
     }>;
   };
 };
+
+async function sha256Hex(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 function deploymentMode(): string {
   return (process.env.TASHILRADAR_DEPLOYMENT_MODE ?? "demo").toLowerCase();
@@ -126,8 +132,6 @@ export const requestHandoff = createServerFn({ method: "POST" })
 
     const match = await authoritativeMatch(config, data.caseId, data.productId);
 
-    // Until a real execution partner is configured, production must not create
-    // a queue that looks live. Staging/demo may exercise the complete DB flow.
     if (deploymentMode() === "production") {
       throw new Error("handoff_partner_not_configured");
     }
