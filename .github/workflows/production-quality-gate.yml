@@ -52,6 +52,9 @@ jobs:
       - name: Persian universal need understanding self-check
         run: bun run src/core/universal-need-extract.selfcheck.ts
 
+      - name: Prequote route value self-check
+        run: bun run src/core/route-value.selfcheck.ts
+
       - name: Authoritative decision envelope self-check
         run: bun run src/core/decision-envelope.selfcheck.ts
 
