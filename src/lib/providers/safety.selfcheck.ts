@@ -66,4 +66,6 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log("provider safety self-check passed (mock production rejection + graceful-unavailable policy)");
+console.log(
+  "provider safety self-check passed (mock production rejection + graceful-unavailable policy)",
+);
