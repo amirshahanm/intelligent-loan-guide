@@ -1,20 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/app-shell";
 import { ConciergeExperience } from "@/features/concierge/concierge-experience";
+import { RouteReveal } from "@/features/concierge/route-reveal";
+import { useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "تسهیل‌رادار — یک جمله بگو، مسیر وامت را ببین" },
+      { title: "تسهیل‌رادار — مسیر واقعی نیاز مالی و خریدت را پیدا کن" },
       {
         name: "description",
         content:
-          "بدون ثبت‌نام بگو چه مبلغی و برای چه می‌خواهی؛ تسهیل‌رادار مسیرهای وام و اعتبار را می‌سنجد، بن‌بست‌ها را حذف می‌کند و دلیل هر تصمیم را نشان می‌دهد.",
+          "بدون ثبت‌نام نیازت را با زبان خودت بگو؛ تسهیل‌رادار مسیرهای نقدینگی، خرید اقساطی، کسب‌وکار و تجارت را با دلیل بررسی می‌کند و قدم بعدی واقعی را نشان می‌دهد.",
       },
-      { property: "og:title", content: "تسهیل‌رادار — ناوبر هوشمند وام و اعتبار" },
+      { property: "og:title", content: "تسهیل‌رادار — ناوبر هوشمند دسترسی مالی و خرید" },
       {
         property: "og:description",
-        content: "یک جمله بنویس یا بگو تا مسیرهای واقعی وام و اعتبارت را با دلیل ببینی.",
+        content: "یک جمله بگو تا مسیرهای واقعی تأمین مالی، خرید اعتباری و اجرای نیازت را با دلیل ببینی.",
       },
     ],
   }),
@@ -22,9 +24,15 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const { state } = useSession();
+  const hasIntent = state.intents.length > 0;
+
   return (
     <AppShell>
-      <ConciergeExperience />
+      <div className="space-y-5">
+        <ConciergeExperience />
+        {hasIntent ? <RouteReveal slots={state.slots} /> : null}
+      </div>
     </AppShell>
   );
 }
