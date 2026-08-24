@@ -9,14 +9,6 @@ import { providerVerified } from "@/core/types";
 import { faNumber, formatToman, formatTomanCompact, toPersianDigits } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
-/**
- * Credit journey — request → consent → payment placeholder → analysis →
- * staged reveal → explanation → next actions.
- *
- * MOCK INTEGRITY: nothing here performs a real credit inquiry. Every fact is
- * flagged `demo`/`simulated` by the provider and labelled in the UI.
- */
-
 type Stage = "intro" | "consent" | "payment" | "analyzing" | "revealed";
 
 const BAND_FA: Record<CreditResult["band"], { label: string; tone: string; note: string }> = {
@@ -56,7 +48,8 @@ export function CreditJourney() {
   const [phase, setPhase] = React.useState(0);
   const [reveal, setReveal] = React.useState(0);
   const [error, setError] = React.useState<string | null>(null);
-  const price = providers.credit.priceIrr();
+  const productionUnavailable = import.meta.env.VITE_TASHILRADAR_DEPLOYMENT_MODE === "production";
+  const price = productionUnavailable ? 0 : providers.credit.priceIrr();
 
   const result = state.creditResult;
 
@@ -68,6 +61,11 @@ export function CreditJourney() {
   }, [hydrated, result, stage]);
 
   const runAnalysis = React.useCallback(async () => {
+    if (productionUnavailable) {
+      setError("اعتبارسنجی واقعی هنوز به سرویس معتبر متصل نشده است.");
+      setStage("intro");
+      return;
+    }
     setError(null);
     setStage("analyzing");
     setPhase(0);
@@ -90,7 +88,7 @@ export function CreditJourney() {
       setError("اعتبارسنجی کامل نشد. دوباره تلاش کن.");
       setStage("consent");
     }
-  }, [price, state.anonSessionId, update]);
+  }, [price, productionUnavailable, state.anonSessionId, update]);
 
   React.useEffect(() => {
     if (stage !== "revealed" || reveal >= 4) return;
@@ -107,7 +105,12 @@ export function CreditJourney() {
       </div>
 
       {stage === "intro" ? (
-        <IntroPanel priceLabel={formatToman(price)} onStart={() => setStage("consent")} />
+        <IntroPanel
+          available={!productionUnavailable}
+          priceLabel={productionUnavailable ? "پس از اتصال سرویس" : formatToman(price)}
+          error={error}
+          onStart={() => setStage("consent")}
+        />
       ) : null}
 
       {stage === "consent" ? (
@@ -116,7 +119,7 @@ export function CreditJourney() {
           <ul className="space-y-1.5 text-xs text-muted-foreground">
             <li>· بررسی اعتباری تنها با اجازهٔ صریح تو انجام می‌شود.</li>
             <li>· داده‌های خام اعتباری هرگز به مرورگر ارسال نمی‌شود و سمت سرور می‌ماند.</li>
-            <li>· نتیجه صرفاً برای سنجش مسیرهای وام تو استفاده می‌شود.</li>
+            <li>· رضایت با نسخهٔ سیاست و زمان ثبت، به همان پرونده متصل می‌شود.</li>
           </ul>
           <label className="mt-4 flex cursor-pointer items-start gap-2 rounded-2xl border border-border bg-elevated/50 p-3">
             <input
@@ -215,26 +218,43 @@ export function CreditJourney() {
   );
 }
 
-function IntroPanel({ priceLabel, onStart }: { priceLabel: string; onStart: () => void }) {
+function IntroPanel({
+  priceLabel,
+  available,
+  error,
+  onStart,
+}: {
+  priceLabel: string;
+  available: boolean;
+  error: string | null;
+  onStart: () => void;
+}) {
   return (
     <section className="surface-panel rounded-3xl p-5">
       <h2 className="text-base font-bold">پرونده‌ات از نگاه یک وام‌دهنده</h2>
       <p className="mt-2 text-xs leading-6 text-muted-foreground">
-        اعتبارسنجی در تسهیل‌رادار یک عدد خشک نیست. سیگنال اعتباری تو خوانده می‌شود، به ظرفیت واقعی
-        مسیرهایی که موتور استدلال باز نگه داشته وصل می‌شود و با زبان ساده توضیح داده می‌شود که چه
-        چیزی مسیر را باز و چه چیزی آن را بسته نگه داشته است.
+        اعتبارسنجی در تسهیل‌رادار یک عدد خشک نیست. سیگنال اعتباری به ظرفیت مسیرهای واقعی وصل می‌شود
+        و با زبان ساده توضیح می‌دهیم چه چیزی مسیر را باز یا بسته نگه داشته است.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <MiniStat label="هزینهٔ بررسی" value={priceLabel} />
-        <MiniStat label="زمان بررسی" value="کمتر از ۲ دقیقه" />
+        <MiniStat label="وضعیت سرویس" value={available ? "نسخهٔ آزمایشی" : "در حال اتصال"} />
       </div>
-      <button
-        type="button"
-        onClick={onStart}
-        className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"
-      >
-        شروع اعتبارسنجی
-      </button>
+      {available ? (
+        <button
+          type="button"
+          onClick={onStart}
+          className="mt-4 w-full rounded-2xl bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground"
+        >
+          شروع اعتبارسنجی آزمایشی
+        </button>
+      ) : (
+        <div className="mt-4 rounded-2xl border border-signal/30 bg-signal/10 p-3 text-xs leading-5 text-muted-foreground">
+          اعتبارسنجی واقعی تا اتصال سرویس معتبر غیرفعال است. تسهیل‌رادار نتیجهٔ ساختگی را جای دادهٔ واقعی
+          نمایش نمی‌دهد.
+        </div>
+      )}
+      {error ? <p className="mt-2 text-[11px] text-warn">{error}</p> : null}
     </section>
   );
 }
@@ -273,7 +293,7 @@ function CreditReveal({
         <div className={cn("mt-1 text-sm font-bold", band.tone)}>{band.label}</div>
         <p className="mt-2 text-xs text-muted-foreground">{band.note}</p>
         <div className="mt-3 flex justify-center">
-          <ProvenanceChip provenance={{ ...providerVerified(0.9), asOf: result.asOf }} />
+          <ProvenanceChip provenance={{ ...providerVerified(0.9, result.demo), asOf: result.asOf }} />
         </div>
       </section>
 
