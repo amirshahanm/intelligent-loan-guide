@@ -13,6 +13,9 @@ export type DemoFlagged = { demo: true };
 /* ---------------- Catalog ---------------- */
 
 export interface ProductCatalogProvider {
+  readonly id: string;
+  /** Production safety must be able to identify a simulated catalog too. */
+  readonly isMock: boolean;
   listPartners(): Promise<Partner[]>;
   listProducts(): Promise<Product[]>;
   /** Catalog freshness timestamp. */
