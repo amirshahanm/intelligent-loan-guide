@@ -5,6 +5,11 @@ import { z } from "zod";
 const phoneSchema = z.string().min(10).max(18);
 const challengeSchema = z.string().uuid();
 const codeSchema = z.string().regex(/^\d{6}$/);
+const claimSchema = z.object({
+  sessionId: z.string().uuid(),
+  caseId: z.string().uuid(),
+  sessionCapability: z.string().min(32).max(256),
+});
 
 function deploymentMode(): string {
   return (process.env.TASHILRADAR_DEPLOYMENT_MODE ?? "demo").toLowerCase();
@@ -129,7 +134,14 @@ export const requestOtp = createServerFn({ method: "POST" })
 
 export const verifyOtp = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ phone: phoneSchema, challengeId: challengeSchema, code: codeSchema }).parse(input),
+    z
+      .object({
+        phone: phoneSchema,
+        challengeId: challengeSchema,
+        code: codeSchema,
+        claim: claimSchema.optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data }) => {
     setResponseHeader("Cache-Control", "no-store");
@@ -152,5 +164,27 @@ export const verifyOtp = createServerFn({ method: "POST" })
       p_code_hash: codeHash,
     });
 
-    return { verified: Boolean(result.verified), reason: result.reason };
+    if (!result.verified) {
+      return { verified: false as const, reason: result.reason, claimed: false as const };
+    }
+
+    if (!data.claim) {
+      return { verified: true as const, reason: result.reason, claimed: false as const };
+    }
+
+    const { claimAnonymousSessionToPhone } = await import("@/lib/identity-session.server");
+    const claimed = await claimAnonymousSessionToPhone({
+      phone,
+      phoneHash,
+      sessionId: data.claim.sessionId,
+      caseId: data.claim.caseId,
+      sessionCapability: data.claim.sessionCapability,
+    });
+
+    return {
+      verified: true as const,
+      reason: result.reason,
+      claimed: true as const,
+      profileId: claimed.profileId,
+    };
   });
