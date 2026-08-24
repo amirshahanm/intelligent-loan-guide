@@ -94,8 +94,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       if (raw) {
         const parsed = normalizeLiquidityJourneyState(JSON.parse(raw) as SessionState);
         const sessionCapability = window.sessionStorage.getItem(CAPABILITY_KEY) ?? undefined;
+        // A persisted anonymous backend UUID without its tab-scoped capability
+        // is intentionally not resumable. Keep the local profile and answers,
+        // but let the next value gate create a fresh secure backend session.
         const restored = parsed.backend
-          ? { ...parsed, backend: { ...parsed.backend, sessionCapability } }
+          ? sessionCapability
+            ? { ...parsed, backend: { ...parsed.backend, sessionCapability } }
+            : { ...parsed, backend: undefined }
           : parsed;
         const ageMs = Date.now() - new Date(restored.lastSeenAt ?? restored.createdAt).getTime();
         setState({ ...restored, lastSeenAt: new Date().toISOString() });
