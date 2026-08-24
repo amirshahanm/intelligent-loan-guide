@@ -10,9 +10,9 @@ import { normalizeLiquidityJourneyState } from "@/lib/session-migration";
  * No-Login First session store.
  *
  * `anonSessionId` is a continuity key for the local experience only. It is
- * explicitly NOT an authorization credential: when persistence and auth land,
- * ownership and access control are enforced server-side and claim/merge is a
- * verified server operation.
+ * explicitly NOT an authorization credential. Backend UUIDs are also only
+ * continuity references: authorization is enforced server-side and claim/
+ * merge into an authenticated user is a separate verified operation.
  */
 
 export type SessionStatus = "ANONYMOUS" | "ENGAGED" | "IDENTIFIED" | "CLAIMED";
@@ -22,6 +22,12 @@ export type Message =
   | { id: string; role: "concierge"; kind: "text"; text: string }
   | { id: string; role: "concierge"; kind: "question"; questionId: string }
   | { id: string; role: "concierge"; kind: "trace"; runId: string };
+
+export type BackendContinuity = {
+  sessionId: string;
+  caseId: string;
+  decisionRunId: string;
+};
 
 export type SessionState = {
   anonSessionId: string;
@@ -38,6 +44,7 @@ export type SessionState = {
   liquidity: LiquidityInput;
   liquidityAskedFactors: LiquidityFactorKey[];
   liquiditySkippedFactors: LiquidityFactorKey[];
+  backend?: BackendContinuity;
 };
 
 const STORAGE_KEY = "tashilradar.session.v1";

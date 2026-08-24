@@ -1,15 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { runReasoning } from "@/core/engine";
+import { buildAuthoritativeDecisionEnvelope } from "@/core/decision-envelope";
 import type { IntentSlots } from "@/core/types";
 
 /**
  * Server-authoritative re-evaluation.
  *
- * The client runs the SAME engine for instant preview and Radar rendering,
- * but every authoritative outcome (eligibility, credit, transaction, partner
- * handoff) must be confirmed here. Phase 1 is stateless: the client submits a
- * validated slot snapshot, the server re-runs the engine and its verdict wins.
+ * The client may run the same deterministic engine for instant preview, but
+ * the server owns authoritative confirmation. When explicitly requested at a
+ * real value gate, the same result is also persisted atomically to the V2
+ * financial OS backend. Client input can never supply an owner user id.
  */
 
 const provenanceSchema = z.object({
@@ -48,10 +48,49 @@ const slotsSchema = z.object({
   region: factOf(z.string().max(40)),
 });
 
+const contextSchema = z
+  .object({
+    sessionId: z.string().uuid().nullable().optional(),
+    caseId: z.string().uuid().nullable().optional(),
+    needText: z.string().max(4000).nullable().optional(),
+    persist: z.boolean().optional(),
+  })
+  .optional();
+
 export const confirmReasoning = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => z.object({ slots: slotsSchema }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ slots: slotsSchema, context: contextSchema }).parse(input),
+  )
   .handler(async ({ data }) => {
-    return runReasoning(data.slots as IntentSlots, {
-      computedBy: "server-authoritative",
-    });
+    const slots = data.slots as IntentSlots;
+    const envelope = buildAuthoritativeDecisionEnvelope(slots);
+
+    const persistence = data.context?.persist
+      ? await (async () => {
+          // Keep service-role/env access out of the shared client graph. The
+          // createServerFn handler is the only path that imports this module.
+          const { persistAuthoritativeDecision } = await import(
+            "@/lib/decision-persistence.server"
+          );
+          return persistAuthoritativeDecision({
+            slots,
+            envelope,
+            context: {
+              sessionId: data.context?.sessionId,
+              caseId: data.context?.caseId,
+              needText: data.context?.needText,
+            },
+          });
+        })()
+      : ({ status: "disabled", reason: "not_requested" } as const);
+
+    // Preserve the ReasoningTrace top-level shape for existing consumers while
+    // adding the broader route and persistence layers as backwards-compatible
+    // metadata.
+    return {
+      ...envelope.reasoning,
+      universalNeed: envelope.need,
+      routeFamilies: envelope.routeFamilies,
+      persistence,
+    };
   });
