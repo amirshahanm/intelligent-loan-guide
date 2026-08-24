@@ -1,6 +1,10 @@
 import * as React from "react";
 import type { IntentSlots } from "@/core/types";
-import { discoverRouteFamilies, type CapabilityStatus, type ProductWorld } from "@/core/opportunity-routes";
+import {
+  discoverRouteFamilies,
+  type CapabilityStatus,
+  type ProductWorld,
+} from "@/core/opportunity-routes";
 import { universalNeedFromText } from "@/core/universal-need-extract";
 import { cn } from "@/lib/utils";
 import { toPersianDigits } from "@/lib/money";
