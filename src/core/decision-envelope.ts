@@ -1,11 +1,12 @@
 import { runReasoning } from "./engine";
 import {
   discoverRouteFamilies,
-  universalNeedFromLegacySlots,
   type CapabilityStatus,
   type NeedKind,
   type RouteFamilyMatch,
+  type UniversalNeed,
 } from "./opportunity-routes";
+import { universalNeedFromText } from "./universal-need-extract";
 import type { IntentSlots, ReasoningTrace } from "./types";
 
 export type PersistenceCapabilityStatus =
@@ -36,7 +37,7 @@ export type PersistableRoute = {
 
 export type AuthoritativeDecisionEnvelope = {
   reasoning: ReasoningTrace;
-  need: ReturnType<typeof universalNeedFromLegacySlots>;
+  need: UniversalNeed;
   routeFamilies: RouteFamilyMatch[];
   primaryWorld: "money" | "buy" | "business" | "trade";
   vertical: string;
@@ -116,9 +117,10 @@ export function toPersistableRoutes(
 
 export function buildAuthoritativeDecisionEnvelope(
   slots: IntentSlots,
+  needText?: string | null,
 ): AuthoritativeDecisionEnvelope {
   const reasoning = runReasoning(slots, { computedBy: "server-authoritative" });
-  const need = universalNeedFromLegacySlots(slots);
+  const need = universalNeedFromText(needText, slots);
   const routeFamilies = discoverRouteFamilies(need);
   const primaryWorld = routeFamilies[0]?.route.world ?? "money";
   const vertical = verticalForNeed(need.kind);
