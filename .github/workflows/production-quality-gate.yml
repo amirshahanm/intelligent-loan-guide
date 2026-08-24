@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   quality-gate:
-    name: Core checks, trust boundaries, lint and production build
+    name: Core checks, trust boundaries, persistence, lint and production build
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -48,6 +48,12 @@ jobs:
 
       - name: Universal route discovery self-check
         run: bun run src/core/opportunity-routes.selfcheck.ts
+
+      - name: Authoritative decision envelope self-check
+        run: bun run src/core/decision-envelope.selfcheck.ts
+
+      - name: Decision persistence fingerprint self-check
+        run: bun run src/lib/decision-persistence.selfcheck.ts
 
       - name: Provider safety self-check
         run: bun run src/lib/providers/safety.selfcheck.ts
