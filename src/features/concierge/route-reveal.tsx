@@ -1,11 +1,7 @@
 import * as React from "react";
 import type { IntentSlots } from "@/core/types";
-import {
-  discoverRouteFamilies,
-  universalNeedFromLegacySlots,
-  type CapabilityStatus,
-  type ProductWorld,
-} from "@/core/opportunity-routes";
+import { discoverRouteFamilies, type CapabilityStatus, type ProductWorld } from "@/core/opportunity-routes";
+import { universalNeedFromText } from "@/core/universal-need-extract";
 import { cn } from "@/lib/utils";
 import { toPersianDigits } from "@/lib/money";
 
@@ -29,8 +25,8 @@ function statusTone(status: CapabilityStatus): string {
   return "border-gold/35 bg-gold/8 text-gold";
 }
 
-export function RouteReveal({ slots }: { slots: IntentSlots }) {
-  const need = React.useMemo(() => universalNeedFromLegacySlots(slots), [slots]);
+export function RouteReveal({ slots, needText }: { slots: IntentSlots; needText?: string | null }) {
+  const need = React.useMemo(() => universalNeedFromText(needText, slots), [needText, slots]);
   const matches = React.useMemo(() => discoverRouteFamilies(need).slice(0, 3), [need]);
 
   if (matches.length === 0 || need.kind === "unknown") return null;
