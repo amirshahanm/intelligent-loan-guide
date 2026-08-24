@@ -7,8 +7,6 @@
 
 import type { IRR, Match, Partner, Product } from "@/core/types";
 
-/* ---------------- Catalog ---------------- */
-
 export interface ProductCatalogProvider {
   readonly id: string;
   readonly isMock: boolean;
@@ -17,11 +15,13 @@ export interface ProductCatalogProvider {
   asOf(): string;
 }
 
-/* ---------------- Credit ---------------- */
-
 export type CreditRequest = {
   anonSessionId: string;
   consentGiven: boolean;
+  /** Server persistence continuity. A bare anonymous id is never authority. */
+  sessionId: string;
+  sessionCapability: string;
+  caseId: string;
 };
 
 export type CreditSignalBand = "strong" | "moderate" | "thin" | "impaired";
@@ -46,8 +46,6 @@ export interface CreditProvider {
   check(request: CreditRequest): Promise<CreditResult>;
 }
 
-/* ---------------- Payment ---------------- */
-
 export type PaymentIntent = {
   id: string;
   amountIrr: IRR;
@@ -62,19 +60,12 @@ export interface PaymentProvider {
   confirm(intentId: string): Promise<PaymentIntent>;
 }
 
-/* ---------------- Identity (phone + OTP transport) ---------------- */
-
-/**
- * SMS is transport only. OTP generation, hashing, expiry, attempts and
- * verification belong to the server identity boundary, not the SMS provider.
- */
+/** SMS is transport only; OTP lifecycle/verification is server-owned. */
 export interface SmsProvider {
   readonly id: string;
   readonly isMock: boolean;
   sendOtp(phone: string, code: string): Promise<{ sent: boolean; expiresInSeconds: number }>;
 }
-
-/* ---------------- Human handoff (provider-agnostic) ---------------- */
 
 export type HandoffChannel = "in_app";
 
@@ -99,8 +90,6 @@ export interface HandoffProvider {
   get(id: string): Promise<Handoff | null>;
   list(anonSessionId: string): Promise<Handoff[]>;
 }
-
-/* ---------------- Understanding (LLM boundary) ---------------- */
 
 export interface UnderstandingProvider {
   readonly id: string;
