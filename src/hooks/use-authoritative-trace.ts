@@ -11,7 +11,7 @@ type ConfirmedTrace = ReasoningTrace & {
     | {
         status: "persisted";
         sessionId: string;
-        sessionCapability: string;
+        sessionCapability?: string;
         caseId: string;
         decisionRunId: string;
         reused: boolean;
@@ -33,7 +33,7 @@ export function useAuthoritativeTrace(): {
   const latestIntentText = state.intents[state.intents.length - 1]?.text ?? null;
 
   const query = useQuery({
-    queryKey: ["reasoning", key],
+    queryKey: ["reasoning", key, state.status],
     enabled: ready,
     staleTime: 60_000,
     queryFn: () =>
@@ -68,7 +68,9 @@ export function useAuthoritativeTrace(): {
         ...current,
         backend: {
           sessionId: persistence.sessionId,
-          sessionCapability: persistence.sessionCapability,
+          ...(persistence.sessionCapability
+            ? { sessionCapability: persistence.sessionCapability }
+            : {}),
           caseId: persistence.caseId,
           decisionRunId: persistence.decisionRunId,
         },
