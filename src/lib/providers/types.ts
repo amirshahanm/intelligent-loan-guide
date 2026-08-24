@@ -1,24 +1,19 @@
 /**
  * Provider interfaces.
  *
- * Phase 1 ships Mock implementations only. Swapping to production is a change
- * of factory, never a change of UX. No mock here may present itself as live
- * market, bank, credit-bureau or approval data — every result is flagged demo.
+ * Provider execution is server-owned. Mocks and real adapters implement the
+ * same contracts, while `demo`/`simulated` truthfully describe each result.
  */
 
 import type { IRR, Match, Partner, Product } from "@/core/types";
-
-export type DemoFlagged = { demo: true };
 
 /* ---------------- Catalog ---------------- */
 
 export interface ProductCatalogProvider {
   readonly id: string;
-  /** Production safety must be able to identify a simulated catalog too. */
   readonly isMock: boolean;
   listPartners(): Promise<Partner[]>;
   listProducts(): Promise<Product[]>;
-  /** Catalog freshness timestamp. */
   asOf(): string;
 }
 
@@ -26,24 +21,22 @@ export interface ProductCatalogProvider {
 
 export type CreditRequest = {
   anonSessionId: string;
-  /** National ID is never stored client-side in Phase 1. */
   consentGiven: boolean;
 };
 
 export type CreditSignalBand = "strong" | "moderate" | "thin" | "impaired";
 
-export type CreditResult = DemoFlagged & {
+export type CreditResult = {
   requestId: string;
   band: CreditSignalBand;
-  /** 0..100 normalized signal, not a bureau score. */
   signal: number;
   openFacilities: number;
   latePaymentEvents: number;
   estimatedCapacity: IRR;
   notes: string[];
   asOf: string;
-  /** Always true in Phase 1: no real inquiry was performed. */
-  simulated: true;
+  demo: boolean;
+  simulated: boolean;
 };
 
 export interface CreditProvider {
@@ -59,7 +52,7 @@ export type PaymentIntent = {
   id: string;
   amountIrr: IRR;
   status: "requires_action" | "processing" | "succeeded" | "failed";
-  demo: true;
+  demo: boolean;
 };
 
 export interface PaymentProvider {
@@ -69,13 +62,16 @@ export interface PaymentProvider {
   confirm(intentId: string): Promise<PaymentIntent>;
 }
 
-/* ---------------- Identity (phone + OTP) ---------------- */
+/* ---------------- Identity (phone + OTP transport) ---------------- */
 
+/**
+ * SMS is transport only. OTP generation, hashing, expiry, attempts and
+ * verification belong to the server identity boundary, not the SMS provider.
+ */
 export interface SmsProvider {
   readonly id: string;
   readonly isMock: boolean;
-  sendOtp(phone: string): Promise<{ sent: boolean; expiresInSeconds: number }>;
-  verifyOtp(phone: string, code: string): Promise<{ verified: boolean }>;
+  sendOtp(phone: string, code: string): Promise<{ sent: boolean; expiresInSeconds: number }>;
 }
 
 /* ---------------- Human handoff (provider-agnostic) ---------------- */
@@ -88,13 +84,12 @@ export type Handoff = {
   productId: string;
   productName: string;
   partnerName: string;
-  /** Provider-agnostic: Phase 1 only implements the in-app queue. */
   channel: HandoffChannel;
   status: "queued" | "assigned" | "in_review" | "closed";
   queuePosition: number;
   createdAt: string;
   summary: string;
-  demo: true;
+  demo: boolean;
 };
 
 export interface HandoffProvider {
@@ -110,9 +105,5 @@ export interface HandoffProvider {
 export interface UnderstandingProvider {
   readonly id: string;
   readonly isMock: boolean;
-  /**
-   * Extraction + explanation only. Implementations MUST NOT produce products,
-   * rates, probabilities, availability or eligibility verdicts.
-   */
   understand(text: string): Promise<{ reply: string }>;
 }
