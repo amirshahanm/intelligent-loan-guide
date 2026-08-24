@@ -2,7 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { buildAuthoritativeDecisionEnvelope } from "@/core/decision-envelope";
 import type { IntentSlots } from "@/core/types";
-import { persistAuthoritativeDecision } from "@/lib/decision-persistence.server";
 
 /**
  * Server-authoritative re-evaluation.
@@ -67,15 +66,22 @@ export const confirmReasoning = createServerFn({ method: "POST" })
     const envelope = buildAuthoritativeDecisionEnvelope(slots);
 
     const persistence = data.context?.persist
-      ? await persistAuthoritativeDecision({
-          slots,
-          envelope,
-          context: {
-            sessionId: data.context.sessionId,
-            caseId: data.context.caseId,
-            needText: data.context.needText,
-          },
-        })
+      ? await (async () => {
+          // Keep service-role/env access out of the shared client graph. The
+          // createServerFn handler is the only path that imports this module.
+          const { persistAuthoritativeDecision } = await import(
+            "@/lib/decision-persistence.server"
+          );
+          return persistAuthoritativeDecision({
+            slots,
+            envelope,
+            context: {
+              sessionId: data.context?.sessionId,
+              caseId: data.context?.caseId,
+              needText: data.context?.needText,
+            },
+          });
+        })()
       : ({ status: "disabled", reason: "not_requested" } as const);
 
     // Preserve the ReasoningTrace top-level shape for existing consumers while
