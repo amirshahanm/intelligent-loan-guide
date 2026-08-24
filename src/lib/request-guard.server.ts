@@ -56,10 +56,17 @@ async function requestFingerprint(secret: string): Promise<string> {
   return hmacHex(secret, `${network}\n${userAgent}`);
 }
 
-export async function consumeDecisionPersistenceLimit({
-  existingSession,
+export async function consumeRequestLimit({
+  scope,
+  limit,
+  windowSeconds,
+  subject,
 }: {
-  existingSession: boolean;
+  scope: string;
+  limit: number;
+  windowSeconds: number;
+  /** Optional already-hashed/log-safe subject discriminator. */
+  subject?: string;
 }): Promise<void> {
   const current = config();
   if (!current) {
@@ -67,10 +74,16 @@ export async function consumeDecisionPersistenceLimit({
     return;
   }
 
-  const scope = existingSession ? "decision_resume" : "decision_new_session";
-  const limit = existingSession ? 30 : 8;
-  const windowSeconds = 10 * 60;
-  const keyHash = await requestFingerprint(current.fingerprintSecret);
+  if (!/^[a-z0-9_:-]{3,80}$/i.test(scope)) throw new Error("invalid_rate_limit_scope");
+  if (!Number.isInteger(limit) || limit < 1 || limit > 500) throw new Error("invalid_rate_limit_limit");
+  if (!Number.isInteger(windowSeconds) || windowSeconds < 30 || windowSeconds > 86400) {
+    throw new Error("invalid_rate_limit_window");
+  }
+
+  const fingerprint = await requestFingerprint(current.fingerprintSecret);
+  const keyHash = subject
+    ? await hmacHex(current.fingerprintSecret, `${fingerprint}\n${subject}`)
+    : fingerprint;
 
   const response = await fetch(`${current.url}/rest/v1/rpc/tr_consume_rate_limit`, {
     method: "POST",
@@ -108,4 +121,16 @@ export async function consumeDecisionPersistenceLimit({
     setResponseHeader("Cache-Control", "no-store");
     throw new Error(`request_rate_limited:${scope}`);
   }
+}
+
+export async function consumeDecisionPersistenceLimit({
+  existingSession,
+}: {
+  existingSession: boolean;
+}): Promise<void> {
+  return consumeRequestLimit({
+    scope: existingSession ? "decision_resume" : "decision_new_session",
+    limit: existingSession ? 30 : 8,
+    windowSeconds: 10 * 60,
+  });
 }
