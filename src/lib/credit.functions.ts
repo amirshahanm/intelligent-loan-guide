@@ -29,7 +29,9 @@ async function sha256Hex(value: string): Promise<string> {
 
 function backendConfig(): BackendConfig {
   const url =
-    process.env.TASHILRADAR_SUPABASE_URL ?? process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+    process.env.TASHILRADAR_SUPABASE_URL ??
+    process.env.SUPABASE_URL ??
+    process.env.VITE_SUPABASE_URL;
   const secret =
     process.env.TASHILRADAR_SUPABASE_SERVICE_ROLE_KEY ??
     process.env.SUPABASE_SERVICE_ROLE_KEY ??
@@ -38,7 +40,11 @@ function backendConfig(): BackendConfig {
   return { url: url.replace(/\/$/, ""), secret };
 }
 
-async function rpc<T>(config: BackendConfig, name: string, payload: Record<string, unknown>): Promise<T> {
+async function rpc<T>(
+  config: BackendConfig,
+  name: string,
+  payload: Record<string, unknown>,
+): Promise<T> {
   const response = await fetch(`${config.url}/rest/v1/rpc/${name}`, {
     method: "POST",
     headers: {
@@ -51,7 +57,11 @@ async function rpc<T>(config: BackendConfig, name: string, payload: Record<strin
   });
   if (!response.ok) {
     const body = await response.text();
-    console.error("Credit backend RPC failed", { name, status: response.status, body: body.slice(0, 400) });
+    console.error("Credit backend RPC failed", {
+      name,
+      status: response.status,
+      body: body.slice(0, 400),
+    });
     throw new Error(`credit_backend_failure:${name}`);
   }
   const text = await response.text();
@@ -67,7 +77,11 @@ export const createCreditPaymentIntent = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     noStore();
     const { consumeRequestLimit } = await import("@/lib/request-guard.server");
-    await consumeRequestLimit({ scope: "credit_payment_create", limit: 8, windowSeconds: 10 * 60 });
+    await consumeRequestLimit({
+      scope: "credit_payment_create",
+      limit: 8,
+      windowSeconds: 10 * 60,
+    });
     const { serverProviders } = await import("@/lib/providers/server-registry.server");
     return serverProviders.payment.createIntent(data.amountIrr);
   });
@@ -77,7 +91,11 @@ export const confirmCreditPaymentIntent = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     noStore();
     const { consumeRequestLimit } = await import("@/lib/request-guard.server");
-    await consumeRequestLimit({ scope: "credit_payment_confirm", limit: 12, windowSeconds: 10 * 60 });
+    await consumeRequestLimit({
+      scope: "credit_payment_confirm",
+      limit: 12,
+      windowSeconds: 10 * 60,
+    });
     const { serverProviders } = await import("@/lib/providers/server-registry.server");
     return serverProviders.payment.confirm(data.intentId);
   });
