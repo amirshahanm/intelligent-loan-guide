@@ -15,7 +15,10 @@ check("catalog defaults to demo for current Phase 1 adapters", demoCatalog.demo 
 check("live catalog provenance can omit demo flag", liveCatalog.demo === undefined);
 check("provider verification defaults to demo for current mocks", demoProvider.demo === true);
 check("live provider verification can omit demo flag", liveProvider.demo === undefined);
-check("live provider remains authoritative provenance", liveProvider.source === "provider_verified");
+check(
+  "live provider remains authoritative provenance",
+  liveProvider.source === "provider_verified",
+);
 check("user stated facts are never marked demo", userStated().demo === undefined);
 check("user confirmed facts are never marked demo", userConfirmed().demo === undefined);
 

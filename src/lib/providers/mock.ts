@@ -129,7 +129,15 @@ const handoffs = new Map<string, Handoff>();
 export const mockHandoffProvider: HandoffProvider = {
   id: "mock_handoff",
   isMock: true,
-  async request({ anonSessionId, match, summary }: { anonSessionId: string; match: Match; summary: string }) {
+  async request({
+    anonSessionId,
+    match,
+    summary,
+  }: {
+    anonSessionId: string;
+    match: Match;
+    summary: string;
+  }) {
     await delay(600);
     const id = `ho_${Date.now().toString(36)}`;
     const handoff: Handoff = {

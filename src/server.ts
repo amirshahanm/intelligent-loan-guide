@@ -2,10 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
-import {
-  assertConfiguredProviderSafety,
-  parseDeploymentMode,
-} from "./lib/providers";
+import { assertConfiguredProviderSafety, parseDeploymentMode } from "./lib/providers";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;

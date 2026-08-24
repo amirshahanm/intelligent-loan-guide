@@ -116,13 +116,7 @@ export const PRODUCTS: Product[] = [
     rules: {
       minAmount: millionToman(5),
       maxAmount: millionToman(120),
-      allowedEmployment: [
-        "salaried",
-        "self_employed",
-        "business_owner",
-        "retired",
-        "student",
-      ],
+      allowedEmployment: ["salaried", "self_employed", "business_owner", "retired", "student"],
       requiresCollateral: null,
       requiresGuarantor: null,
       minIncomeBand: "under_20",
@@ -194,15 +188,7 @@ export const PRODUCTS: Product[] = [
       requiresGuarantor: null,
       minIncomeBand: "under_20",
       maxDebtLoad: "heavy",
-      allowedPurposes: [
-        "personal",
-        "business",
-        "debt",
-        "education",
-        "marriage",
-        "car",
-        "home",
-      ],
+      allowedPurposes: ["personal", "business", "debt", "education", "marriage", "car", "home"],
     },
   },
   {

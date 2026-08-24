@@ -64,7 +64,9 @@ function RadarPage() {
             {trace.eliminated.map((path) => (
               <li key={path.productId} className="rounded-3xl border border-border bg-surface p-4">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-sm font-semibold text-foreground/80">{path.productName}</span>
+                  <span className="text-sm font-semibold text-foreground/80">
+                    {path.productName}
+                  </span>
                   <span className="text-[11px] text-muted-foreground">{path.partnerName}</span>
                 </div>
                 <ul className="mt-2 space-y-1">

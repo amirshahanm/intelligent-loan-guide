@@ -69,9 +69,8 @@ export const confirmReasoning = createServerFn({ method: "POST" })
       ? await (async () => {
           // Keep service-role/env access out of the shared client graph. The
           // createServerFn handler is the only path that imports this module.
-          const { persistAuthoritativeDecision } = await import(
-            "@/lib/decision-persistence.server"
-          );
+          const { persistAuthoritativeDecision } =
+            await import("@/lib/decision-persistence.server");
           return persistAuthoritativeDecision({
             slots,
             envelope,

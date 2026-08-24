@@ -64,6 +64,7 @@ The product may offer discreet assisted execution through qualified partners/exp
 OpenAI/AI belongs in orchestration, not authoritative financial judgment.
 
 AI responsibilities may include:
+
 - natural-language intent understanding
 - adaptive questioning
 - planning/tool selection
@@ -91,6 +92,7 @@ Do not hard-code SnappPay, DigiPay, AzkiVam, a bank, merchant or supplier API in
 ## Commercial model
 
 Potential revenue layers include:
+
 - paid personalized Decision / Action Plan
 - assisted execution fees
 - qualified lead revenue
@@ -123,6 +125,7 @@ Current approved foundations include Eligibility/Match, Lead Liquidity, Executio
 New work should extend around them unless a genuine P0 defect exists.
 
 Every meaningful feature should improve at least one of:
+
 - Decision Quality
 - Execution Rate
 - Data Moat

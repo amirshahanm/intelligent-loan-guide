@@ -31,7 +31,11 @@ export const Route = createFileRoute("/handoff/$handoffId")({
 const STEPS = [
   { key: "queued", label: "ثبت در صف", detail: "درخواست تو ثبت شد و در نوبت بررسی است." },
   { key: "assigned", label: "تخصیص کارشناس", detail: "یک کارشناس پرونده را برمی‌دارد." },
-  { key: "in_review", label: "بررسی پرونده", detail: "مدارک و شرایط با تأمین‌کننده تطبیق داده می‌شود." },
+  {
+    key: "in_review",
+    label: "بررسی پرونده",
+    detail: "مدارک و شرایط با تأمین‌کننده تطبیق داده می‌شود.",
+  },
   { key: "closed", label: "جمع‌بندی", detail: "نتیجه و مسیر اجرایی به تو اعلام می‌شود." },
 ] as const;
 

@@ -46,13 +46,16 @@ function PartnersPage() {
       <header className="surface-panel rounded-3xl p-5">
         <h1 className="text-lg font-bold">شبکهٔ تأمین‌کنندگان</h1>
         <p className="mt-2 text-xs leading-6 text-muted-foreground">
-          موتور استدلال تسهیل‌رادار روی همین مجموعه از محصولات اجرا می‌شود؛ قواعد هر محصول و
-          منبع هر عدد شفاف است.
+          موتور استدلال تسهیل‌رادار روی همین مجموعه از محصولات اجرا می‌شود؛ قواعد هر محصول و منبع هر
+          عدد شفاف است.
         </p>
         <div className="mt-3 grid grid-cols-3 gap-2">
           <Tally value={PARTNERS.length} label="تأمین‌کننده" />
           <Tally value={PRODUCTS.length} label="محصول" />
-          <Tally value={new Set(PRODUCTS.flatMap((p) => p.rules.allowedPurposes)).size} label="هدف پوشش‌داده‌شده" />
+          <Tally
+            value={new Set(PRODUCTS.flatMap((p) => p.rules.allowedPurposes)).size}
+            label="هدف پوشش‌داده‌شده"
+          />
         </div>
         <div className="mt-3">
           <ProvenanceChip provenance={catalogFact(PRODUCTS[0].asOf)} />
@@ -95,13 +98,17 @@ function PartnersPage() {
                     </button>
                     {open ? (
                       <div className="border-t border-border p-3">
-                        <p className="text-[11px] leading-5 text-muted-foreground">{product.notes}</p>
+                        <p className="text-[11px] leading-5 text-muted-foreground">
+                          {product.notes}
+                        </p>
                         <div className="mt-3 grid grid-cols-3 gap-2 text-center">
                           <Cell label="حداکثر مدت" value={faMonths(product.maxTermMonths)} />
                           <Cell label="زمان معمول" value={faDays(product.typicalDays)} />
                           <Cell label="نرخ سالانه" value={faPercent(product.ratePercent)} />
                         </div>
-                        <div className="mt-3 text-[10px] text-muted-foreground">اهداف پذیرفته‌شده</div>
+                        <div className="mt-3 text-[10px] text-muted-foreground">
+                          اهداف پذیرفته‌شده
+                        </div>
                         <div className="mt-1 flex flex-wrap gap-1.5">
                           {product.rules.allowedPurposes.map((p) => (
                             <span
@@ -159,4 +166,3 @@ function Cell({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-

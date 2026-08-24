@@ -12,7 +12,10 @@ export type QuoteStage = "MARKET_OBSERVATION" | "LIVE_CONFIRMED" | "EXECUTABLE";
 export type EffectiveQuoteState = QuoteStage | "EXPIRED";
 
 export type QuoteSourceType =
-  "PUBLIC_LISTING" | "PARTNER_API" | "PROVIDER_OPERATOR" | "MANUAL_VERIFIED";
+  | "PUBLIC_LISTING"
+  | "PARTNER_API"
+  | "PROVIDER_OPERATOR"
+  | "MANUAL_VERIFIED";
 
 export type TrustedQuoteSource = Exclude<QuoteSourceType, "PUBLIC_LISTING">;
 

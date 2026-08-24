@@ -17,7 +17,6 @@ import {
   toPersianDigits,
 } from "@/lib/money";
 
-
 export const Route = createFileRoute("/opportunity/$productId")({
   head: () => ({
     meta: [
@@ -93,7 +92,6 @@ function OpportunityPage() {
     update((s) => ({ ...s, handoffs: [...s.handoffs, result] }));
     setRequesting(false);
   };
-
 
   return (
     <AppShell className="space-y-5">
@@ -200,8 +198,6 @@ function OpportunityPage() {
             <span className="mt-2 block text-[11px] text-accent">پیگیری وضعیت ←</span>
           </Link>
         ) : (
-
-
           <button
             type="button"
             onClick={requestHandoff}

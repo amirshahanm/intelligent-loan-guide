@@ -10,7 +10,14 @@ export function FitRing({ score, size = 56 }: { score: number; size?: number }) 
   const c = 2 * Math.PI * r;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-border)" strokeWidth="4" />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={r}
+        fill="none"
+        stroke="var(--color-border)"
+        strokeWidth="4"
+      />
       <circle
         cx={size / 2}
         cy={size / 2}

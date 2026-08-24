@@ -2,37 +2,25 @@
 
 PROJECT: TashilRadar
 
-
-
 MODE: PLANNING ONLY.
 
 Do not build or modify code yet.
 
 Do not simplify the product into a normal fintech landing page.
 
-
-
 We are building TashilRadar as an AI-first Loan & Credit Decision Platform for Persian-speaking users.
 
-
-
 The product vision and core architecture are already decided. Your job now is to create the strongest implementation plan for this exact product, not reinterpret it from scratch.
-
-
 
 CORE PRODUCT:
 
 TashilRadar helps a user explain a financial need in natural language, understands their financial context, asks only necessary adaptive questions, evaluates readiness, searches suitable financial/loan opportunities, explains matches, and guides the user to the next action.
-
-
 
 Example:
 
 User says:
 
 «حدود ۳۰۰ میلیون وام می‌خوام، مغازه دارم، ضامن ندارم.»
-
-
 
 The system should understand:
 
@@ -44,17 +32,11 @@ The system should understand:
 
 - guarantor status
 
-
-
 Then respond naturally:
 
 «فهمیدم. فقط دو چیز دیگه لازمه بدونم.»
 
-
-
 The experience must feel like a living financial intelligence interface, not a form-based website.
-
-
 
 LOCKED PRODUCT PRINCIPLES:
 
@@ -88,8 +70,6 @@ LOCKED PRODUCT PRINCIPLES:
 
 - No public display of sensitive personal data
 
-
-
 CORE MODULES:
 
 1. Interactive Home / Intent Entry
@@ -118,15 +98,11 @@ CORE MODULES:
 
 13. Data / Outcome learning layer later
 
-
-
 HOME EXPERIENCE:
 
 Do NOT design the homepage as:
 
 Hero → cards → sections → CTA.
-
-
 
 The first 3–5 seconds must clearly communicate:
 
@@ -136,13 +112,9 @@ The first 3–5 seconds must clearly communicate:
 
 3. This is fundamentally different from ordinary loan websites.
 
-
-
 Primary entry:
 
 «دنبال چه چیزی هستی؟»
-
-
 
 Quick intents:
 
@@ -156,27 +128,17 @@ Quick intents:
 
 - یه راه حل برام پیدا کن
 
-
-
 Natural-language input:
 
 «یا با زبان خودت بگو چی می‌خوای…»
 
-
-
 Voice input should be visible beside typing.
 
-
-
 AI should transform the interface in place instead of sending users through conventional forms.
-
-
 
 RADAR CONCEPT:
 
 Radar is not decoration.
-
-
 
 It represents actual reasoning states:
 
@@ -187,8 +149,6 @@ It represents actual reasoning states:
 - Connect
 
 - Resolve
-
-
 
 Possible semantic nodes:
 
@@ -204,8 +164,6 @@ Possible semantic nodes:
 
 - Next Action
 
-
-
 Example analysis:
 
 11 مسیر بررسی شد
@@ -215,8 +173,6 @@ Example analysis:
 3 مسیر نزدیک
 
 1 پیشنهاد اصلی
-
-
 
 CREDIT EXPERIENCE:
 
@@ -234,8 +190,6 @@ Request
 
 → recommended actions
 
-
-
 The final user experience should answer:
 
 - وضعیت من چیه؟
@@ -247,8 +201,6 @@ The final user experience should answer:
 - چه کاری می‌تونم انجام بدم؟
 
 - با این شرایط چه گزینه‌هایی دارم؟
-
-
 
 Do not expose internal technical terminology such as:
 
@@ -264,11 +216,7 @@ Context Engine
 
 to normal users.
 
-
-
 Keep those concepts behind the interface.
-
-
 
 LIVE MARKET FEEL:
 
@@ -286,8 +234,6 @@ The product should be capable of showing anonymized live opportunities and marke
 
 without exposing personal identity.
 
-
-
 VISUAL DIRECTION:
 
 This must NOT feel like:
@@ -304,13 +250,9 @@ This must NOT feel like:
 
 - generic AI landing page
 
-
-
 Target:
 
 Future Fintech + Financial Intelligence + Premium Trust.
-
-
 
 Base visual language:
 
@@ -324,15 +266,9 @@ Signal Blue = data
 
 Champagne Gold = money/opportunity/premium signal only
 
-
-
 Gold must have semantic meaning and should not be decorative.
 
-
-
 Use strong typography, generous space, meaningful motion, subtle depth, premium micro-interactions and high clarity.
-
-
 
 Numbers should have emotional weight:
 
@@ -344,19 +280,13 @@ Numbers should have emotional weight:
 
 12 دقیقه پیش
 
-
-
 MOTION:
 
 Motion must communicate system intelligence, not decoration.
 
-
-
 Brand motion grammar:
 
 Scan → Detect → Connect → Resolve.
-
-
 
 PERFORMANCE:
 
@@ -368,13 +298,9 @@ Important content must remain visible if motion fails.
 
 Support reduced motion.
 
-
-
 ARCHITECTURE:
 
 Build this as a modular web product that can evolve continuously without rebuilding from scratch.
-
-
 
 Future integrations will include:
 
@@ -394,13 +320,9 @@ Future integrations will include:
 
 - admin / operations systems
 
-
-
 Do not assume these external APIs already exist.
 
 Use explicit integration boundaries and mocked interfaces until credentials/APIs are available.
-
-
 
 TECH DIRECTION:
 
@@ -412,17 +334,11 @@ Prepare clean boundaries for backend, AI and external service integrations.
 
 Do not create irreversible vendor lock-in decisions unnecessarily.
 
-
-
 IMPORTANT:
 
 For this planning phase, DO NOT IMPLEMENT.
 
-
-
 Produce a structured MASTER IMPLEMENTATION PLAN containing:
-
-
 
 1. Product architecture
 
@@ -462,13 +378,9 @@ Produce a structured MASTER IMPLEMENTATION PLAN containing:
 
 19. Risks and architectural decisions that need Founder approval
 
-
-
 PHASE 1 GOAL:
 
 Do not build the entire company at once.
-
-
 
 Phase 1 should produce an exceptional interactive public product experience with:
 
@@ -488,25 +400,15 @@ Phase 1 should produce an exceptional interactive public product experience with
 
 - personalization states
 
-
-
 with explicit interfaces for later production backend connections.
 
-
-
 The Phase 1 experience must be strong enough that the Founder can perform visual/UX QA before production backend integration.
-
-
 
 Do not optimize for minimum effort.
 
 Optimize for a category-defining final product.
 
-
-
 Before proposing implementation, challenge any architectural decision that could prevent TashilRadar from becoming a scalable production financial platform.
-
-
 
 Return the plan only.
 

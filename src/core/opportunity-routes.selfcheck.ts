@@ -47,7 +47,8 @@ check(
 check(
   "trade finance is explicitly license gated",
   tradeRoutes.some(
-    (match) => match.route.id === "trade_finance" && match.route.capabilityStatus === "LICENSE_REQUIRED",
+    (match) =>
+      match.route.id === "trade_finance" && match.route.capabilityStatus === "LICENSE_REQUIRED",
   ),
 );
 

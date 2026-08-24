@@ -16,14 +16,18 @@ const second = buildAuthoritativeDecisionEnvelope(carSlots);
 
 check("vehicle becomes Buy primary world", first.primaryWorld === "buy");
 check("vehicle vertical is preserved", first.vertical === "vehicle");
-check("vehicle finance is first persistable route", first.persistableRoutes[0]?.route_key === "buy_vehicle_finance");
+check(
+  "vehicle finance is first persistable route",
+  first.persistableRoutes[0]?.route_key === "buy_vehicle_finance",
+);
 check(
   "capability status normalized for database",
   first.persistableRoutes[0]?.capability_status === "partner_required",
 );
 check(
   "semantic decision snapshot is deterministic across retries",
-  JSON.stringify(semanticDecisionSnapshot(first)) === JSON.stringify(semanticDecisionSnapshot(second)),
+  JSON.stringify(semanticDecisionSnapshot(first)) ===
+    JSON.stringify(semanticDecisionSnapshot(second)),
 );
 check(
   "volatile reasoning run ids are allowed to differ",

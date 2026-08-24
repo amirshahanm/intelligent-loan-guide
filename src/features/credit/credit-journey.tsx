@@ -125,9 +125,7 @@ export function CreditJourney() {
               onChange={(e) => setConsent(e.target.checked)}
               className="mt-0.5 size-4 accent-[var(--color-accent)]"
             />
-            <span className="text-xs leading-5">
-              اجازهٔ اجرای اعتبارسنجی را می‌دهم.
-            </span>
+            <span className="text-xs leading-5">اجازهٔ اجرای اعتبارسنجی را می‌دهم.</span>
           </label>
           {error ? <p className="mt-2 text-[11px] text-danger">{error}</p> : null}
           <button
@@ -174,7 +172,11 @@ export function CreditJourney() {
                 <span
                   className={cn(
                     "size-2 rounded-full",
-                    i < phase ? "bg-accent" : i === phase ? "bg-accent anim-pulse-node" : "bg-border",
+                    i < phase
+                      ? "bg-accent"
+                      : i === phase
+                        ? "bg-accent anim-pulse-node"
+                        : "bg-border",
                   )}
                 />
                 <span
@@ -198,12 +200,16 @@ export function CreditJourney() {
       ) : null}
 
       {stage === "revealed" && result ? (
-        <CreditReveal result={result} step={reveal} onReset={() => {
-          update((s) => ({ ...s, creditResult: undefined }));
-          setStage("intro");
-          setConsent(false);
-          setReveal(0);
-        }} />
+        <CreditReveal
+          result={result}
+          step={reveal}
+          onReset={() => {
+            update((s) => ({ ...s, creditResult: undefined }));
+            setStage("intro");
+            setConsent(false);
+            setReveal(0);
+          }}
+        />
       ) : null}
     </div>
   );
@@ -214,9 +220,9 @@ function IntroPanel({ priceLabel, onStart }: { priceLabel: string; onStart: () =
     <section className="surface-panel rounded-3xl p-5">
       <h2 className="text-base font-bold">پرونده‌ات از نگاه یک وام‌دهنده</h2>
       <p className="mt-2 text-xs leading-6 text-muted-foreground">
-        اعتبارسنجی در تسهیل‌رادار یک عدد خشک نیست. سیگنال اعتباری تو خوانده می‌شود، به ظرفیت
-        واقعی مسیرهایی که موتور استدلال باز نگه داشته وصل می‌شود و با زبان ساده توضیح داده می‌شود
-        که چه چیزی مسیر را باز و چه چیزی آن را بسته نگه داشته است.
+        اعتبارسنجی در تسهیل‌رادار یک عدد خشک نیست. سیگنال اعتباری تو خوانده می‌شود، به ظرفیت واقعی
+        مسیرهایی که موتور استدلال باز نگه داشته وصل می‌شود و با زبان ساده توضیح داده می‌شود که چه
+        چیزی مسیر را باز و چه چیزی آن را بسته نگه داشته است.
       </p>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <MiniStat label="هزینهٔ بررسی" value={priceLabel} />
