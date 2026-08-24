@@ -6,6 +6,7 @@ import {
   type RouteFamilyMatch,
   type UniversalNeed,
 } from "./opportunity-routes";
+import { scorePrequoteRouteValue } from "./route-value";
 import { universalNeedFromText } from "./universal-need-extract";
 import type { IntentSlots, ReasoningTrace } from "./types";
 
@@ -23,12 +24,13 @@ export type PersistableRoute = {
   capability_status: PersistenceCapabilityStatus;
   rank: number;
   fit_score: number;
-  route_value_score: number | null;
+  route_value_score: number;
   evidence_status: "demo" | "unverified";
   explanation: {
     titleFa: string;
     summaryFa: string;
     reasonFa: string;
+    routeValue: ReturnType<typeof scorePrequoteRouteValue>;
   };
   requirements: unknown[];
   next_actions: unknown[];
@@ -84,35 +86,39 @@ export function toPersistableRoutes(
   routeFamilies: RouteFamilyMatch[],
   vertical: string,
 ): PersistableRoute[] {
-  return routeFamilies.map((match, index) => ({
-    route_key: match.route.id,
-    world: match.route.world,
-    vertical,
-    route_type: match.route.kind,
-    capability_status: persistenceCapabilityStatus(match.route.capabilityStatus),
-    rank: index + 1,
-    fit_score: match.score,
-    route_value_score: null,
-    evidence_status: match.route.demo ? "demo" : "unverified",
-    explanation: {
-      titleFa: match.route.titleFa,
-      summaryFa: match.route.summaryFa,
-      reasonFa: match.reasonFa,
-    },
-    requirements: [],
-    next_actions:
-      match.route.capabilityStatus === "ACTIVE"
-        ? []
-        : [
-            {
-              kind: "capture_demand",
-              status: match.route.capabilityStatus,
-              messageFa:
-                "این مسیر هنوز اتصال اجرایی کامل ندارد؛ نیاز کاربر بدون ادعای اجرای زنده ثبت می‌شود.",
-            },
-          ],
-    demo: Boolean(match.route.demo),
-  }));
+  return routeFamilies.map((match, index) => {
+    const routeValue = scorePrequoteRouteValue(match);
+    return {
+      route_key: match.route.id,
+      world: match.route.world,
+      vertical,
+      route_type: match.route.kind,
+      capability_status: persistenceCapabilityStatus(match.route.capabilityStatus),
+      rank: index + 1,
+      fit_score: match.score,
+      route_value_score: routeValue.score,
+      evidence_status: match.route.demo ? "demo" : "unverified",
+      explanation: {
+        titleFa: match.route.titleFa,
+        summaryFa: match.route.summaryFa,
+        reasonFa: match.reasonFa,
+        routeValue,
+      },
+      requirements: [],
+      next_actions:
+        match.route.capabilityStatus === "ACTIVE"
+          ? []
+          : [
+              {
+                kind: "capture_demand",
+                status: match.route.capabilityStatus,
+                messageFa:
+                  "این مسیر هنوز اتصال اجرایی کامل ندارد؛ نیاز کاربر بدون ادعای اجرای زنده ثبت می‌شود.",
+              },
+            ],
+      demo: Boolean(match.route.demo),
+    };
+  });
 }
 
 export function buildAuthoritativeDecisionEnvelope(
@@ -151,5 +157,6 @@ export function semanticDecisionSnapshot(envelope: AuthoritativeDecisionEnvelope
     nextActions: reasoning.nextActions,
     need: envelope.need,
     routeFamilies: envelope.routeFamilies,
+    persistableRoutes: envelope.persistableRoutes,
   };
 }
