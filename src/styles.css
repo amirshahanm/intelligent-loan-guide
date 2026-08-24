@@ -136,11 +136,15 @@
 }
 
 @utility glow-accent {
-  box-shadow: 0 0 0 1px var(--color-border), 0 18px 60px -28px var(--color-accent);
+  box-shadow:
+    0 0 0 1px var(--color-border),
+    0 18px 60px -28px var(--color-accent);
 }
 
 @utility glow-gold {
-  box-shadow: 0 0 0 1px var(--color-border), 0 18px 60px -28px var(--color-gold);
+  box-shadow:
+    0 0 0 1px var(--color-border),
+    0 18px 60px -28px var(--color-gold);
 }
 
 @utility surface-panel {

@@ -19,9 +19,9 @@ type ProviderSet = {
 function providerIsMock(provider: unknown): boolean {
   return Boolean(
     provider &&
-      typeof provider === "object" &&
-      "isMock" in provider &&
-      (provider as { isMock?: unknown }).isMock === true,
+    typeof provider === "object" &&
+    "isMock" in provider &&
+    (provider as { isMock?: unknown }).isMock === true,
   );
 }
 
@@ -44,9 +44,7 @@ export function assertProviderSafety(providers: ProviderSet, mode: DeploymentMod
   const mockKeys = listMockProviderKeys(providers);
   if (mockKeys.length === 0) return;
 
-  throw new Error(
-    `unsafe_production_provider_configuration:${mockKeys.join(",")}`,
-  );
+  throw new Error(`unsafe_production_provider_configuration:${mockKeys.join(",")}`);
 }
 
 export function parseDeploymentMode(value: string | undefined): DeploymentMode {

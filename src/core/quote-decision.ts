@@ -26,7 +26,12 @@ export type QuoteDecisionState =
   | "INVALID_EVIDENCE";
 
 export type QuoteEvidenceReadiness =
-  "MISSING" | "INDICATIVE" | "CONFIRMED" | "ACTIONABLE" | "STALE" | "REQUIRES_REVIEW";
+  | "MISSING"
+  | "INDICATIVE"
+  | "CONFIRMED"
+  | "ACTIONABLE"
+  | "STALE"
+  | "REQUIRES_REVIEW";
 
 export type QuoteNextAction =
   | "GET_QUOTE"

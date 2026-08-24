@@ -5,11 +5,7 @@ import {
   mockPaymentProvider,
   mockSmsProvider,
 } from "./mock";
-import {
-  assertProviderSafety,
-  listMockProviderKeys,
-  type DeploymentMode,
-} from "./safety";
+import { assertProviderSafety, listMockProviderKeys, type DeploymentMode } from "./safety";
 import type {
   CreditProvider,
   HandoffProvider,

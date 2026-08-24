@@ -2,11 +2,7 @@ import type { IntentSlots, IRR, Purpose } from "./types";
 
 export type ProductWorld = "money" | "buy" | "business" | "trade";
 
-export type CapabilityStatus =
-  | "ACTIVE"
-  | "COMING_SOON"
-  | "PARTNER_REQUIRED"
-  | "LICENSE_REQUIRED";
+export type CapabilityStatus = "ACTIVE" | "COMING_SOON" | "PARTNER_REQUIRED" | "LICENSE_REQUIRED";
 
 export type NeedKind =
   | "cash"
@@ -139,7 +135,8 @@ const ROUTE_FAMILIES: OpportunityRouteFamily[] = [
     world: "trade",
     kind: "trade_finance",
     titleFa: "تأمین مالی تجارت",
-    summaryFa: "مسیر معماری برای تأمین مالی تجارت که اجرای واقعی آن وابسته به شریک و مجوزهای لازم است.",
+    summaryFa:
+      "مسیر معماری برای تأمین مالی تجارت که اجرای واقعی آن وابسته به شریک و مجوزهای لازم است.",
     capabilityStatus: "LICENSE_REQUIRED",
     supportedNeeds: ["trade_import", "trade_export"],
     demo: true,

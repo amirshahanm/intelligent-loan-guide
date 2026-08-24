@@ -1,8 +1,4 @@
-import {
-  assertConfiguredProviderSafety,
-  mockProviderKeys,
-  parseDeploymentMode,
-} from "./index";
+import { assertConfiguredProviderSafety, mockProviderKeys, parseDeploymentMode } from "./index";
 
 const failures: string[] = [];
 
