@@ -5,7 +5,14 @@ import {
   mockPaymentProvider,
   mockSmsProvider,
 } from "./mock";
-import { assertProviderSafety, listMockProviderKeys, type DeploymentMode } from "./safety";
+import {
+  unavailableCatalogProvider,
+  unavailableCreditProvider,
+  unavailableHandoffProvider,
+  unavailablePaymentProvider,
+  unavailableSmsProvider,
+} from "./unavailable.server";
+import { assertProviderSafety, listMockProviderKeys, parseDeploymentMode, type DeploymentMode } from "./safety";
 import type {
   CreditProvider,
   HandoffProvider,
@@ -14,9 +21,15 @@ import type {
   SmsProvider,
 } from "./types";
 
+const mode = parseDeploymentMode(process.env.TASHILRADAR_DEPLOYMENT_MODE);
+const production = mode === "production";
+
 /**
- * Authoritative provider registry. This module is server-only.
- * Real provider adapters replace values here without changing UI/domain cores.
+ * Authoritative server registry.
+ *
+ * Demo/staging intentionally exercise mocks. Production never falls back to a
+ * mock: until a real adapter is wired, the capability is explicitly unavailable
+ * while the rest of the public product remains online.
  */
 export const serverProviders: {
   catalog: ProductCatalogProvider;
@@ -24,16 +37,24 @@ export const serverProviders: {
   payment: PaymentProvider;
   sms: SmsProvider;
   handoff: HandoffProvider;
-} = {
-  catalog: mockCatalogProvider,
-  credit: mockCreditProvider,
-  payment: mockPaymentProvider,
-  sms: mockSmsProvider,
-  handoff: mockHandoffProvider,
-};
+} = production
+  ? {
+      catalog: unavailableCatalogProvider,
+      credit: unavailableCreditProvider,
+      payment: unavailablePaymentProvider,
+      sms: unavailableSmsProvider,
+      handoff: unavailableHandoffProvider,
+    }
+  : {
+      catalog: mockCatalogProvider,
+      credit: mockCreditProvider,
+      payment: mockPaymentProvider,
+      sms: mockSmsProvider,
+      handoff: mockHandoffProvider,
+    };
 
 export const serverMockProviderKeys = listMockProviderKeys(serverProviders);
 
-export function assertServerProviderSafety(mode: DeploymentMode): void {
-  assertProviderSafety(serverProviders, mode);
+export function assertServerProviderSafety(deploymentMode: DeploymentMode): void {
+  assertProviderSafety(serverProviders, deploymentMode);
 }
