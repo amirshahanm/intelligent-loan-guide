@@ -1,11 +1,10 @@
+import { millionToman } from "@/lib/money";
 import {
-  mockCatalogProvider,
-  mockCreditProvider,
-  mockHandoffProvider,
-  mockPaymentProvider,
-  mockSmsProvider,
-} from "./mock";
-import { assertProviderSafety, listMockProviderKeys, type DeploymentMode } from "./safety";
+  confirmCreditPaymentIntent,
+  createCreditPaymentIntent,
+  executeCreditCheck,
+} from "@/lib/credit.functions";
+import { mockCatalogProvider, mockHandoffProvider, mockSmsProvider } from "./mock";
 import type {
   CreditProvider,
   HandoffProvider,
@@ -15,9 +14,29 @@ import type {
 } from "./types";
 
 /**
- * Provider registry. Phase 1 binds every slot to a mock. Production wiring
- * replaces the value here only — no UI or engine code changes.
+ * Browser-safe provider facade.
+ *
+ * Sensitive provider execution is never owned by React. Credit/payment calls
+ * cross TanStack server-function boundaries; the authoritative adapter registry
+ * lives in `server-registry.server.ts`.
+ *
+ * Catalog/SMS/Handoff remain Phase-1 mock paths and are explicitly blocked from
+ * production by the server registry safety gate until migrated or replaced.
  */
+const creditFacade: CreditProvider = {
+  id: "server_credit_facade",
+  isMock: true,
+  priceIrr: () => millionToman(0.089),
+  check: (request) => executeCreditCheck({ data: request }),
+};
+
+const paymentFacade: PaymentProvider = {
+  id: "server_payment_facade",
+  isMock: true,
+  createIntent: (amountIrr) => createCreditPaymentIntent({ data: { amountIrr } }),
+  confirm: (intentId) => confirmCreditPaymentIntent({ data: { intentId } }),
+};
+
 export const providers: {
   catalog: ProductCatalogProvider;
   credit: CreditProvider;
@@ -26,24 +45,16 @@ export const providers: {
   handoff: HandoffProvider;
 } = {
   catalog: mockCatalogProvider,
-  credit: mockCreditProvider,
-  payment: mockPaymentProvider,
+  credit: creditFacade,
+  payment: paymentFacade,
   sms: mockSmsProvider,
   handoff: mockHandoffProvider,
 };
 
-export const mockProviderKeys = listMockProviderKeys(providers);
+/** Current public/demo facade state. Authoritative safety is checked server-side. */
+export const mockProviderKeys = Object.entries(providers)
+  .filter(([, provider]) => provider.isMock)
+  .map(([key]) => key);
 export const anyMock = mockProviderKeys.length > 0;
 
-/**
- * Must be called by the server boundary before serving a deployment explicitly
- * marked as production. A production deployment backed by any mock provider is
- * rejected instead of quietly presenting simulated financial capabilities.
- */
-export function assertConfiguredProviderSafety(mode: DeploymentMode): void {
-  assertProviderSafety(providers, mode);
-}
-
-export { parseDeploymentMode } from "./safety";
-export type { DeploymentMode } from "./safety";
 export * from "./types";
