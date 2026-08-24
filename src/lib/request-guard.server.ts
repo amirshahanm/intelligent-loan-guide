@@ -1,4 +1,8 @@
-import { getRequestHeader } from "@tanstack/react-start/server";
+import {
+  getRequestHeader,
+  setResponseHeader,
+  setResponseStatus,
+} from "@tanstack/react-start/server";
 
 type RateLimitResult = {
   allowed: boolean;
@@ -95,6 +99,13 @@ export async function consumeDecisionPersistenceLimit({
 
   const result = (await response.json()) as RateLimitResult;
   if (!result.allowed) {
-    throw new Error(`request_rate_limited:${scope}:${result.reset_at}`);
+    const retryAfter = Math.max(
+      1,
+      Math.ceil((new Date(result.reset_at).getTime() - Date.now()) / 1000),
+    );
+    setResponseStatus(429);
+    setResponseHeader("Retry-After", String(retryAfter));
+    setResponseHeader("Cache-Control", "no-store");
+    throw new Error(`request_rate_limited:${scope}`);
   }
 }
