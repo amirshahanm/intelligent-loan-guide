@@ -5,6 +5,7 @@ import {
 import type { IntentSlots } from "@/core/types";
 
 type PersistDecisionContext = {
+  ownerUserId?: string | null;
   sessionId?: string | null;
   sessionCapability?: string | null;
   caseId?: string | null;
@@ -15,7 +16,7 @@ export type DecisionPersistenceResult =
   | {
       status: "persisted";
       sessionId: string;
-      sessionCapability: string;
+      sessionCapability?: string;
       caseId: string;
       decisionRunId: string;
       reused: boolean;
@@ -152,15 +153,20 @@ export async function persistAuthoritativeDecision({
     return { status: "disabled", reason: "backend_not_configured" };
   }
 
+  const ownerUserId = context?.ownerUserId ?? null;
   const existingSessionId = context?.sessionId ?? null;
   let capability = context?.sessionCapability ?? null;
 
-  if (existingSessionId) {
-    if (!capability || !(await verifyCapability(config, existingSessionId, capability))) {
-      throw new Error("invalid_anonymous_session_capability");
+  if (!ownerUserId) {
+    if (existingSessionId) {
+      if (!capability || !(await verifyCapability(config, existingSessionId, capability))) {
+        throw new Error("invalid_anonymous_session_capability");
+      }
+    } else {
+      capability = createCapabilityToken();
     }
   } else {
-    capability = createCapabilityToken();
+    capability = null;
   }
 
   const semanticOutput = semanticDecisionSnapshot(envelope);
@@ -170,7 +176,7 @@ export async function persistAuthoritativeDecision({
   const result = await rpc<RpcResult>(config, "tr_persist_decision", {
     p_session_id: existingSessionId,
     p_case_id: context?.caseId ?? null,
-    p_owner_user_id: null,
+    p_owner_user_id: ownerUserId,
     p_need_text: context?.needText ?? null,
     p_world: envelope.primaryWorld,
     p_vertical: envelope.vertical,
@@ -188,14 +194,14 @@ export async function persistAuthoritativeDecision({
     throw new Error("decision_persistence_invalid_response");
   }
 
-  if (!existingSessionId) {
-    await registerCapability(config, result.session_id, capability!);
+  if (!ownerUserId && !existingSessionId && capability) {
+    await registerCapability(config, result.session_id, capability);
   }
 
   return {
     status: "persisted",
     sessionId: result.session_id,
-    sessionCapability: capability!,
+    ...(capability ? { sessionCapability: capability } : {}),
     caseId: result.case_id,
     decisionRunId: result.decision_run_id,
     reused: Boolean(result.reused),
