@@ -4,6 +4,7 @@ import { AppShell } from "@/components/app-shell";
 import { AuthorityBadge, ProvenanceChip, SectionTitle } from "@/components/provenance";
 import { ReadinessPanel } from "@/features/readiness/readiness-panel";
 import { SlotChips } from "@/features/concierge/slot-chips";
+import { ClaimProfileCard } from "@/features/profile/claim-profile-card";
 import { useAuthoritativeTrace } from "@/hooks/use-authoritative-trace";
 import { useSession } from "@/lib/session";
 import { providerVerified } from "@/core/types";
@@ -81,6 +82,8 @@ function ProfilePage() {
           پرونده سمت سرور احراز و منتقل می‌شود.
         </p>
       </section>
+
+      <ClaimProfileCard />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ReadinessPanel readiness={trace.readiness} />
@@ -196,9 +199,10 @@ function ProfilePage() {
       <section className="rounded-3xl border border-border bg-surface p-4">
         <SectionTitle>شخصی‌سازی و داده</SectionTitle>
         <ul className="space-y-1.5 text-[11px] leading-5 text-muted-foreground">
-          <li>· همهٔ داده‌های تو روی همین مرورگر می‌ماند و به‌صورت خودکار جایی ارسال نمی‌شود.</li>
+          <li>· قبل از اتصال حساب، داده‌های محلی فقط برای ادامهٔ تجربه روی همین مرورگر نگه داشته می‌شوند.</li>
           <li>· صدا هرگز ذخیره نمی‌شود؛ فقط متن حاصل از تشخیص گفتار استفاده می‌شود.</li>
           <li>· نتایج قطعی همیشه با اجرای دوبارهٔ موتور روی سرور تأیید می‌شود.</li>
+          <li>· بعد از Claim، مالکیت پرونده و تصمیم‌ها سمت سرور به حساب احراز‌شده متصل می‌شود.</li>
         </ul>
         <button
           type="button"
