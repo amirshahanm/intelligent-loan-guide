@@ -9,10 +9,10 @@ import { normalizeLiquidityJourneyState } from "@/lib/session-migration";
 /**
  * No-Login First session store.
  *
- * `anonSessionId` is a continuity key for the local experience only. It is
- * explicitly NOT an authorization credential. Backend UUIDs are also only
- * continuity references: authorization is enforced server-side and claim/
- * merge into an authenticated user is a separate verified operation.
+ * `anonSessionId` is local continuity only. Backend session UUIDs are not
+ * authorization credentials. Anonymous write continuity additionally requires
+ * a server-verified capability token. That token is intentionally kept out of
+ * persistent localStorage and lives only for the browser tab/session.
  */
 
 export type SessionStatus = "ANONYMOUS" | "ENGAGED" | "IDENTIFIED" | "CLAIMED";
@@ -25,6 +25,7 @@ export type Message =
 
 export type BackendContinuity = {
   sessionId: string;
+  sessionCapability?: string;
   caseId: string;
   decisionRunId: string;
 };
@@ -48,6 +49,7 @@ export type SessionState = {
 };
 
 const STORAGE_KEY = "tashilradar.session.v1";
+const CAPABILITY_KEY = "tashilradar.backend.capability.v1";
 
 function newId(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 10)}`;
@@ -76,7 +78,6 @@ type Ctx = {
   state: SessionState;
   update: (fn: (s: SessionState) => SessionState) => void;
   reset: () => void;
-  /** Client-side preview trace. Authoritative results come from the server. */
   trace: ReasoningTrace;
   hydrated: boolean;
 };
@@ -92,9 +93,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = normalizeLiquidityJourneyState(JSON.parse(raw) as SessionState);
-        const ageMs = Date.now() - new Date(parsed.lastSeenAt ?? parsed.createdAt).getTime();
-        setState({ ...parsed, lastSeenAt: new Date().toISOString() });
-        bindAnalyticsSession(parsed.anonSessionId);
+        const sessionCapability = window.sessionStorage.getItem(CAPABILITY_KEY) ?? undefined;
+        const restored = parsed.backend
+          ? { ...parsed, backend: { ...parsed.backend, sessionCapability } }
+          : parsed;
+        const ageMs = Date.now() - new Date(restored.lastSeenAt ?? restored.createdAt).getTime();
+        setState({ ...restored, lastSeenAt: new Date().toISOString() });
+        bindAnalyticsSession(restored.anonSessionId);
         track({
           name: "return_session",
           ageBand: ageMs < 864e5 ? "today" : ageMs < 6048e5 ? "week" : "older",
@@ -112,9 +117,17 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (!hydrated) return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const persisted: SessionState = state.backend
+        ? { ...state, backend: { ...state.backend, sessionCapability: undefined } }
+        : state;
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
+      if (state.backend?.sessionCapability) {
+        window.sessionStorage.setItem(CAPABILITY_KEY, state.backend.sessionCapability);
+      } else {
+        window.sessionStorage.removeItem(CAPABILITY_KEY);
+      }
     } catch {
-      /* quota errors are non-fatal */
+      /* quota/privacy-mode errors are non-fatal */
     }
   }, [state, hydrated]);
 
@@ -125,6 +138,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const reset = React.useCallback(() => {
     const fresh = initialState();
     bindAnalyticsSession(fresh.anonSessionId);
+    try {
+      window.sessionStorage.removeItem(CAPABILITY_KEY);
+    } catch {
+      /* ignore */
+    }
     setState(fresh);
   }, []);
 
