@@ -18,7 +18,9 @@ check(
   vehicleValue.executionReadiness === 55,
 );
 
-const tradeRoutes = discoverRouteFamilies(universalNeedFromText("برای واردات کالا مسیر می‌خوام", {}));
+const tradeRoutes = discoverRouteFamilies(
+  universalNeedFromText("برای واردات کالا مسیر می‌خوام", {}),
+);
 const tradeIntelligence = tradeRoutes.find((x) => x.route.id === "trade_opportunity_intelligence");
 const tradeFinance = tradeRoutes.find((x) => x.route.id === "trade_finance");
 if (!tradeIntelligence || !tradeFinance) failures.push("trade routes exist");
