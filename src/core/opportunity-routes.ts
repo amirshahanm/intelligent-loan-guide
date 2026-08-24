@@ -28,7 +28,7 @@ export type RouteKind =
 export type UniversalNeed = {
   kind: NeedKind;
   targetAmount?: IRR;
-  source: "legacy_slots" | "ai_structured" | "user_selected";
+  source: "legacy_slots" | "deterministic_text" | "ai_structured" | "user_selected";
   confidence: number;
 };
 
