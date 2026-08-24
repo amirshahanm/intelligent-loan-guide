@@ -56,15 +56,6 @@ const contextSchema = z
     needText: z.string().max(4000).nullable().optional(),
     persist: z.boolean().optional(),
   })
-  .superRefine((context, ctx) => {
-    if (context.sessionId && !context.sessionCapability) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["sessionCapability"],
-        message: "session_capability_required",
-      });
-    }
-  })
   .optional();
 
 export const confirmReasoning = createServerFn({ method: "POST" })
@@ -77,20 +68,26 @@ export const confirmReasoning = createServerFn({ method: "POST" })
 
     const persistence = data.context?.persist
       ? await (async () => {
-          const [{ persistAuthoritativeDecision }, { consumeDecisionPersistenceLimit }] =
-            await Promise.all([
-              import("@/lib/decision-persistence.server"),
-              import("@/lib/request-guard.server"),
-            ]);
+          const [
+            { persistAuthoritativeDecision },
+            { consumeDecisionPersistenceLimit },
+            { resolveCurrentUserId },
+          ] = await Promise.all([
+            import("@/lib/decision-persistence.server"),
+            import("@/lib/request-guard.server"),
+            import("@/lib/identity-session.server"),
+          ]);
 
           await consumeDecisionPersistenceLimit({
             existingSession: Boolean(data.context?.sessionId),
           });
 
+          const ownerUserId = await resolveCurrentUserId();
           return persistAuthoritativeDecision({
             slots,
             envelope,
             context: {
+              ownerUserId,
               sessionId: data.context?.sessionId,
               sessionCapability: data.context?.sessionCapability,
               caseId: data.context?.caseId,
