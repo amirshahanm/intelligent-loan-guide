@@ -41,39 +41,39 @@ async function sha256Json(value: unknown): Promise<string> {
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+function verticalForNeed(kind: ReturnType<typeof universalNeedFromLegacySlots>["kind"]): string {
+  switch (kind) {
+    case "purchase_vehicle":
+      return "vehicle";
+    case "purchase_property":
+      return "property";
+    case "working_capital":
+      return "working_capital";
+    case "trade_import":
+      return "import";
+    case "trade_export":
+      return "export";
+    default:
+      return "general";
+  }
+}
+
 function worldVertical(slots: IntentSlots): { world: string; vertical: string } {
   const need = universalNeedFromLegacySlots(slots);
-  const routes = discoverRouteFamilies(need);
-  const primary = routes[0]?.route;
-  if (!primary) return { world: "money", vertical: "general" };
-  const vertical =
-    need.kind === "purchase_vehicle"
-      ? "vehicle"
-      : need.kind === "purchase_property"
-        ? "property"
-        : need.kind === "working_capital"
-          ? "working_capital"
-          : need.kind === "trade_import"
-            ? "import"
-            : need.kind === "trade_export"
-              ? "export"
-              : "general";
-  return { world: primary.world, vertical };
+  const primary = discoverRouteFamilies(need)[0]?.route;
+  return {
+    world: primary?.world ?? "money",
+    vertical: verticalForNeed(need.kind),
+  };
 }
 
 function routeRows(slots: IntentSlots, trace: ReasoningTrace) {
   const need = universalNeedFromLegacySlots(slots);
+  const vertical = verticalForNeed(need.kind);
   return discoverRouteFamilies(need).map((match, index) => ({
     route_key: match.route.id,
     world: match.route.world,
-    vertical:
-      need.kind === "purchase_vehicle"
-        ? "vehicle"
-        : need.kind === "purchase_property"
-          ? "property"
-          : need.kind === "working_capital"
-            ? "working_capital"
-            : "general",
+    vertical,
     route_type: match.route.kind,
     capability_status: match.route.capabilityStatus.toLowerCase(),
     rank: index + 1,
@@ -120,15 +120,15 @@ export async function persistAuthoritativeDecision(
     p_need_text: context.needText ?? "",
     p_world: world,
     p_vertical: vertical,
-    p_intent_snapshot: slots as unknown as Record<string, unknown>,
+    p_intent_snapshot: slots,
     p_engine_version: "tashil-core-v2",
     p_ruleset_version: "2026-08-24",
-    p_input_snapshot: inputSnapshot as unknown as Record<string, unknown>,
-    p_output_snapshot: outputSnapshot as unknown as Record<string, unknown>,
+    p_input_snapshot: inputSnapshot,
+    p_output_snapshot: outputSnapshot,
     p_input_hash: await sha256Json(inputSnapshot),
     p_output_hash: await sha256Json(outputSnapshot),
-    p_routes: routes as unknown as Array<Record<string, unknown>>,
-  } as never);
+    p_routes: routes,
+  });
 
   sessionId = result.session_id;
   if (!context.sessionId) {
