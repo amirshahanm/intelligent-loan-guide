@@ -9,7 +9,8 @@ import type { IntentSlots } from "@/core/types";
  * The client may run the same deterministic engine for instant preview, but
  * the server owns authoritative confirmation. When explicitly requested at a
  * real value gate, the same result is also persisted atomically to the V2
- * financial OS backend. Client input can never supply an owner user id.
+ * financial OS backend. Anonymous persisted sessions are bound to a separate
+ * capability token; a bare session UUID is never sufficient to resume writes.
  */
 
 const provenanceSchema = z.object({
@@ -51,9 +52,19 @@ const slotsSchema = z.object({
 const contextSchema = z
   .object({
     sessionId: z.string().uuid().nullable().optional(),
+    sessionCapability: z.string().min(32).max(256).nullable().optional(),
     caseId: z.string().uuid().nullable().optional(),
     needText: z.string().max(4000).nullable().optional(),
     persist: z.boolean().optional(),
+  })
+  .superRefine((context, ctx) => {
+    if (context.sessionId && !context.sessionCapability) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["sessionCapability"],
+        message: "session_capability_required",
+      });
+    }
   })
   .optional();
 
@@ -67,8 +78,6 @@ export const confirmReasoning = createServerFn({ method: "POST" })
 
     const persistence = data.context?.persist
       ? await (async () => {
-          // Keep service-role/env access out of the shared client graph. The
-          // createServerFn handler is the only path that imports this module.
           const { persistAuthoritativeDecision } =
             await import("@/lib/decision-persistence.server");
           return persistAuthoritativeDecision({
@@ -76,6 +85,7 @@ export const confirmReasoning = createServerFn({ method: "POST" })
             envelope,
             context: {
               sessionId: data.context?.sessionId,
+              sessionCapability: data.context?.sessionCapability,
               caseId: data.context?.caseId,
               needText: data.context?.needText,
             },
@@ -83,9 +93,6 @@ export const confirmReasoning = createServerFn({ method: "POST" })
         })()
       : ({ status: "disabled", reason: "not_requested" } as const);
 
-    // Preserve the ReasoningTrace top-level shape for existing consumers while
-    // adding the broader route and persistence layers as backwards-compatible
-    // metadata.
     return {
       ...envelope.reasoning,
       universalNeed: envelope.need,
