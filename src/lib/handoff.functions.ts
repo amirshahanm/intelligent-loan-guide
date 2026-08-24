@@ -28,7 +28,9 @@ function deploymentMode(): string {
 
 function backendConfig(): BackendConfig {
   const url =
-    process.env.TASHILRADAR_SUPABASE_URL ?? process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+    process.env.TASHILRADAR_SUPABASE_URL ??
+    process.env.SUPABASE_URL ??
+    process.env.VITE_SUPABASE_URL;
   const secret =
     process.env.TASHILRADAR_SUPABASE_SERVICE_ROLE_KEY ??
     process.env.SUPABASE_SERVICE_ROLE_KEY ??
@@ -37,7 +39,11 @@ function backendConfig(): BackendConfig {
   return { url: url.replace(/\/$/, ""), secret };
 }
 
-async function rpc<T>(config: BackendConfig, name: string, payload: Record<string, unknown>): Promise<T> {
+async function rpc<T>(
+  config: BackendConfig,
+  name: string,
+  payload: Record<string, unknown>,
+): Promise<T> {
   const response = await fetch(`${config.url}/rest/v1/rpc/${name}`, {
     method: "POST",
     headers: {
@@ -50,7 +56,11 @@ async function rpc<T>(config: BackendConfig, name: string, payload: Record<strin
   });
   if (!response.ok) {
     const body = await response.text();
-    console.error("Handoff backend RPC failed", { name, status: response.status, body: body.slice(0, 400) });
+    console.error("Handoff backend RPC failed", {
+      name,
+      status: response.status,
+      body: body.slice(0, 400),
+    });
     throw new Error(`handoff_backend_failure:${name}`);
   }
   const text = await response.text();
@@ -67,7 +77,10 @@ async function adminGet<T>(config: BackendConfig, path: string): Promise<T> {
   });
   if (!response.ok) {
     const body = await response.text();
-    console.error("Handoff backend read failed", { status: response.status, body: body.slice(0, 400) });
+    console.error("Handoff backend read failed", {
+      status: response.status,
+      body: body.slice(0, 400),
+    });
     throw new Error("handoff_backend_read_failure");
   }
   return (await response.json()) as T;
@@ -84,7 +97,11 @@ const requestSchema = continuitySchema.extend({
   anonSessionId: z.string().min(3).max(120),
 });
 
-async function assertCapability(config: BackendConfig, sessionId: string, capability: string): Promise<string> {
+async function assertCapability(
+  config: BackendConfig,
+  sessionId: string,
+  capability: string,
+): Promise<string> {
   const tokenHash = await sha256Hex(capability);
   const valid = await rpc<boolean>(config, "tr_verify_session_capability", {
     p_session_id: sessionId,
@@ -110,7 +127,9 @@ async function authoritativeMatch(
     config,
     `tr_decision_runs?select=output_snapshot&id=eq.${encodeURIComponent(decisionId)}&limit=1`,
   );
-  const match = decisions[0]?.output_snapshot?.matches?.find((item) => item.productId === productId);
+  const match = decisions[0]?.output_snapshot?.matches?.find(
+    (item) => item.productId === productId,
+  );
   if (!match) throw new Error("handoff_product_not_in_authoritative_decision");
   return match;
 }
@@ -169,7 +188,9 @@ export const requestHandoff = createServerFn({ method: "POST" })
   });
 
 export const getHandoff = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => continuitySchema.extend({ handoffId: z.string().uuid() }).parse(input))
+  .inputValidator((input: unknown) =>
+    continuitySchema.extend({ handoffId: z.string().uuid() }).parse(input),
+  )
   .handler(async ({ data }) => {
     setResponseHeader("Cache-Control", "no-store");
     const config = backendConfig();
