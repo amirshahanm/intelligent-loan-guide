@@ -25,13 +25,13 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const { state } = useSession();
-  const hasIntent = state.intents.length > 0;
+  const latestIntentText = state.intents[state.intents.length - 1]?.text ?? null;
 
   return (
     <AppShell>
       <div className="space-y-5">
         <ConciergeExperience />
-        {hasIntent ? <RouteReveal slots={state.slots} /> : null}
+        {latestIntentText ? <RouteReveal slots={state.slots} needText={latestIntentText} /> : null}
       </div>
     </AppShell>
   );
