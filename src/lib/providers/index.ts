@@ -5,6 +5,11 @@ import {
   mockPaymentProvider,
   mockSmsProvider,
 } from "./mock";
+import {
+  assertProviderSafety,
+  listMockProviderKeys,
+  type DeploymentMode,
+} from "./safety";
 import type {
   CreditProvider,
   HandoffProvider,
@@ -31,6 +36,18 @@ export const providers: {
   handoff: mockHandoffProvider,
 };
 
-export const anyMock = Object.values(providers).some((p) => "isMock" in p && p.isMock);
+export const mockProviderKeys = listMockProviderKeys(providers);
+export const anyMock = mockProviderKeys.length > 0;
 
+/**
+ * Must be called by the server boundary before serving a deployment explicitly
+ * marked as production. A production deployment backed by any mock provider is
+ * rejected instead of quietly presenting simulated financial capabilities.
+ */
+export function assertConfiguredProviderSafety(mode: DeploymentMode): void {
+  assertProviderSafety(providers, mode);
+}
+
+export { parseDeploymentMode } from "./safety";
+export type { DeploymentMode } from "./safety";
 export * from "./types";
