@@ -66,7 +66,7 @@ async function rpc<T>(name: string, body: Record<string, unknown>): Promise<T> {
   return (text ? JSON.parse(text) : null) as T;
 }
 
-async function createAuthUser(phone: string): Promise<string> {
+async function createAuthUser(phone: string, phoneHash: string): Promise<string> {
   const config = backendConfig();
   const response = await fetch(`${config.url}/auth/v1/admin/users`, {
     method: "POST",
@@ -86,7 +86,7 @@ async function createAuthUser(phone: string): Promise<string> {
   const text = await response.text();
   if (!response.ok) {
     const existing = await rpc<string | null>("tr_find_phone_identity", {
-      p_phone_hash: await phoneMappingHash(phone),
+      p_phone_hash: phoneHash,
     });
     if (existing) return existing;
     console.error("Supabase Auth user creation failed", {
@@ -102,21 +102,13 @@ async function createAuthUser(phone: string): Promise<string> {
   return id;
 }
 
-/**
- * This fallback hash is used only for a concurrency re-check. The canonical
- * mapping hash is supplied by the OTP flow using the server-only OTP pepper.
- */
-async function phoneMappingHash(phone: string): Promise<string> {
-  return sha256Hex(`fallback-phone:${phone}`);
-}
-
 async function resolveOrCreateAuthUser(phone: string, phoneHash: string): Promise<string> {
   const mapped = await rpc<string | null>("tr_find_phone_identity", {
     p_phone_hash: phoneHash,
   });
   if (mapped) return mapped;
 
-  const userId = await createAuthUser(phone);
+  const userId = await createAuthUser(phone, phoneHash);
   await rpc<string>("tr_register_phone_identity", {
     p_phone_hash: phoneHash,
     p_user_id: userId,
