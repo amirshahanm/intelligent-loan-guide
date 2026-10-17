@@ -1,5 +1,5 @@
 import * as React from "react";
-import { toLatinDigits } from "@/lib/money";
+import { bindVoiceCapture, type Recognition } from "./voice-capture";
 
 type SpeechRecognitionLike = {
   lang: string;
@@ -22,6 +22,7 @@ export function useVoiceInput(onTranscript: (text: string) => void) {
   const [listening, setListening] = React.useState(false);
   const [interim, setInterim] = React.useState("");
   const recognitionRef = React.useRef<SpeechRecognitionLike | null>(null);
+  const captureRef = React.useRef<ReturnType<typeof bindVoiceCapture> | null>(null);
   const callbackRef = React.useRef(onTranscript);
   callbackRef.current = onTranscript;
 
@@ -34,28 +35,16 @@ export function useVoiceInput(onTranscript: (text: string) => void) {
     if (!Ctor) return;
     setSupported(true);
     const rec = new Ctor();
-    rec.lang = "fa-IR";
-    rec.continuous = false;
-    rec.interimResults = true;
-    rec.onresult = (event) => {
-      let text = "";
-      for (let i = 0; i < event.results.length; i++) text += event.results[i][0].transcript;
-      setInterim(text);
-    };
-    rec.onerror = () => setListening(false);
-    rec.onend = () => {
-      setListening(false);
-      setInterim((current) => {
-        const cleaned = toLatinDigits(current).trim();
-        if (cleaned) callbackRef.current(cleaned);
-        return "";
-      });
-    };
+    const capture = bindVoiceCapture(
+      rec as Recognition,
+      (text) => callbackRef.current(text),
+      setInterim,
+      () => setListening(false),
+    );
+    captureRef.current = capture;
     recognitionRef.current = rec;
     return () => {
-      rec.onresult = null;
-      rec.onend = null;
-      rec.onerror = null;
+      capture.dispose();
       try {
         rec.stop();
       } catch {
@@ -67,6 +56,7 @@ export function useVoiceInput(onTranscript: (text: string) => void) {
   const start = React.useCallback(() => {
     const rec = recognitionRef.current;
     if (!rec) return;
+    captureRef.current?.reset();
     setInterim("");
     try {
       rec.start();

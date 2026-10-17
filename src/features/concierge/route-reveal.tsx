@@ -7,7 +7,7 @@ import {
 } from "@/core/opportunity-routes";
 import { universalNeedFromText } from "@/core/universal-need-extract";
 import { cn } from "@/lib/utils";
-import { toPersianDigits } from "@/lib/money";
+import { toDisplayDigits } from "@/lib/money";
 
 const WORLD_FA: Record<ProductWorld, string> = {
   money: "نقدینگی",
@@ -48,7 +48,7 @@ export function RouteReveal({ slots, needText }: { slots: IntentSlots; needText?
             </h2>
           </div>
           <span className="num shrink-0 rounded-full border border-accent/30 bg-accent/8 px-2.5 py-1 text-xs font-bold text-accent">
-            {toPersianDigits(primary.score)}٪
+            {toDisplayDigits(primary.score)}٪
           </span>
         </div>
       </div>
@@ -71,7 +71,7 @@ export function RouteReveal({ slots, needText }: { slots: IntentSlots; needText?
                     : "border-border bg-elevated text-muted-foreground",
                 )}
               >
-                {toPersianDigits(index + 1)}
+                {toDisplayDigits(index + 1)}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">

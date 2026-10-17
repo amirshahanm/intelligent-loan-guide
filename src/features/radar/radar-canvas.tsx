@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { ReasoningTrace } from "@/core/types";
 import { traceTally } from "@/core/engine";
-import { toPersianDigits } from "@/lib/money";
+import { toDisplayDigits } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 /**
@@ -187,7 +187,7 @@ export function RadarTally({ trace }: { trace: ReasoningTrace }) {
           className="rounded-2xl border border-border bg-elevated/50 p-2 text-center"
         >
           <div className={cn("num text-xl font-bold", item.tone)}>
-            {toPersianDigits(item.value)}
+            {toDisplayDigits(item.value)}
           </div>
           <div className="mt-0.5 text-[10px] text-muted-foreground">{item.label}</div>
         </div>

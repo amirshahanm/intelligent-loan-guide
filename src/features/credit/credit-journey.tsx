@@ -6,7 +6,7 @@ import type { CreditResult } from "@/lib/providers";
 import { useSession } from "@/lib/session";
 import { track } from "@/lib/analytics";
 import { providerVerified } from "@/core/types";
-import { faNumber, formatToman, formatTomanCompact, toPersianDigits } from "@/lib/money";
+import { faNumber, formatToman, formatTomanCompact, toDisplayDigits } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 type Stage = "intro" | "consent" | "payment" | "analyzing" | "revealed";
@@ -288,7 +288,7 @@ function CreditReveal({
       >
         <div className="text-[10px] text-muted-foreground">سیگنال اعتباری</div>
         <div className={cn("num mt-1 text-5xl font-extrabold", band.tone)}>
-          {toPersianDigits(result.signal)}
+          {toDisplayDigits(result.signal)}
         </div>
         <div className={cn("mt-1 text-sm font-bold", band.tone)}>{band.label}</div>
         <p className="mt-2 text-xs text-muted-foreground">{band.note}</p>

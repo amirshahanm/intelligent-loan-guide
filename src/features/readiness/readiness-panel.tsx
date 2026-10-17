@@ -1,6 +1,6 @@
 import type { Readiness } from "@/core/types";
 import { DIMENSION_FA } from "@/core/labels";
-import { toPersianDigits } from "@/lib/money";
+import { toDisplayDigits } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 /** Readiness is a diagnosis, never a verdict — every low score names its fix. */
@@ -34,7 +34,7 @@ export function ReadinessPanel({ readiness }: { readiness: Readiness }) {
             />
           </svg>
           <span className={cn("num absolute text-lg font-extrabold", tone)}>
-            {toPersianDigits(readiness.total)}
+            {toDisplayDigits(readiness.total)}
           </span>
         </div>
         <div>
@@ -51,7 +51,7 @@ export function ReadinessPanel({ readiness }: { readiness: Readiness }) {
           <li key={dimension.dimension}>
             <div className="flex items-baseline justify-between gap-2 text-xs">
               <span className="text-foreground">{DIMENSION_FA[dimension.dimension]}</span>
-              <span className="num text-muted-foreground">{toPersianDigits(dimension.score)}</span>
+              <span className="num text-muted-foreground">{toDisplayDigits(dimension.score)}</span>
             </div>
             <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-elevated">
               <div

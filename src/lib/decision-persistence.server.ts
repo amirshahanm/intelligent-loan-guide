@@ -147,6 +147,10 @@ export async function persistAuthoritativeDecision({
   envelope: AuthoritativeDecisionEnvelope;
   context?: PersistDecisionContext;
 }): Promise<DecisionPersistenceResult> {
+  if (process.env.TASHILRADAR_BACKEND === "postgres") {
+    const { persistPostgresDecision } = await import("./postgres.server");
+    return persistPostgresDecision({ slots, envelope, context });
+  }
   const config = backendConfig();
   if (!config) {
     if (isProductionDeployment()) throw new Error("production_backend_not_configured");

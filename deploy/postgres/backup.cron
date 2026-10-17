@@ -1,0 +1,3 @@
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+17 2 * * * root /usr/bin/flock -n /opt/tashilradar/backups/backup.lock /bin/sh /opt/tashilradar/backup-postgres.sh >> /opt/tashilradar/backups/backup.log 2>&1

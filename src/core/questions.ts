@@ -7,6 +7,7 @@
  */
 
 import type { IntentSlots, SlotKey } from "./types";
+import { purchaseBudget } from "./purchase-budget";
 import {
   ADVERSE_FA,
   COLLATERAL_FA,
@@ -39,10 +40,36 @@ const opts = <T extends string>(map: Record<T, string>, exclude: T[] = []): Ques
 
 export const QUESTIONS: Question[] = [
   {
+    id: "q_target_price",
+    slot: "targetPrice",
+    text: "مبلغ هدف خریدت چقدر است؟",
+    helper:
+      "این مبلغ برآورد خودت است، نه قیمت تأییدشدهٔ بازار. اگر هنوز نمی‌دانی، در متن نیاز توضیح بده.",
+    kind: "amount",
+    weight: 102,
+  },
+  {
+    id: "q_monthly_capacity",
+    slot: "monthlyPaymentCapacity",
+    text: "برای این خرید، ماهانه چه مبلغی می‌توانی پرداخت کنی؟",
+    helper: "توان اعلام‌شدهٔ تو را ثبت می‌کنیم؛ این مبلغ تأیید توان بازپرداخت یا پیشنهاد قسط نیست.",
+    kind: "amount",
+    weight: 99,
+  },
+  {
+    id: "q_spending_budget",
+    slot: "spendingBudget",
+    text: "از سرمایهٔ موجودت چه مبلغی را برای خرید کنار می‌گذاری؟",
+    helper: "کل سرمایه را بودجهٔ خرید فرض نمی‌کنیم؛ مبلغی را بگو که می‌خواهی استفاده کنی.",
+    kind: "amount",
+    weight: 101,
+  },
+  {
     id: "q_amount",
     slot: "amount",
-    text: "چه مبلغی نیاز داری؟",
-    helper: "مبلغ تقریبی کافی است؛ بعداً می‌توانی تغییرش بدهی.",
+    text: "چه مبلغ تسهیلاتی را می‌خواهی بررسی کنیم؟",
+    helper:
+      "کسری بودجه را خودکار درخواست وام نمی‌کنیم؛ مبلغ مورد نظر خودت را مشخص کن. مبلغ تقریبی کافی است و بعداً می‌توانی تغییرش بدهی.",
     kind: "amount",
     weight: 100,
   },
@@ -124,15 +151,46 @@ export const QUESTIONS: Question[] = [
 
 /** Next unanswered question, ranked by unblocking weight. Null when ready. */
 export function nextQuestion(slots: IntentSlots, asked: string[]): Question | null {
+  if (purchaseBudget(slots).status === "conflict") {
+    return QUESTIONS.find((question) => question.id === "q_spending_budget") ?? null;
+  }
   if (isAssessmentComplete(slots)) return null;
+  // Establish the goal before asking financing-specific questions. An amount
+  // alone does not tell us whether the user wants a vehicle, home or cash.
+  if (slots.purpose === undefined && !asked.includes("q_purpose")) {
+    return QUESTIONS.find((question) => question.id === "q_purpose") ?? null;
+  }
+  const purchase = isPurchaseJourney(slots);
+  if (purchase && slots.availableCapital && !slots.spendingBudget) {
+    return QUESTIONS.find((q) => q.id === "q_spending_budget") ?? null;
+  }
+  if (purchase && slots.spendingBudget && !slots.targetPrice) {
+    return QUESTIONS.find((q) => q.id === "q_target_price") ?? null;
+  }
   const candidates = QUESTIONS.filter(
-    (q) => slots[q.slot] === undefined && !asked.includes(q.id),
+    (q) =>
+      slots[q.slot] === undefined &&
+      !asked.includes(q.id) &&
+      (q.id !== "q_spending_budget" || (purchase && slots.availableCapital !== undefined)) &&
+      (q.id !== "q_target_price" || (purchase && slots.spendingBudget !== undefined)) &&
+      (q.id !== "q_monthly_capacity" ||
+        (purchase && purchaseBudget(slots).status === "calculated")),
   ).sort((a, b) => b.weight - a.weight);
-  return candidates[0] ?? null;
+  const next = candidates[0];
+  if (purchase && next?.id === "q_amount" && slots.spendingBudget) {
+    return {
+      ...next,
+      text: "چه مبلغ تسهیلاتی را می‌خواهی بررسی کنیم؟",
+      helper:
+        "کسری بودجه را خودکار درخواست وام نمی‌کنیم؛ مبلغ مورد نظر خودت را مشخص کن. تأیید نهایی با تأمین‌کننده است.",
+    };
+  }
+  return next ?? null;
 }
 
 /** The full assessment sequence. The result section stays hidden until all are answered. */
 export const ASSESSMENT_SLOTS: SlotKey[] = [
+  "purpose",
   "amount",
   "employment",
   "guarantor",
@@ -141,7 +199,20 @@ export const ASSESSMENT_SLOTS: SlotKey[] = [
   "debtLoad",
 ];
 
+export function isPurchaseJourney(slots: IntentSlots): boolean {
+  return slots.purpose?.value === "car" || slots.purpose?.value === "home";
+}
+
 export function isAssessmentComplete(slots: IntentSlots): boolean {
+  const budget = purchaseBudget(slots);
+  if (budget.status === "conflict" || budget.status === "invalid") return false;
+  if (isPurchaseJourney(slots) && slots.availableCapital && !slots.spendingBudget) return false;
+  if (isPurchaseJourney(slots) && slots.spendingBudget && !slots.targetPrice) return false;
+  // A stated cash-covered purchase needs no loan/guarantor interrogation.
+  if (isPurchaseJourney(slots) && budget.status === "calculated" && budget.fundingGapIrr === 0)
+    return true;
+  if (isPurchaseJourney(slots) && budget.status === "calculated" && !slots.monthlyPaymentCapacity)
+    return false;
   return ASSESSMENT_SLOTS.every((s) => slots[s] !== undefined);
 }
 

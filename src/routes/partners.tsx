@@ -5,7 +5,7 @@ import { ProvenanceChip, SectionTitle } from "@/components/provenance";
 import { PARTNERS, PRODUCTS } from "@/core/catalog";
 import { catalogFact } from "@/core/types";
 import { PURPOSE_FA } from "@/core/labels";
-import { faDays, faMonths, faPercent, formatTomanCompact, toPersianDigits } from "@/lib/money";
+import { faDays, faMonths, faPercent, formatTomanCompact, toDisplayDigits } from "@/lib/money";
 import { useSession } from "@/lib/session";
 
 export const Route = createFileRoute("/partners")({
@@ -57,16 +57,23 @@ function PartnersPage() {
             label="هدف پوشش‌داده‌شده"
           />
         </div>
-        <div className="mt-3">
-          <ProvenanceChip provenance={catalogFact(PRODUCTS[0].asOf)} />
-        </div>
+        {PRODUCTS[0] ? (
+          <div className="mt-3">
+            <ProvenanceChip provenance={catalogFact(PRODUCTS[0].asOf)} />
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted-foreground">
+            هنوز تأمین‌کننده یا محصول مالی تأییدشده‌ای متصل نشده است. نرخ و شرایط پس از دریافت
+            اطلاعات معتبر نمایش داده می‌شود.
+          </p>
+        )}
       </header>
 
       {PARTNERS.map((partner) => {
         const products = PRODUCTS.filter((p) => p.partnerId === partner.id);
         return (
           <section key={partner.id} className="rounded-3xl border border-border bg-surface p-4">
-            <SectionTitle hint={`${toPersianDigits(products.length)} محصول`}>
+            <SectionTitle hint={`${toDisplayDigits(products.length)} محصول`}>
               <span className="flex items-center gap-2">
                 {partner.name}
                 <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-normal text-muted-foreground">
@@ -152,7 +159,7 @@ function PartnersPage() {
 function Tally({ value, label }: { value: number; label: string }) {
   return (
     <div className="rounded-2xl border border-border bg-elevated/50 p-2 text-center">
-      <div className="num text-base font-extrabold text-foreground">{toPersianDigits(value)}</div>
+      <div className="num text-base font-extrabold text-foreground">{toDisplayDigits(value)}</div>
       <div className="mt-0.5 text-[10px] text-muted-foreground">{label}</div>
     </div>
   );

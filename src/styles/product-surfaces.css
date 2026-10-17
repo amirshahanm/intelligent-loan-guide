@@ -1,0 +1,237 @@
+/* Shared interior surfaces. Home keeps its approved scene and composition. */
+.app-shell--interior {
+  --product-page-width: 72rem;
+  --product-section-gap: 1.25rem;
+  --product-panel-radius: 1.5rem;
+  --product-control-radius: 1rem;
+  --product-panel-padding: 1.25rem;
+  --product-title-size: clamp(1.55rem, 3.2vw, 2.25rem);
+  --product-panel-border: color-mix(in oklch, var(--foreground) 12%, var(--background));
+  --product-panel-fill: linear-gradient(
+    150deg,
+    color-mix(in oklch, var(--surface) 75%, var(--background)),
+    color-mix(in oklch, var(--surface) 30%, var(--background))
+  );
+  --product-panel-shadow:
+    0 12px 32px -22px color-mix(in oklch, var(--background) 95%, black),
+    inset 0 1px 0 color-mix(in oklch, var(--foreground) 5%, transparent);
+  background:
+    radial-gradient(
+      ellipse 70rem 30rem at 50% 0,
+      color-mix(in oklch, var(--signal) 8%, transparent),
+      transparent 75%
+    ),
+    var(--background);
+  min-width: 0;
+}
+
+.app-shell--interior .app-shell__header {
+  background: color-mix(in oklch, var(--background) 94%, transparent);
+}
+
+.app-shell__context {
+  width: min(100%, var(--product-page-width));
+  margin-inline: auto;
+  padding: 1rem 1rem 0;
+}
+
+.app-shell__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.65rem;
+  margin-right: -0.65rem;
+  border-radius: 0.75rem;
+  color: var(--muted-foreground);
+  font-size: 0.8rem;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+.app-shell__back svg {
+  width: 1rem;
+  height: 1rem;
+}
+.app-shell__back:hover {
+  color: var(--accent);
+  background: color-mix(in oklch, var(--accent) 7%, transparent);
+}
+.app-shell__back:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.app-shell--interior .app-shell__main {
+  width: min(100%, var(--product-page-width));
+  min-width: 0;
+  padding-top: 0.75rem;
+}
+.app-shell--interior .app-shell__main > * {
+  min-width: 0;
+}
+.app-shell--interior :is(.goods-page, .vehicle-page, .credit-service-page, .support-page) {
+  gap: var(--product-section-gap);
+}
+.app-shell--interior
+  :is(
+    .goods-hero h1,
+    .vehicle-page__title,
+    .credit-service-hero h1,
+    .support-hero h1,
+    .profile-overview h1
+  ) {
+  font-size: var(--product-title-size);
+  line-height: 1.45;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.app-shell--interior .app-shell__main > :is(div, header) > h1 {
+  font-size: var(--product-title-size);
+  line-height: 1.45;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.app-shell--interior
+  :is(.support-hero p, .credit-service-hero p, .goods-hero p, .vehicle-hero__copy p) {
+  font-size: 0.925rem;
+  line-height: 1.9;
+  color: var(--muted-foreground);
+}
+
+/* Major containers share one material; route layouts and semantic accents stay local. */
+.app-shell--interior
+  :is(
+    .goods-panel,
+    .credit-service-panel,
+    .vehicle-section,
+    .support-route-card,
+    .support-truth-note,
+    .goods-benefits,
+    .surface-panel,
+    .app-shell__main > .rounded-3xl,
+    .app-shell__main > section.rounded-3xl,
+    .app-shell__main > div > section.rounded-3xl
+  ) {
+  border-color: var(--product-panel-border);
+  border-radius: var(--product-panel-radius);
+  background: var(--product-panel-fill);
+  box-shadow: var(--product-panel-shadow);
+}
+.app-shell--interior
+  :is(
+    .goods-panel,
+    .credit-service-panel,
+    .vehicle-section,
+    .support-route-card,
+    .surface-panel,
+    .app-shell__main > .rounded-3xl,
+    .app-shell__main > section.rounded-3xl
+  ) {
+  padding: var(--product-panel-padding);
+}
+.app-shell--interior :is(.vehicle-path, .vehicle-start, .vehicle-hero) {
+  border-radius: var(--product-panel-radius);
+  box-shadow: var(--product-panel-shadow);
+}
+.app-shell--interior
+  :is(.goods-panel h2, .credit-service-panel h2, .vehicle-section h2, .support-route-card h2) {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  font-weight: 650;
+  text-wrap: balance;
+}
+.app-shell--interior :is(.goods-panel h2, .credit-service-panel h2, .vehicle-section h2) > svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  stroke-width: 1.7;
+}
+.app-shell--interior
+  :is(.goods-panel, .credit-service-panel, .vehicle-section, .support-route-card)
+  p {
+  line-height: 1.9;
+}
+.app-shell--interior
+  :is(
+    .credit-summary__facts > div,
+    .goods-route__facts,
+    .credit-sakha__value,
+    .credit-sakha__status,
+    .profile-metric,
+    .credit-next > a
+  ) {
+  border-radius: var(--product-control-radius);
+  border-color: var(--product-panel-border);
+}
+.app-shell--interior
+  :is(.vehicle-path a, .support-route-card__action, .goods-continue, .credit-next > a) {
+  min-height: 2.75rem;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.app-shell--interior :is(.support-route-card__action, .vehicle-path a) {
+  border-radius: var(--product-control-radius);
+}
+.app-shell--interior :is(.credit-next > a, .vehicle-path a):hover {
+  border-color: color-mix(in oklch, var(--accent) 50%, var(--border));
+  background: color-mix(in oklch, var(--accent) 5%, transparent);
+}
+.app-shell--interior .app-shell__main button:not(:disabled),
+.app-shell--interior .app-shell__main a {
+  touch-action: manipulation;
+}
+.app-shell--interior .app-shell__main button:disabled {
+  cursor: not-allowed;
+}
+.app-shell--interior
+  .app-shell__main
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not(
+    .home-need-control__input
+  ) {
+  min-height: 2.75rem;
+  border-radius: var(--product-control-radius);
+  caret-color: var(--accent);
+}
+.app-shell--interior .app-shell__main :is(button, a, input, summary):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.app-shell--interior ::selection {
+  color: var(--foreground);
+  background: color-mix(in oklch, var(--accent) 30%, var(--background));
+}
+.app-shell--interior :is(.goods-categories, .credit-factors > div) {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--accent) 45%, var(--surface)) transparent;
+}
+.app-shell--interior :is(.num, output, .credit-summary__facts strong, .profile-metric) {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 40rem) {
+  .app-shell--interior {
+    --product-panel-padding: 1.5rem;
+    --product-section-gap: 1.5rem;
+  }
+  .app-shell__context {
+    padding-inline: 1.5rem;
+  }
+}
+@media (min-width: 64rem) {
+  .app-shell--interior {
+    --product-panel-padding: 1.75rem;
+  }
+  .app-shell__context {
+    padding-inline: 2rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell__back,
+  .app-shell--interior
+    :is(.vehicle-path a, .support-route-card__action, .goods-continue, .credit-next > a) {
+    transition: none;
+  }
+}

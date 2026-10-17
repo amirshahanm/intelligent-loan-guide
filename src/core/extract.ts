@@ -180,7 +180,57 @@ export function extractSlots(text: string): ExtractionResult {
   const filled: SlotKey[] = [];
 
   const amount = extractAmount(t);
-  if (amount) {
+  // Conservatively classify explicitly labelled amounts. Ambiguous multi-amount
+  // text must not silently use its first number as a loan request.
+  const monetaryMentions = [
+    ...t.matchAll(
+      /(?:\d+(?:\.\d+)?|یک|دو|سه|پانصد|دویست|سیصد)\s*(?:میلیارد|میلیون|هزار)(?:\s*تومان)?/g,
+    ),
+  ];
+  let classified = false;
+  for (const mention of monetaryMentions) {
+    const value = extractAmount(mention[0]);
+    if (!value || !Number.isSafeInteger(value)) continue;
+    const before = t.slice(Math.max(0, mention.index! - 30), mention.index);
+    const after = t.slice(
+      mention.index! + mention[0].length,
+      mention.index! + mention[0].length + 25,
+    );
+    // An existing loan is a liability, not available cash or a new request.
+    // Do not coerce negative amounts into positive financial facts either.
+    if (/[-−]\s*$/.test(before) || (/(?:وام|تسهیلات)\s*$/.test(before) && /^\s*دارم/.test(after))) {
+      classified = true;
+      continue;
+    }
+    let key:
+      | "availableCapital"
+      | "spendingBudget"
+      | "targetPrice"
+      | "monthlyPaymentCapacity"
+      | "amount"
+      | undefined;
+    if (/(?:توان پرداخت ماهانه|قسط ماهانه|پرداخت ماهانه)\s*$/.test(before))
+      key = "monthlyPaymentCapacity";
+    else if (/(?:بودجه خرید|بودجه قابل استفاده|برای خرید کنار گذاشتم)\s*$/.test(before))
+      key = "spendingBudget";
+    else if (/(?:قیمت|هزینه هدف)\s*$/.test(before)) key = "targetPrice";
+    else if (
+      /^\s*(?:دارم|پول دارم|سرمایه دارم)/.test(after) ||
+      /(?:سرمایه موجود|پول موجود)\s*$/.test(before)
+    )
+      key = "availableCapital";
+    else if (
+      /(?:وام|تسهیلات)\s*$/.test(before) ||
+      /^\s*(?:وام|تسهیلات|نیاز دارم|لازم دارم)/.test(after)
+    )
+      key = "amount";
+    if (key) {
+      slots[key] = fact(value, userStated(0.9));
+      if (!filled.includes(key)) filled.push(key);
+      classified = true;
+    }
+  }
+  if (amount && !classified && monetaryMentions.length <= 1 && !/[-−]\s*\d/.test(t)) {
     slots.amount = fact(amount, userStated(0.9));
     filled.push("amount");
   }

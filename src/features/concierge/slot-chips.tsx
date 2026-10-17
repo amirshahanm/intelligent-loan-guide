@@ -16,6 +16,11 @@ import { ProvenanceChip } from "@/components/provenance";
 
 export function slotDisplayValue(slots: IntentSlots, key: SlotKey): string | null {
   switch (key) {
+    case "availableCapital":
+    case "spendingBudget":
+    case "targetPrice":
+    case "monthlyPaymentCapacity":
+      return slots[key] ? formatTomanCompact(slots[key].value) : null;
     case "amount":
       return slots.amount ? formatTomanCompact(slots.amount.value) : null;
     case "purpose":
@@ -44,6 +49,10 @@ export function slotDisplayValue(slots: IntentSlots, key: SlotKey): string | nul
 }
 
 const ORDER: SlotKey[] = [
+  "availableCapital",
+  "spendingBudget",
+  "targetPrice",
+  "monthlyPaymentCapacity",
   "amount",
   "purpose",
   "employment",

@@ -3,7 +3,7 @@ import * as React from "react";
 import { AppShell } from "@/components/app-shell";
 import { ProvenanceChip, SectionTitle } from "@/components/provenance";
 import { providerVerified } from "@/core/types";
-import { faRelativeTime, toPersianDigits } from "@/lib/money";
+import { faRelativeTime, toDisplayDigits } from "@/lib/money";
 import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
@@ -84,7 +84,7 @@ function HandoffPage() {
         <div className="mt-4 grid grid-cols-2 gap-2 text-center">
           <div className="rounded-2xl border border-gold/40 bg-gold/10 p-3">
             <div className="num text-2xl font-extrabold text-gold">
-              {toPersianDigits(handoff.queuePosition)}
+              {toDisplayDigits(handoff.queuePosition)}
             </div>
             <div className="mt-0.5 text-[10px] text-muted-foreground">جایگاه در صف</div>
           </div>

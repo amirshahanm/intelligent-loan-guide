@@ -12,7 +12,7 @@ import { millionToman } from "@/lib/money";
 
 const ASOF = "2026-07-24T09:00:00.000Z";
 
-export const PARTNERS: Partner[] = [
+const DEMO_PARTNERS: Partner[] = [
   { id: "p_aban", name: "مؤسسه اعتباری آبان", kind: "credit_institution", demo: true },
   { id: "p_karan", name: "بانک کاران", kind: "bank", demo: true },
   { id: "p_sepehrad", name: "صندوق سپهراد", kind: "fund", demo: true },
@@ -20,10 +20,13 @@ export const PARTNERS: Partner[] = [
   { id: "p_tadbir", name: "فین‌تک تدبیر", kind: "fintech", demo: true },
 ];
 
-export const partnerById = (id: string): Partner =>
-  PARTNERS.find((p) => p.id === id) ?? PARTNERS[0];
+export const partnerById = (id: string): Partner => {
+  const partner = PARTNERS.find((p) => p.id === id) ?? PARTNERS[0];
+  if (!partner) throw new Error("catalog_unavailable");
+  return partner;
+};
 
-export const PRODUCTS: Product[] = [
+const DEMO_PRODUCTS: Product[] = [
   {
     id: "pr_business_growth",
     partnerId: "p_aban",
@@ -252,3 +255,8 @@ export const PRODUCTS: Product[] = [
     },
   },
 ];
+
+// Public builds must never expose the seeded financial catalog.
+const productionCatalog = import.meta.env?.VITE_TASHILRADAR_DEPLOYMENT_MODE === "production";
+export const PARTNERS: Partner[] = productionCatalog ? [] : DEMO_PARTNERS;
+export const PRODUCTS: Product[] = productionCatalog ? [] : DEMO_PRODUCTS;

@@ -26,6 +26,9 @@ function config(): { url: string; serviceKey: string; fingerprintSecret: string 
     process.env.SUPABASE_SECRET_KEY;
   const fingerprintSecret = process.env.TASHILRADAR_REQUEST_FINGERPRINT_SECRET;
 
+  if (process.env.TASHILRADAR_BACKEND === "postgres" && fingerprintSecret) {
+    return { url: "", serviceKey: "", fingerprintSecret };
+  }
   if (!url || !serviceKey || !fingerprintSecret) return null;
   return { url: url.replace(/\/$/, ""), serviceKey, fingerprintSecret };
 }
@@ -89,32 +92,38 @@ export async function consumeRequestLimit({
     ? await hmacHex(current.fingerprintSecret, `${fingerprint}\n${subject}`)
     : fingerprint;
 
-  const response = await fetch(`${current.url}/rest/v1/rpc/tr_consume_rate_limit`, {
-    method: "POST",
-    headers: {
-      apikey: current.serviceKey,
-      authorization: `Bearer ${current.serviceKey}`,
-      "content-type": "application/json",
-      accept: "application/json",
-    },
-    body: JSON.stringify({
-      p_key_hash: keyHash,
-      p_scope: scope,
-      p_limit: limit,
-      p_window_seconds: windowSeconds,
-    }),
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    console.error("TashilRadar rate-limit RPC failed", {
-      status: response.status,
-      body: body.slice(0, 500),
+  let result: RateLimitResult;
+  if (process.env.TASHILRADAR_BACKEND === "postgres") {
+    const { consumePostgresLimit } = await import("./postgres.server");
+    result = await consumePostgresLimit(keyHash, scope, limit, windowSeconds);
+  } else {
+    const response = await fetch(`${current.url}/rest/v1/rpc/tr_consume_rate_limit`, {
+      method: "POST",
+      headers: {
+        apikey: current.serviceKey,
+        authorization: `Bearer ${current.serviceKey}`,
+        "content-type": "application/json",
+        accept: "application/json",
+      },
+      body: JSON.stringify({
+        p_key_hash: keyHash,
+        p_scope: scope,
+        p_limit: limit,
+        p_window_seconds: windowSeconds,
+      }),
     });
-    throw new Error("request_guard_backend_failure");
-  }
 
-  const result = (await response.json()) as RateLimitResult;
+    if (!response.ok) {
+      const body = await response.text();
+      console.error("TashilRadar rate-limit RPC failed", {
+        status: response.status,
+        body: body.slice(0, 500),
+      });
+      throw new Error("request_guard_backend_failure");
+    }
+
+    result = (await response.json()) as RateLimitResult;
+  }
   if (!result.allowed) {
     const retryAfter = Math.max(
       1,

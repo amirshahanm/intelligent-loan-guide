@@ -23,6 +23,10 @@ const factOf = <T extends z.ZodTypeAny>(value: T) =>
   z.object({ value, provenance: provenanceSchema }).optional();
 
 const slotsSchema = z.object({
+  availableCapital: factOf(z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)),
+  spendingBudget: factOf(z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)),
+  targetPrice: factOf(z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)),
+  monthlyPaymentCapacity: factOf(z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER)),
   amount: factOf(z.number().int().nonnegative()),
   purpose: factOf(
     z.enum(["business", "home", "car", "personal", "education", "debt", "marriage", "unknown"]),

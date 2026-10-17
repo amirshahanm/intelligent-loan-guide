@@ -9,44 +9,35 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as CreditRouteImport } from './routes/credit'
-import { Route as OpportunitiesRouteImport } from './routes/opportunities'
-import { Route as PartnersRouteImport } from './routes/partners'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as RadarRouteImport } from './routes/radar'
+import { Route as VehicleRouteImport } from './routes/vehicle'
+import { Route as TradeRouteImport } from './routes/trade'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as ReadinessRouteImport } from './routes/readiness'
-import { Route as HandoffHandoffIdRouteImport } from './routes/handoff.$handoffId'
+import { Route as RadarRouteImport } from './routes/radar'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PartnersRouteImport } from './routes/partners'
+import { Route as OpportunitiesRouteImport } from './routes/opportunities'
+import { Route as GoodsRouteImport } from './routes/goods'
+import { Route as CreditRouteImport } from './routes/credit'
+import { Route as BankCreditRouteImport } from './routes/bank-credit'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as OpportunityProductIdRouteImport } from './routes/opportunity.$productId'
+import { Route as HandoffHandoffIdRouteImport } from './routes/handoff.$handoffId'
+import { Route as FinanceServiceRouteImport } from './routes/finance.$service'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const VehicleRoute = VehicleRouteImport.update({
+  id: '/vehicle',
+  path: '/vehicle',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CreditRoute = CreditRouteImport.update({
-  id: '/credit',
-  path: '/credit',
+const TradeRoute = TradeRouteImport.update({
+  id: '/trade',
+  path: '/trade',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OpportunitiesRoute = OpportunitiesRouteImport.update({
-  id: '/opportunities',
-  path: '/opportunities',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PartnersRoute = PartnersRouteImport.update({
-  id: '/partners',
-  path: '/partners',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RadarRoute = RadarRouteImport.update({
-  id: '/radar',
-  path: '/radar',
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReadinessRoute = ReadinessRouteImport.update({
@@ -54,9 +45,44 @@ const ReadinessRoute = ReadinessRouteImport.update({
   path: '/readiness',
   getParentRoute: () => rootRouteImport,
 } as any)
-const HandoffHandoffIdRoute = HandoffHandoffIdRouteImport.update({
-  id: '/handoff/$handoffId',
-  path: '/handoff/$handoffId',
+const RadarRoute = RadarRouteImport.update({
+  id: '/radar',
+  path: '/radar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartnersRoute = PartnersRouteImport.update({
+  id: '/partners',
+  path: '/partners',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpportunitiesRoute = OpportunitiesRouteImport.update({
+  id: '/opportunities',
+  path: '/opportunities',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GoodsRoute = GoodsRouteImport.update({
+  id: '/goods',
+  path: '/goods',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreditRoute = CreditRouteImport.update({
+  id: '/credit',
+  path: '/credit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BankCreditRoute = BankCreditRouteImport.update({
+  id: '/bank-credit',
+  path: '/bank-credit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OpportunityProductIdRoute = OpportunityProductIdRouteImport.update({
@@ -64,38 +90,66 @@ const OpportunityProductIdRoute = OpportunityProductIdRouteImport.update({
   path: '/opportunity/$productId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HandoffHandoffIdRoute = HandoffHandoffIdRouteImport.update({
+  id: '/handoff/$handoffId',
+  path: '/handoff/$handoffId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FinanceServiceRoute = FinanceServiceRouteImport.update({
+  id: '/finance/$service',
+  path: '/finance/$service',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bank-credit': typeof BankCreditRoute
   '/credit': typeof CreditRoute
+  '/goods': typeof GoodsRoute
   '/opportunities': typeof OpportunitiesRoute
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
   '/readiness': typeof ReadinessRoute
+  '/support': typeof SupportRoute
+  '/trade': typeof TradeRoute
+  '/vehicle': typeof VehicleRoute
+  '/finance/$service': typeof FinanceServiceRoute
   '/handoff/$handoffId': typeof HandoffHandoffIdRoute
   '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bank-credit': typeof BankCreditRoute
   '/credit': typeof CreditRoute
+  '/goods': typeof GoodsRoute
   '/opportunities': typeof OpportunitiesRoute
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
   '/readiness': typeof ReadinessRoute
+  '/support': typeof SupportRoute
+  '/trade': typeof TradeRoute
+  '/vehicle': typeof VehicleRoute
+  '/finance/$service': typeof FinanceServiceRoute
   '/handoff/$handoffId': typeof HandoffHandoffIdRoute
   '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bank-credit': typeof BankCreditRoute
   '/credit': typeof CreditRoute
+  '/goods': typeof GoodsRoute
   '/opportunities': typeof OpportunitiesRoute
   '/partners': typeof PartnersRoute
   '/profile': typeof ProfileRoute
   '/radar': typeof RadarRoute
   '/readiness': typeof ReadinessRoute
+  '/support': typeof SupportRoute
+  '/trade': typeof TradeRoute
+  '/vehicle': typeof VehicleRoute
+  '/finance/$service': typeof FinanceServiceRoute
   '/handoff/$handoffId': typeof HandoffHandoffIdRoute
   '/opportunity/$productId': typeof OpportunityProductIdRoute
 }
@@ -103,92 +157,95 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/bank-credit'
     | '/credit'
+    | '/goods'
     | '/opportunities'
     | '/partners'
     | '/profile'
     | '/radar'
     | '/readiness'
+    | '/support'
+    | '/trade'
+    | '/vehicle'
+    | '/finance/$service'
     | '/handoff/$handoffId'
     | '/opportunity/$productId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/bank-credit'
     | '/credit'
+    | '/goods'
     | '/opportunities'
     | '/partners'
     | '/profile'
     | '/radar'
     | '/readiness'
+    | '/support'
+    | '/trade'
+    | '/vehicle'
+    | '/finance/$service'
     | '/handoff/$handoffId'
     | '/opportunity/$productId'
   id:
     | '__root__'
     | '/'
+    | '/bank-credit'
     | '/credit'
+    | '/goods'
     | '/opportunities'
     | '/partners'
     | '/profile'
     | '/radar'
     | '/readiness'
+    | '/support'
+    | '/trade'
+    | '/vehicle'
+    | '/finance/$service'
     | '/handoff/$handoffId'
     | '/opportunity/$productId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BankCreditRoute: typeof BankCreditRoute
   CreditRoute: typeof CreditRoute
+  GoodsRoute: typeof GoodsRoute
   OpportunitiesRoute: typeof OpportunitiesRoute
   PartnersRoute: typeof PartnersRoute
   ProfileRoute: typeof ProfileRoute
   RadarRoute: typeof RadarRoute
   ReadinessRoute: typeof ReadinessRoute
+  SupportRoute: typeof SupportRoute
+  TradeRoute: typeof TradeRoute
+  VehicleRoute: typeof VehicleRoute
+  FinanceServiceRoute: typeof FinanceServiceRoute
   HandoffHandoffIdRoute: typeof HandoffHandoffIdRoute
   OpportunityProductIdRoute: typeof OpportunityProductIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/vehicle': {
+      id: '/vehicle'
+      path: '/vehicle'
+      fullPath: '/vehicle'
+      preLoaderRoute: typeof VehicleRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/credit': {
-      id: '/credit'
-      path: '/credit'
-      fullPath: '/credit'
-      preLoaderRoute: typeof CreditRouteImport
+    '/trade': {
+      id: '/trade'
+      path: '/trade'
+      fullPath: '/trade'
+      preLoaderRoute: typeof TradeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/opportunities': {
-      id: '/opportunities'
-      path: '/opportunities'
-      fullPath: '/opportunities'
-      preLoaderRoute: typeof OpportunitiesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/partners': {
-      id: '/partners'
-      path: '/partners'
-      fullPath: '/partners'
-      preLoaderRoute: typeof PartnersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/radar': {
-      id: '/radar'
-      path: '/radar'
-      fullPath: '/radar'
-      preLoaderRoute: typeof RadarRouteImport
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/readiness': {
@@ -198,11 +255,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ReadinessRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/handoff/$handoffId': {
-      id: '/handoff/$handoffId'
-      path: '/handoff/$handoffId'
-      fullPath: '/handoff/$handoffId'
-      preLoaderRoute: typeof HandoffHandoffIdRouteImport
+    '/radar': {
+      id: '/radar'
+      path: '/radar'
+      fullPath: '/radar'
+      preLoaderRoute: typeof RadarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/partners': {
+      id: '/partners'
+      path: '/partners'
+      fullPath: '/partners'
+      preLoaderRoute: typeof PartnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/opportunities': {
+      id: '/opportunities'
+      path: '/opportunities'
+      fullPath: '/opportunities'
+      preLoaderRoute: typeof OpportunitiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/goods': {
+      id: '/goods'
+      path: '/goods'
+      fullPath: '/goods'
+      preLoaderRoute: typeof GoodsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/credit': {
+      id: '/credit'
+      path: '/credit'
+      fullPath: '/credit'
+      preLoaderRoute: typeof CreditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bank-credit': {
+      id: '/bank-credit'
+      path: '/bank-credit'
+      fullPath: '/bank-credit'
+      preLoaderRoute: typeof BankCreditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/opportunity/$productId': {
@@ -212,17 +318,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OpportunityProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/handoff/$handoffId': {
+      id: '/handoff/$handoffId'
+      path: '/handoff/$handoffId'
+      fullPath: '/handoff/$handoffId'
+      preLoaderRoute: typeof HandoffHandoffIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/finance/$service': {
+      id: '/finance/$service'
+      path: '/finance/$service'
+      fullPath: '/finance/$service'
+      preLoaderRoute: typeof FinanceServiceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BankCreditRoute: BankCreditRoute,
   CreditRoute: CreditRoute,
+  GoodsRoute: GoodsRoute,
   OpportunitiesRoute: OpportunitiesRoute,
   PartnersRoute: PartnersRoute,
   ProfileRoute: ProfileRoute,
   RadarRoute: RadarRoute,
   ReadinessRoute: ReadinessRoute,
+  SupportRoute: SupportRoute,
+  TradeRoute: TradeRoute,
+  VehicleRoute: VehicleRoute,
+  FinanceServiceRoute: FinanceServiceRoute,
   HandoffHandoffIdRoute: HandoffHandoffIdRoute,
   OpportunityProductIdRoute: OpportunityProductIdRoute,
 }

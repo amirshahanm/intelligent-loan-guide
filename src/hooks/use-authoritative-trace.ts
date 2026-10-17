@@ -5,6 +5,7 @@ import type { IntentSlots, ReasoningTrace } from "@/core/types";
 import { confirmReasoning } from "@/lib/reasoning.functions";
 import { hasCoreSlots, isAssessmentComplete } from "@/core/questions";
 import { useSession } from "@/lib/session";
+import { reasoningQueryKey } from "./reasoning-query-key";
 
 type ConfirmedTrace = ReasoningTrace & {
   persistence?:
@@ -23,6 +24,9 @@ export function useAuthoritativeTrace(): {
   trace: ReasoningTrace;
   confirming: boolean;
   confirmed: boolean;
+  confirmationFailed: boolean;
+  persistenceDisabled: boolean;
+  retryConfirmation: () => void;
 } {
   const { state, update, trace } = useSession();
   const confirm = useServerFn(confirmReasoning);
@@ -33,9 +37,10 @@ export function useAuthoritativeTrace(): {
   const latestIntentText = state.intents[state.intents.length - 1]?.text ?? null;
 
   const query = useQuery({
-    queryKey: ["reasoning", key, state.status],
+    queryKey: reasoningQueryKey(key, state.status, latestIntentText),
     enabled: ready,
     staleTime: 60_000,
+    retry: 1,
     queryFn: () =>
       confirm({
         data: {
@@ -79,8 +84,14 @@ export function useAuthoritativeTrace(): {
   }, [query.data, update]);
 
   return {
-    trace: (query.data as ReasoningTrace | undefined) ?? trace,
+    trace: !query.isError ? ((query.data as ReasoningTrace | undefined) ?? trace) : trace,
     confirming: query.isFetching,
-    confirmed: Boolean(query.data),
+    confirmed: Boolean(query.data) && !query.isError,
+    confirmationFailed: query.isError,
+    persistenceDisabled:
+      (query.data as ConfirmedTrace | undefined)?.persistence?.status === "disabled" && complete,
+    retryConfirmation: () => {
+      void query.refetch();
+    },
   };
 }

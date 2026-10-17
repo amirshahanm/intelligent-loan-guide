@@ -42,14 +42,21 @@ export function ClaimProfileCard() {
       setChallengeId(result.challengeId);
       setDemoCode(result.demoCode ?? null);
     } catch {
-      setError("ارسال کد انجام نشد. اگر سرویس پیامک واقعی هنوز متصل نیست، این بخش موقتاً غیرفعال می‌ماند.");
+      setError(
+        "ارسال کد انجام نشد. اگر سرویس پیامک واقعی هنوز متصل نیست، این بخش موقتاً غیرفعال می‌ماند.",
+      );
     } finally {
       setBusy(false);
     }
   }
 
   async function handleVerify() {
-    if (!challengeId || !continuity?.sessionId || !continuity.caseId || !continuity.sessionCapability) {
+    if (
+      !challengeId ||
+      !continuity?.sessionId ||
+      !continuity.caseId ||
+      !continuity.sessionCapability
+    ) {
       setError("اطلاعات نشست برای اتصال پرونده کامل نیست.");
       return;
     }
@@ -97,8 +104,8 @@ export function ClaimProfileCard() {
       <div className="text-[10px] font-medium text-accent">ذخیرهٔ امن پرونده</div>
       <h2 className="mt-1 text-base font-bold">پرونده‌ات را به شمارهٔ موبایل خودت وصل کن</h2>
       <p className="mt-2 text-xs leading-5 text-muted-foreground">
-        ورود برای شروع لازم نیست. فقط وقتی می‌خواهی پرونده روی دستگاه‌های بعدی هم متعلق به خودت بماند،
-        شماره را تأیید می‌کنی.
+        ورود برای شروع لازم نیست. فقط وقتی می‌خواهی پرونده روی دستگاه‌های بعدی هم متعلق به خودت
+        بماند، شماره را تأیید می‌کنی.
       </p>
 
       <div className="mt-4 space-y-2">
@@ -128,7 +135,7 @@ export function ClaimProfileCard() {
               autoComplete="one-time-code"
               value={code}
               onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-              placeholder="کد ۶ رقمی"
+              placeholder="کد 6 رقمی"
               disabled={busy}
               className="num w-full rounded-2xl border border-border bg-background px-4 py-3 text-center text-lg tracking-[0.35em] outline-none transition-colors focus:border-accent"
             />

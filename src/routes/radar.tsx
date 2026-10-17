@@ -5,7 +5,8 @@ import { ReadinessPanel } from "@/features/readiness/readiness-panel";
 import { AuthorityBadge, SectionTitle } from "@/components/provenance";
 import { useAuthoritativeTrace } from "@/hooks/use-authoritative-trace";
 import { useSession } from "@/lib/session";
-import { toPersianDigits } from "@/lib/money";
+import { toDisplayDigits } from "@/lib/money";
+import { ReasoningNotice } from "@/components/reasoning-notice";
 
 export const Route = createFileRoute("/radar")({
   head: () => ({
@@ -34,25 +35,26 @@ function RadarPage() {
 
   if (state.messages.length === 0) {
     return (
-      <AppShell>
+      <AppShell className="radar-page">
         <EmptyState />
       </AppShell>
     );
   }
 
   return (
-    <AppShell className="space-y-5">
+    <AppShell className="radar-page space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-lg font-bold">رادار استدلال</h1>
         <AuthorityBadge computedBy={confirmed ? "server-authoritative" : trace.computedBy} />
       </div>
 
-      <RadarCanvas trace={trace} />
+      <ReasoningNotice />
+      <RadarCanvas trace={trace} className="radar-page__canvas" />
 
       <ReadinessPanel readiness={trace.readiness} />
 
       <section>
-        <SectionTitle hint={`${toPersianDigits(trace.eliminated.length)} مسیر`}>
+        <SectionTitle hint={`${toDisplayDigits(trace.eliminated.length)} مسیر`}>
           چرا این مسیرها حذف شدند
         </SectionTitle>
         {trace.eliminated.length === 0 ? (

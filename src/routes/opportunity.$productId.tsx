@@ -2,6 +2,7 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import * as React from "react";
 import { AppShell } from "@/components/app-shell";
 import { AuthorityBadge, ProvenanceChip, SectionTitle } from "@/components/provenance";
+import { ReasoningNotice } from "@/components/reasoning-notice";
 import { FitRing } from "@/features/opportunity/opportunity-card";
 import { useAuthoritativeTrace } from "@/hooks/use-authoritative-trace";
 import { useSession } from "@/lib/session";
@@ -14,7 +15,7 @@ import {
   faPercent,
   formatToman,
   formatTomanCompact,
-  toPersianDigits,
+  toDisplayDigits,
 } from "@/lib/money";
 
 export const Route = createFileRoute("/opportunity/$productId")({
@@ -126,6 +127,7 @@ function OpportunityPage() {
         <AuthorityBadge computedBy={confirmed ? "server-authoritative" : trace.computedBy} />
       </div>
 
+      <ReasoningNotice />
       <header className="surface-panel rounded-3xl p-4">
         <div className="flex items-start gap-3">
           <FitRing score={match.fitScore} size={64} />
@@ -217,7 +219,7 @@ function OpportunityPage() {
           >
             <div className="text-sm font-semibold text-accent">در صف بررسی انسانی</div>
             <p className="num mt-1 text-xs text-muted-foreground">
-              شمارهٔ پیگیری {handoff.id} — جایگاه {toPersianDigits(handoff.queuePosition)} در صف.
+              شمارهٔ پیگیری {handoff.id} — جایگاه {toDisplayDigits(handoff.queuePosition)} در صف.
             </p>
             <span className="mt-2 block text-[11px] text-accent">پیگیری وضعیت ←</span>
           </Link>
@@ -233,7 +235,8 @@ function OpportunityPage() {
             </button>
             {!backendReady ? (
               <p className="mt-2 text-[10px] leading-5 text-muted-foreground">
-                این اقدام بعد از تأیید سروری پرونده فعال می‌شود.
+                این اقدام به ذخیرهٔ امن پرونده سمت سرور و فراهم‌بودن مسیر اجرایی نیاز دارد؛ تأیید
+                محاسبه به‌تنهایی کافی نیست.
               </p>
             ) : null}
             {handoffError ? <p className="mt-2 text-[11px] text-warn">{handoffError}</p> : null}

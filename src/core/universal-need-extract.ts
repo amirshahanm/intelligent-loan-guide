@@ -73,13 +73,15 @@ export function universalNeedFromText(
   slots: IntentSlots,
 ): UniversalNeed {
   const normalized = normalize(text ?? "");
-  const targetAmount = slots.amount?.value;
 
   for (const rule of RULES) {
     if (rule.pattern.test(normalized)) {
       return {
         kind: rule.kind,
-        targetAmount,
+        targetAmount:
+          rule.kind.startsWith("purchase_") || rule.kind === "equipment"
+            ? (slots.targetPrice?.value ?? slots.amount?.value)
+            : slots.amount?.value,
         source: "deterministic_text",
         confidence: rule.confidence,
       };

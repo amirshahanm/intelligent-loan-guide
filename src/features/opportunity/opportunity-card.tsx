@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { Match } from "@/core/types";
-import { faDays, faMonths, faPercent, formatTomanCompact, toPersianDigits } from "@/lib/money";
+import { faDays, faMonths, faPercent, formatTomanCompact, toDisplayDigits } from "@/lib/money";
 import { ProvenanceChip } from "@/components/provenance";
 import { catalogFact } from "@/core/types";
 import { cn } from "@/lib/utils";
@@ -37,7 +37,7 @@ export function FitRing({ score, size = 56 }: { score: number; size?: number }) 
         className="num rotate-90 fill-foreground text-[13px] font-bold"
         style={{ transformOrigin: "center" }}
       >
-        {toPersianDigits(Math.round(score))}
+        {toDisplayDigits(Math.round(score))}
       </text>
     </svg>
   );

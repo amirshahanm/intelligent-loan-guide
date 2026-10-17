@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Question } from "@/core/questions";
-import { fromToman, toLatinDigits, toPersianDigits } from "@/lib/money";
+import { toDisplayDigits } from "@/lib/money";
+import { parseMillionTomanInput } from "./amount-input";
 import { cn } from "@/lib/utils";
 
 /**
@@ -23,14 +24,13 @@ export function QuestionCard({
   const [amountText, setAmountText] = React.useState("");
 
   const amountIrr = React.useMemo(() => {
-    const raw = Number(toLatinDigits(amountText).replace(/[^\d]/g, ""));
-    return Number.isFinite(raw) && raw > 0 ? fromToman(raw * 1_000_000) : null;
+    return parseMillionTomanInput(amountText);
   }, [amountText]);
 
   return (
     <div className="anim-resolve rounded-3xl border border-border bg-surface p-4">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <span className="text-[10px] text-accent">پرسش {toPersianDigits(index)} · موتور تصمیم</span>
+        <span className="text-[10px] text-accent">پرسش {toDisplayDigits(index)} · موتور تصمیم</span>
         {onBack ? (
           <button
             type="button"
@@ -59,8 +59,8 @@ export function QuestionCard({
             <input
               inputMode="numeric"
               value={amountText}
-              onChange={(e) => setAmountText(e.target.value)}
-              placeholder="مثلاً ۳۰۰"
+              onChange={(e) => setAmountText(toDisplayDigits(e.target.value))}
+              placeholder="مثلاً 300"
               className="num w-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
               aria-label="مبلغ به میلیون تومان"
             />

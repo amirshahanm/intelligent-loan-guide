@@ -1,0 +1,13 @@
+tashilradar.com {
+    encode zstd gzip
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        -Server
+    }
+    reverse_proxy tashilradar-web-20261009-05:3000
+}
+
+www.tashilradar.com {
+    redir https://tashilradar.com{uri} permanent
+}

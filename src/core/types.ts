@@ -106,6 +106,10 @@ export type BankTurnover = "under_50" | "50_150" | "150_300" | "over_300" | "unk
 export type AdverseHistory = "none" | "resolved" | "active" | "unsure" | "unknown";
 
 export type SlotKey =
+  | "availableCapital"
+  | "spendingBudget"
+  | "targetPrice"
+  | "monthlyPaymentCapacity"
   | "amount"
   | "purpose"
   | "employment"
@@ -119,6 +123,11 @@ export type SlotKey =
   | "region";
 
 export type IntentSlots = {
+  /** User-stated money held; never assumed to be fully spendable or a loan request. */
+  availableCapital?: Fact<IRR>;
+  spendingBudget?: Fact<IRR>;
+  targetPrice?: Fact<IRR>;
+  monthlyPaymentCapacity?: Fact<IRR>;
   /** Requested amount, integer IRR. */
   amount?: Fact<IRR>;
   purpose?: Fact<Purpose>;

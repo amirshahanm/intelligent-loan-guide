@@ -83,7 +83,22 @@ export const providers: {
   sms: SmsProvider;
   handoff: HandoffProvider;
 } = {
-  catalog: mockCatalogProvider,
+  catalog:
+    import.meta.env.VITE_TASHILRADAR_DEPLOYMENT_MODE === "production"
+      ? {
+          id: "unavailable_catalog",
+          isMock: false,
+          async listPartners() {
+            return [];
+          },
+          async listProducts() {
+            return [];
+          },
+          asOf() {
+            return new Date(0).toISOString();
+          },
+        }
+      : mockCatalogProvider,
   credit: creditFacade,
   payment: paymentFacade,
   sms: serverOnlySmsFacade,

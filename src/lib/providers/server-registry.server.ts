@@ -25,6 +25,7 @@ import type {
   ProductCatalogProvider,
   SmsProvider,
 } from "./types";
+import { configuredApiirSmsProvider } from "./apiir-sms.server";
 
 const mode = parseDeploymentMode(process.env.TASHILRADAR_DEPLOYMENT_MODE);
 const production = mode === "production";
@@ -47,7 +48,7 @@ export const serverProviders: {
       catalog: unavailableCatalogProvider,
       credit: unavailableCreditProvider,
       payment: unavailablePaymentProvider,
-      sms: unavailableSmsProvider,
+      sms: configuredApiirSmsProvider(process.env) ?? unavailableSmsProvider,
       handoff: unavailableHandoffProvider,
     }
   : {

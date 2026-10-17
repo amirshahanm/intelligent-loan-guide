@@ -71,11 +71,9 @@ async function rpc<T>(name: string, body: Record<string, unknown>): Promise<T> {
     body: JSON.stringify(body),
   });
   if (!response.ok) {
-    const bodyText = await response.text();
     console.error("OTP backend RPC failed", {
       name,
       status: response.status,
-      body: bodyText.slice(0, 300),
     });
     throw new Error("otp_backend_failure");
   }

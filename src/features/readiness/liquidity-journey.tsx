@@ -8,11 +8,11 @@ import {
 } from "@/core/liquidity-journey";
 import { track } from "@/lib/analytics";
 import { useSession } from "@/lib/session";
-import { toPersianDigits } from "@/lib/money";
+import { toDisplayDigits } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 export function LiquidityJourney() {
-  const { state, update } = useSession();
+  const { state, update, hydrated } = useSession();
   const input = React.useMemo(
     () => ({
       // Phase 1 CreditResult is simulated and is deliberately not a verified review signal.
@@ -28,15 +28,16 @@ export function LiquidityJourney() {
   const viewed = React.useRef<string | null>(null);
 
   React.useEffect(() => {
-    if (started.current) return;
+    if (!hydrated || started.current) return;
     started.current = true;
     track({
       name: "liquidity_started",
       knownCount: result.factors.filter((factor) => factor.known).length,
     });
-  }, [result.factors]);
+  }, [hydrated, result.factors]);
 
   React.useEffect(() => {
+    if (!hydrated) return;
     const signature = `${result.status}:${result.total}`;
     if (viewed.current === signature) return;
     viewed.current = signature;
@@ -45,16 +46,16 @@ export function LiquidityJourney() {
       status: result.status,
     });
     track({ name: "liquidity_next_action_viewed", factor: action.key });
-  }, [action.key, result.status, result.total]);
+  }, [hydrated, action.key, result.status, result.total]);
 
   React.useEffect(() => {
-    if (!question || state.liquidityAskedFactors.includes(question.key)) return;
+    if (!hydrated || !question || state.liquidityAskedFactors.includes(question.key)) return;
     update((current) => ({
       ...current,
       liquidityAskedFactors: [...current.liquidityAskedFactors, question.key],
     }));
     track({ name: "liquidity_factor_asked", factor: question.key });
-  }, [question, state.liquidityAskedFactors, update]);
+  }, [hydrated, question, state.liquidityAskedFactors, update]);
 
   const answer = (key: LiquidityFactorKey, value: LiquidityAnswer) => {
     update((current) => ({
@@ -79,6 +80,13 @@ export function LiquidityJourney() {
     track({ name: "liquidity_factor_answered", factor: key, answer: "skipped" });
   };
 
+  if (!hydrated)
+    return (
+      <p role="status" aria-busy="true" className="surface-panel p-5 text-sm text-muted-foreground">
+        در حال بازیابی اطلاعات پرونده…
+      </p>
+    );
+
   return (
     <div className="space-y-5">
       <section className="surface-panel overflow-hidden rounded-3xl p-5">
@@ -89,16 +97,16 @@ export function LiquidityJourney() {
           </div>
           <div className="text-center">
             <div className="num text-4xl font-black text-accent">
-              {toPersianDigits(result.total)}
+              {toDisplayDigits(result.total)}
             </div>
             <div className="text-[10px] text-muted-foreground">
-              از {toPersianDigits(result.maxScore)}
+              از {toDisplayDigits(result.maxScore)}
             </div>
           </div>
         </div>
         <div
           className="mt-4 h-2 overflow-hidden rounded-full bg-elevated"
-          aria-label={`امتیاز ${result.total} از ۱۰۰`}
+          aria-label={`امتیاز ${result.total} از 100`}
         >
           <div
             className="h-full rounded-full bg-accent transition-[width] duration-500"
@@ -172,7 +180,7 @@ export function LiquidityJourney() {
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-sm font-bold">ریز فاکتورها</h2>
           <span className="text-[11px] text-muted-foreground">
-            {toPersianDigits(result.missingFactors.length)} مورد نامشخص
+            {toDisplayDigits(result.missingFactors.length)} مورد نامشخص
           </span>
         </div>
         <ul className="mt-4 space-y-3">
@@ -186,7 +194,7 @@ export function LiquidityJourney() {
                     factor.known ? "text-accent" : "text-muted-foreground",
                   )}
                 >
-                  +{toPersianDigits(factor.awarded)} / {toPersianDigits(factor.weight)}
+                  +{toDisplayDigits(factor.awarded)} / {toDisplayDigits(factor.weight)}
                 </span>
               </div>
               <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{factor.reason}</p>

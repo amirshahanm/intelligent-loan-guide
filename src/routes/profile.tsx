@@ -2,14 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import * as React from "react";
 import { AppShell } from "@/components/app-shell";
 import { AuthorityBadge, ProvenanceChip, SectionTitle } from "@/components/provenance";
+import { ReasoningNotice } from "@/components/reasoning-notice";
 import { ReadinessPanel } from "@/features/readiness/readiness-panel";
 import { SlotChips } from "@/features/concierge/slot-chips";
 import { ClaimProfileCard } from "@/features/profile/claim-profile-card";
 import { useAuthoritativeTrace } from "@/hooks/use-authoritative-trace";
 import { useSession } from "@/lib/session";
 import { providerVerified } from "@/core/types";
-import { faRelativeTime, formatTomanCompact, toPersianDigits } from "@/lib/money";
+import { faRelativeTime, formatTomanCompact, toDisplayDigits } from "@/lib/money";
 import { cn } from "@/lib/utils";
+import { BadgeCheck, CircleUserRound, ClipboardList, CreditCard, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({
@@ -52,11 +54,53 @@ function ProfilePage() {
     new Date(state.lastSeenAt).getTime() - new Date(state.createdAt).getTime() > 5 * 60_000;
 
   return (
-    <AppShell className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-lg font-bold">پروندهٔ مالی من</h1>
-        <AuthorityBadge computedBy={confirmed ? "server-authoritative" : trace.computedBy} />
-      </div>
+    <AppShell className="profile-page space-y-5">
+      <header className="profile-overview">
+        <div className="profile-overview__copy">
+          <span className="profile-overview__eyebrow">مرکز اطلاعات مالی و هویت تو</span>
+          <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">پروندهٔ مالی من</h1>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+            اطلاعاتی که با اجازهٔ تو ثبت شده، منبع هر داده و قدم‌هایی که پرونده را کامل‌تر می‌کند.
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <span className="profile-status">
+              <span className="profile-status__dot" />
+              {status.label}
+            </span>
+            <AuthorityBadge computedBy={confirmed ? "server-authoritative" : trace.computedBy} />
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">{status.hint}</p>
+        </div>
+        <ProfileIdentityVisual />
+      </header>
+
+      {state.messages.length > 0 ? <ReasoningNotice /> : null}
+      <section className="profile-snapshot" aria-label="خلاصهٔ پرونده">
+        <ProfileMetric
+          icon={<CircleUserRound aria-hidden="true" />}
+          label="اطلاعات ثبت‌شده"
+          value={`${toDisplayDigits(filled)} مورد`}
+          note={filled === 0 ? "هنوز داده‌ای ثبت نشده" : "از گفته‌های خودت"}
+        />
+        <ProfileMetric
+          icon={<ShieldCheck aria-hidden="true" />}
+          label="وضعیت پرونده"
+          value={status.label}
+          note="وضعیت فعلی حساب"
+        />
+        <ProfileMetric
+          icon={<CreditCard aria-hidden="true" />}
+          label="سیگنال اعتباری"
+          value={state.creditResult ? toDisplayDigits(state.creditResult.signal) : "دریافت نشده"}
+          note={state.creditResult ? "نتیجهٔ ثبت‌شده" : "بدون نتیجهٔ ساختگی"}
+        />
+        <ProfileMetric
+          icon={<ClipboardList aria-hidden="true" />}
+          label="درخواست‌های انسانی"
+          value={`${toDisplayDigits(state.handoffs.length)} مورد`}
+          note={state.handoffs.length === 0 ? "هنوز درخواستی ثبت نشده" : "ثبت‌شده در پرونده"}
+        />
+      </section>
 
       {returning ? (
         <div className="rounded-2xl border border-accent/40 bg-accent/10 p-3 text-xs text-accent">
@@ -65,16 +109,17 @@ function ProfilePage() {
         </div>
       ) : null}
 
-      <section className="surface-panel rounded-3xl p-4">
+      <section className="profile-session surface-panel rounded-3xl p-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[10px] text-muted-foreground">وضعیت پرونده</div>
-            <div className="text-base font-bold">{status.label}</div>
-            <p className="mt-1 text-[11px] text-muted-foreground">{status.hint}</p>
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <ShieldCheck aria-hidden="true" className="size-4 text-accent" />
+              شناسهٔ نشست
+            </div>
+            <div className="num mt-1 text-xs text-foreground/80">{state.anonSessionId}</div>
           </div>
           <div className="text-end">
-            <div className="text-[10px] text-muted-foreground">شناسهٔ نشست</div>
-            <div className="num text-[11px] text-foreground/80">{state.anonSessionId}</div>
+            <span className="profile-status profile-status--quiet">{status.label}</span>
           </div>
         </div>
         <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
@@ -89,7 +134,7 @@ function ProfilePage() {
         <ReadinessPanel readiness={trace.readiness} />
 
         <section className="rounded-3xl border border-border bg-surface p-4">
-          <SectionTitle hint={`${toPersianDigits(filled)} مورد ثبت‌شده`}>
+          <SectionTitle hint={`${toDisplayDigits(filled)} مورد ثبت‌شده`}>
             آنچه دربارهٔ تو می‌دانم
           </SectionTitle>
           {filled === 0 ? (
@@ -135,7 +180,7 @@ function ProfilePage() {
           <div className="flex items-center justify-between gap-3">
             <div>
               <div className="num text-2xl font-extrabold text-signal">
-                {toPersianDigits(state.creditResult.signal)}
+                {toDisplayDigits(state.creditResult.signal)}
               </div>
               <div className="mt-1 text-[11px] text-muted-foreground">
                 ظرفیت تخمینی {formatTomanCompact(state.creditResult.estimatedCapacity)}
@@ -166,7 +211,7 @@ function ProfilePage() {
       </section>
 
       <section className="rounded-3xl border border-border bg-surface p-4">
-        <SectionTitle hint={`${toPersianDigits(state.handoffs.length)} مورد`}>
+        <SectionTitle hint={`${toDisplayDigits(state.handoffs.length)} مورد`}>
           درخواست‌های بررسی انسانی
         </SectionTitle>
         {state.handoffs.length === 0 ? (
@@ -199,8 +244,13 @@ function ProfilePage() {
       <section className="rounded-3xl border border-border bg-surface p-4">
         <SectionTitle>شخصی‌سازی و داده</SectionTitle>
         <ul className="space-y-1.5 text-[11px] leading-5 text-muted-foreground">
-          <li>· قبل از اتصال حساب، داده‌های محلی فقط برای ادامهٔ تجربه روی همین مرورگر نگه داشته می‌شوند.</li>
-          <li>· صدا هرگز ذخیره نمی‌شود؛ فقط متن حاصل از تشخیص گفتار استفاده می‌شود.</li>
+          <li>
+            · قبل از اتصال حساب، داده‌های محلی فقط برای ادامهٔ تجربه روی همین مرورگر نگه داشته
+            می‌شوند.
+          </li>
+          <li>
+            · تسهیل‌رادار فایل صوتی ذخیره نمی‌کند؛ تشخیص گفتار تابع تنظیمات و سرویس مرورگر است.
+          </li>
           <li>· نتایج قطعی همیشه با اجرای دوبارهٔ موتور روی سرور تأیید می‌شود.</li>
           <li>· بعد از Claim، مالکیت پرونده و تصمیم‌ها سمت سرور به حساب احراز‌شده متصل می‌شود.</li>
         </ul>
@@ -223,5 +273,77 @@ function ProfilePage() {
         ) : null}
       </section>
     </AppShell>
+  );
+}
+
+function ProfileMetric({
+  icon,
+  label,
+  value,
+  note,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  note: string;
+}) {
+  return (
+    <article className="profile-metric">
+      <span className="profile-metric__icon">{icon}</span>
+      <div className="min-w-0 flex-1">
+        <div className="text-[11px] text-muted-foreground">{label}</div>
+        <div className="mt-1 truncate text-sm font-bold text-foreground">{value}</div>
+        <div className="mt-1 truncate text-[10px] text-muted-foreground">{note}</div>
+      </div>
+    </article>
+  );
+}
+
+function ProfileIdentityVisual() {
+  return (
+    <div className="profile-orbit" aria-hidden="true">
+      <svg viewBox="0 0 220 220" role="presentation">
+        <defs>
+          <radialGradient id="profile-core" cx="50%" cy="35%">
+            <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.34" />
+            <stop offset="100%" stopColor="var(--color-accent)" stopOpacity="0.02" />
+          </radialGradient>
+          <linearGradient id="profile-line" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="var(--color-accent)" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="var(--color-signal)" stopOpacity="0.15" />
+          </linearGradient>
+        </defs>
+        <circle cx="110" cy="110" r="88" fill="url(#profile-core)" />
+        <circle cx="110" cy="110" r="77" fill="none" stroke="var(--color-border)" />
+        <circle
+          cx="110"
+          cy="110"
+          r="63"
+          fill="none"
+          stroke="url(#profile-line)"
+          strokeWidth="1.5"
+        />
+        <circle
+          cx="110"
+          cy="110"
+          r="51"
+          fill="none"
+          stroke="var(--color-border)"
+          strokeDasharray="2 7"
+        />
+        <circle cx="110" cy="82" r="18" fill="var(--color-accent)" fillOpacity="0.78" />
+        <path
+          d="M71 151c4-24 19-37 39-37s35 13 39 37c-11 9-24 13-39 13s-28-4-39-13Z"
+          fill="var(--color-accent)"
+          fillOpacity="0.62"
+        />
+        <circle cx="43" cy="115" r="4" fill="var(--color-signal)" />
+        <circle cx="171" cy="72" r="3.5" fill="var(--color-accent)" />
+        <circle cx="158" cy="177" r="3" fill="var(--color-signal)" />
+      </svg>
+      <span className="profile-orbit__badge">
+        <BadgeCheck />
+      </span>
+    </div>
   );
 }

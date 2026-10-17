@@ -19,7 +19,17 @@ export type SessionStatus = "ANONYMOUS" | "ENGAGED" | "IDENTIFIED" | "CLAIMED";
 
 export type Message =
   | { id: string; role: "user"; kind: "text"; text: string; channel: "typed" | "voice" }
-  | { id: string; role: "concierge"; kind: "text"; text: string }
+  | {
+      id: string;
+      role: "concierge";
+      kind: "text";
+      text: string;
+      ai?: {
+        sources: { title: string; url: string }[];
+        researchedAt: string | null;
+        attributionRequired?: boolean;
+      };
+    }
   | { id: string; role: "concierge"; kind: "question"; questionId: string }
   | { id: string; role: "concierge"; kind: "trace"; runId: string };
 

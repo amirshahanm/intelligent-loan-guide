@@ -12,29 +12,67 @@ import { SlotChips } from "./slot-chips";
 import { QuestionCard } from "./question-card";
 import { AuthorityBadge } from "@/components/provenance";
 import { RadarTally } from "@/features/radar/radar-canvas";
-import { toPersianDigits } from "@/lib/money";
+import { formatTomanCompact, toDisplayDigits } from "@/lib/money";
+import { purchaseBudget } from "@/core/purchase-budget";
 import { cn } from "@/lib/utils";
-
-const EXAMPLES = [
-  "۳۰۰ میلیون برای راه‌اندازی کارگاه می‌خوام، کارمندم و ضامن دارم",
-  "می‌خوام ماشین بخرم، آزادکارم، وثیقه ندارم",
-  "۵۰ میلیون فوری لازم دارم برای هزینهٔ درمان",
-];
+import { ReasoningNotice } from "@/components/reasoning-notice";
+import { converseWithBrain, getBrainAvailability } from "@/lib/brain.functions";
+import { safeSource } from "@/lib/brain-policy";
 
 /** Deterministic acknowledgement — never invents a fact the engine didn't get. */
 function acknowledge(filled: SlotKey[], unclear: boolean): string {
   if (unclear) return "متوجه شدم ضامن داری. فقط بگو ضامن کارمند رسمی است یا صاحب کسب‌وکار.";
   if (filled.length === 0)
     return "چیزی که نوشتی را ثبت کردم، ولی هنوز داده‌ای برای تصمیم‌گیری از آن درنیامد. با چند پرسش کوتاه پیش می‌رویم.";
-  return `${toPersianDigits(filled.length)} نکته از حرفت برداشت کردم. برای اینکه مسیرهای واقعی را جدا کنم، چند چیز دیگر لازم دارم.`;
+  return `${toDisplayDigits(filled.length)} نکته از حرفت برداشت کردم. برای اینکه مسیرهای واقعی را جدا کنم، چند چیز دیگر لازم دارم.`;
 }
 
-export function ConciergeExperience() {
+function budgetSummary(slots: IntentSlots): string {
+  const budget = purchaseBudget(slots);
+  if (budget.status === "conflict")
+    return " بودجهٔ خرید از سرمایهٔ اعلام‌شده بیشتر است؛ پیش از ادامه، این دو مبلغ را اصلاح کن.";
+  if (budget.status !== "calculated") return "";
+  const retained =
+    budget.retainedCapitalIrr === null
+      ? ""
+      : ` سرمایهٔ باقی‌مانده پس از کنارگذاشتن بودجهٔ خرید: ${formatTomanCompact(budget.retainedCapitalIrr)}.`;
+  const next =
+    budget.fundingGapIrr === 0
+      ? " مبلغ هدف در بودجهٔ اعلام‌شده جا می‌گیرد؛ بررسی قیمت واقعی، هزینه‌های جانبی و شرایط فروش هنوز لازم است."
+      : " برای بررسی تأمین این فاصله، مبلغ تسهیلات مورد نظر و توان پرداخت ماهانهٔ خودت را جدا ثبت می‌کنیم.";
+  return ` فاصلهٔ مبلغ هدف تا بودجهٔ خرید: ${formatTomanCompact(budget.fundingGapIrr)}.${retained}${next} این محاسبه فقط از گفته‌های توست؛ نه قیمت بازار، رتبهٔ اعتباری یا تأیید تسهیلات.`;
+}
+
+export function ConciergeExperience({
+  suggestedNeed,
+  suggestionLabel = "استفاده از انتخاب‌های خودرو در متن نیاز",
+}: { suggestedNeed?: string; suggestionLabel?: string } = {}) {
   const { state, update, hydrated } = useSession();
   const { trace, confirming, confirmed } = useAuthoritativeTrace();
   const navigate = useNavigate();
   const [draft, setDraft] = React.useState("");
+  const [draftChannel, setDraftChannel] = React.useState<"typed" | "voice">("typed");
+  const voicePrefix = React.useRef("");
+  const [composingNewNeed, setComposingNewNeed] = React.useState(false);
   const endRef = React.useRef<HTMLDivElement>(null);
+  const [brainAvailable, setBrainAvailable] = React.useState(false);
+  const [brainConsent, setBrainConsent] = React.useState(false);
+  const [brainSearch, setBrainSearch] = React.useState(false);
+  const [brainBusy, setBrainBusy] = React.useState(false);
+  const [brainError, setBrainError] = React.useState("");
+  const brainPending = React.useRef(false);
+
+  React.useEffect(() => {
+    let active = true;
+    getBrainAvailability()
+      .then((result) => {
+        if (active) setBrainAvailable(result.enabled);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const started = state.messages.length > 0;
 
@@ -51,6 +89,11 @@ export function ConciergeExperience() {
       update((s) => {
         const merged = mergeSlots(s.slots, extracted);
         const question = nextQuestion(merged, s.askedQuestionIds);
+        const budgetNote =
+          budgetSummary(merged) ||
+          (extracted.availableCapital
+            ? " این مبلغ را سرمایهٔ موجود ثبت کردم، نه درخواست وام."
+            : "");
         if (question)
           track({ name: "question_asked", questionId: question.id, slot: question.slot });
         track({ name: "reasoning_started", slotCount: slotKeys(merged).length });
@@ -70,7 +113,7 @@ export function ConciergeExperience() {
               id: messageId(),
               role: "concierge",
               kind: "text",
-              text: acknowledge(filled, guarantorTypeUnclear),
+              text: acknowledge(filled, guarantorTypeUnclear) + budgetNote,
             },
             ...(question
               ? ([
@@ -86,11 +129,82 @@ export function ConciergeExperience() {
         };
       });
       setDraft("");
+      setComposingNewNeed(false);
     },
     [update],
   );
 
-  const voice = useVoiceInput((text) => applyText(text, "voice"));
+  const voice = useVoiceInput((text) => {
+    setDraft([voicePrefix.current.trim(), text].filter(Boolean).join(" ").slice(0, 4000));
+    setDraftChannel("voice");
+  });
+
+  const submitNeed = async () => {
+    if (voice.listening || brainPending.current || !draft.trim()) return;
+    if (!brainConsent || !brainAvailable) {
+      applyText(draft, draftChannel);
+      return;
+    }
+    const text = draft.trim();
+    const channel = draftChannel;
+    const history = state.messages
+      .filter((message) => message.kind === "text")
+      .slice(-9)
+      .map((message) => ({
+        role: message.role === "user" ? ("user" as const) : ("assistant" as const),
+        text: message.kind === "text" ? message.text.slice(0, 4000) : "",
+      }));
+    brainPending.current = true;
+    setBrainBusy(true);
+    setBrainError("");
+    try {
+      const reply = await converseWithBrain({
+        data: {
+          consent: true,
+          search: brainSearch,
+          messages: [...history, { role: "user", text }],
+        },
+      });
+      if (reply.status !== "ready") {
+        setBrainError(reply.text);
+        return;
+      }
+      const extracted = extractSlots(text).slots;
+      update((previous) => ({
+        ...previous,
+        status: previous.status === "ANONYMOUS" ? "ENGAGED" : previous.status,
+        slots: mergeSlots(previous.slots, extracted),
+        intents: [
+          ...previous.intents,
+          { id: messageId(), text, channel, at: new Date().toISOString() },
+        ],
+        messages: [
+          ...previous.messages,
+          { id: messageId(), role: "user", kind: "text", text, channel },
+          {
+            id: messageId(),
+            role: "concierge",
+            kind: "text",
+            text: reply.text,
+            ai: {
+              sources: reply.sources,
+              researchedAt: reply.researchedAt,
+              attributionRequired: reply.attributionRequired,
+            },
+          },
+        ],
+      }));
+      setDraft("");
+      setComposingNewNeed(false);
+    } catch {
+      setBrainError(
+        "سرویس پاسخ نداد یا ظرفیت درخواست تکمیل شده است. متن حفظ شد؛ دوباره تلاش کن یا گزینهٔ مشاورهٔ AI را خاموش کن تا مسیر قبلی ادامه پیدا کند.",
+      );
+    } finally {
+      brainPending.current = false;
+      setBrainBusy(false);
+    }
+  };
 
   const answer = React.useCallback(
     (questionId: string, value: string | number, label: string) => {
@@ -113,6 +227,16 @@ export function ConciergeExperience() {
           messages: [
             ...s.messages,
             { id: messageId(), role: "user", kind: "text", text: label, channel: "typed" },
+            ...(question.slot === "targetPrice" || question.slot === "spendingBudget"
+              ? [
+                  {
+                    id: messageId(),
+                    role: "concierge" as const,
+                    kind: "text" as const,
+                    text: budgetSummary(merged) || "بودجه ثبت شد؛ مبلغ هدف را جدا مشخص می‌کنیم.",
+                  },
+                ]
+              : []),
             ...(upcoming
               ? ([
                   { id: messageId(), role: "concierge", kind: "question", questionId: upcoming.id },
@@ -122,7 +246,7 @@ export function ConciergeExperience() {
                     id: messageId(),
                     role: "concierge",
                     kind: "text",
-                    text: "بررسی کامل شد. یک پیشنهاد اصلی و سه مسیر نزدیک برای پرونده‌ات پیدا کردم.",
+                    text: "پاسخ‌ها ثبت شد. حالا می‌توانی نتیجهٔ محاسبهٔ همین داده‌ها را بررسی کنی.",
                   },
                 ] as const)),
           ],
@@ -168,7 +292,7 @@ export function ConciergeExperience() {
       }
       const targetId = asked[targetIdx];
       const slots: IntentSlots = { ...s.slots };
-      for (const id of asked.slice(targetIdx + 1)) {
+      for (const id of asked.slice(targetIdx)) {
         const q = QUESTIONS.find((x) => x.id === id);
         if (q) delete slots[q.slot];
       }
@@ -192,13 +316,18 @@ export function ConciergeExperience() {
     (key: SlotKey) => {
       const question = QUESTIONS.find((q) => q.slot === key);
       if (!question) return;
-      update((s) => ({
-        ...s,
-        messages: [
-          ...s.messages,
-          { id: messageId(), role: "concierge", kind: "question", questionId: question.id },
-        ],
-      }));
+      update((s) => {
+        const slots = { ...s.slots };
+        delete slots[key];
+        return {
+          ...s,
+          slots,
+          messages: [
+            ...s.messages,
+            { id: messageId(), role: "concierge", kind: "question", questionId: question.id },
+          ],
+        };
+      });
     },
     [update],
   );
@@ -235,13 +364,15 @@ export function ConciergeExperience() {
     return idx >= 0 || state.intents.length > 0;
   }, [state.askedQuestionIds, state.slots, state.messages, state.intents]);
 
-  const lastQuestionId = React.useMemo(() => {
+  const lastQuestion = React.useMemo(() => {
     for (let i = state.messages.length - 1; i >= 0; i--) {
       const m = state.messages[i];
-      if (m.role === "concierge" && m.kind === "question") return m.questionId;
+      if (m.role === "concierge" && m.kind === "question")
+        return { id: m.id, questionId: m.questionId };
     }
     return null;
   }, [state.messages]);
+  const lastQuestionId = lastQuestion?.questionId ?? null;
 
   if (!hydrated) {
     return <div className="h-[60vh] animate-pulse rounded-3xl border border-border bg-surface" />;
@@ -249,21 +380,6 @@ export function ConciergeExperience() {
 
   return (
     <div className="space-y-5">
-      {!started ? (
-        <section className="anim-resolve pt-6 text-center">
-          <p className="text-xs text-accent">ناوبر هوشمند وام و اعتبار</p>
-          <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl">
-            بگو چه می‌خواهی.
-            <br />
-            <span className="text-gold">مسیرِ واقعی‌اش را نشانت می‌دهم.</span>
-          </h1>
-          <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">
-            بدون ثبت‌نام، بدون فرم بلند. یک جمله بنویس یا بگو؛ من مسیرهای موجود را می‌سنجم، آنچه
-            بسته است را حذف می‌کنم و دلیل هر تصمیم را نشانت می‌دهم.
-          </p>
-        </section>
-      ) : null}
-
       {started ? (
         <div className="space-y-3">
           {state.messages.map((message) => {
@@ -271,7 +387,7 @@ export function ConciergeExperience() {
               return (
                 <div key={message.id} className="flex justify-start">
                   <div className="anim-resolve max-w-[85%] rounded-3xl rounded-ss-md bg-signal/15 px-4 py-2.5 text-sm text-foreground">
-                    {message.text}
+                    {toDisplayDigits(message.text)}
                     {message.channel === "voice" ? (
                       <span className="ms-2 text-[10px] text-muted-foreground">صوتی</span>
                     ) : null}
@@ -283,17 +399,48 @@ export function ConciergeExperience() {
               return (
                 <div key={message.id} className="flex justify-end">
                   <div className="anim-resolve max-w-[85%] rounded-3xl rounded-se-md border border-border bg-surface px-4 py-2.5 text-sm text-foreground">
-                    {message.text}
+                    {message.ai ? (
+                      <p className="mb-2 text-xs text-accent">
+                        پاسخ هوش مصنوعی · نه تأیید مالی یا رتبهٔ اعتباری
+                      </p>
+                    ) : null}
+                    <span className="whitespace-pre-wrap">{toDisplayDigits(message.text)}</span>
+                    {message.ai?.sources.length && message.ai.attributionRequired !== false ? (
+                      <div className="mt-3 flex flex-wrap gap-3" aria-label="منابع پاسخ">
+                        {message.ai.sources.map((item, index) => {
+                          const source = safeSource(item.title, item.url);
+                          return source ? (
+                            <a
+                              key={source.url}
+                              href={source.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-accent underline"
+                            >
+                              [{index + 1}] {source.title}
+                            </a>
+                          ) : null;
+                        })}
+                        <p className="w-full text-[10px] text-muted-foreground">
+                          منابع عمومی وب؛ نه تأیید همکاری، موجودی یا شرایط قطعی. زمان بررسی:{" "}
+                          {message.ai.researchedAt
+                            ? new Date(message.ai.researchedAt).toISOString().slice(0, 10)
+                            : "نامشخص"}
+                        </p>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               );
             }
             if (message.kind === "question") {
+              if (brainConsent && brainAvailable) return null;
+              if (message.id !== lastQuestion?.id) return null;
               const question = QUESTIONS.find((q) => q.id === message.questionId);
               if (!question) return null;
               const answered = state.slots[question.slot] !== undefined;
               const index = state.askedQuestionIds.indexOf(question.id) + 1;
-              if (answered && message.questionId !== lastQuestionId) return null;
+              if (answered && (complete || message.questionId !== lastQuestionId)) return null;
               return (
                 <QuestionCard
                   key={message.id}
@@ -323,69 +470,151 @@ export function ConciergeExperience() {
 
       <SlotChips slots={state.slots} onEdit={reAsk} />
 
-      {complete ? null : (
+      {complete && !composingNewNeed ? (
+        <button
+          type="button"
+          className="min-h-11 text-sm text-accent underline underline-offset-4"
+          onClick={() => setComposingNewNeed(true)}
+        >
+          شرح نیاز جدید با حفظ اطلاعات پرونده
+        </button>
+      ) : null}
+      {!complete || composingNewNeed || brainAvailable ? (
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            applyText(draft, "typed");
+            void submitNeed();
           }}
-          className="sticky bottom-3 z-20"
+          className={cn(started ? "relative" : "home-need-form")}
         >
-          <div className="flex items-end gap-2 rounded-3xl border border-border bg-surface/95 p-2 backdrop-blur-xl">
-            <textarea
-              value={voice.listening ? voice.interim : draft}
-              onChange={(e) => setDraft(e.target.value)}
-              readOnly={voice.listening}
-              rows={2}
-              placeholder={voice.listening ? "در حال شنیدن…" : "مثلاً: ۲۰۰ میلیون برای خرید ماشین"}
-              className="max-h-32 min-h-11 flex-1 resize-none bg-transparent px-2 py-2 text-sm outline-none placeholder:text-muted-foreground"
+          {suggestedNeed && !draft.trim() && !voice.listening ? (
+            <button
+              type="button"
+              className="mb-3 text-sm text-accent underline underline-offset-4"
+              onClick={() => setDraft(suggestedNeed)}
+            >
+              {suggestionLabel}
+            </button>
+          ) : null}
+          <div
+            className={cn(
+              "flex items-center gap-2 border border-border bg-surface/95 p-2 backdrop-blur-xl",
+              started ? "rounded-3xl" : "home-need-control",
+            )}
+          >
+            <button
+              type="button"
+              onClick={() => {
+                if (voice.listening) voice.stop();
+                else {
+                  voicePrefix.current = draft;
+                  voice.start();
+                }
+              }}
+              disabled={!voice.supported || brainBusy}
+              aria-label={
+                voice.supported
+                  ? voice.listening
+                    ? "پایان ضبط"
+                    : "گفتن نیاز با صدا"
+                  : "ورودی صوتی در این مرورگر پشتیبانی نمی‌شود"
+              }
+              title={voice.supported ? undefined : "ورودی صوتی در این مرورگر پشتیبانی نمی‌شود"}
+              className={cn(
+                "home-need-control__action home-need-control__voice",
+                voice.listening && "is-listening",
+              )}
+            >
+              <MicIcon />
+            </button>
+            <input
+              type="text"
+              maxLength={4000}
+              value={voice.listening ? [draft, voice.interim].filter(Boolean).join(" ") : draft}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                setDraftChannel("typed");
+              }}
+              readOnly={voice.listening || brainBusy}
+              placeholder={
+                voice.listening
+                  ? "در حال شنیدن…"
+                  : "هدفت چیه؟ مثلاً وام نقدی، خودرو اقساط یا خرید کالا"
+              }
+              className="home-need-control__input"
               aria-label="خواسته‌ات را بنویس"
             />
-            {voice.supported ? (
-              <button
-                type="button"
-                onClick={voice.listening ? voice.stop : voice.start}
-                aria-label={voice.listening ? "پایان ضبط" : "گفتن با صدا"}
-                className={cn(
-                  "grid size-11 shrink-0 place-items-center rounded-2xl border transition-colors",
-                  voice.listening
-                    ? "border-danger/50 bg-danger/15 text-danger"
-                    : "border-border bg-elevated text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <MicIcon />
-              </button>
-            ) : null}
             <button
               type="submit"
-              disabled={!draft.trim()}
-              className="h-11 shrink-0 rounded-2xl bg-accent px-4 text-sm font-semibold text-accent-foreground disabled:opacity-40"
+              disabled={voice.listening || brainBusy || !draft.trim()}
+              aria-label="شروع جست‌وجوی مسیر"
+              className="home-need-control__action home-need-control__submit"
             >
-              بفرست
+              <SearchIcon />
             </button>
           </div>
-          {voice.supported ? (
-            <p className="mt-1 px-2 text-[10px] text-muted-foreground">
-              صدا فقط در مرورگر خودت پردازش می‌شود و هیچ فایل صوتی ذخیره یا ارسال نمی‌شود.
+          {brainAvailable ? (
+            <div className="mt-2 space-y-2 px-2 text-xs text-muted-foreground">
+              <label className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={brainConsent}
+                  disabled={brainBusy}
+                  onChange={(event) => {
+                    setBrainConsent(event.target.checked);
+                    setBrainError("");
+                  }}
+                />
+                <span>
+                  مشاورهٔ AI: با ارسال متن و بخش اخیر همین گفتگو به OpenAI موافقم. فقط شرایط کلی و
+                  نوع مدارک؛ بدون نام، آدرس، شماره هویتی، رمز یا فایل مدرک. خاموش باشد، بررسی قبلی
+                  ادامه دارد.
+                </span>
+              </label>
+              {brainConsent ? (
+                <label className="flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    checked={brainSearch}
+                    disabled={brainBusy}
+                    onChange={(event) => setBrainSearch(event.target.checked)}
+                  />
+                  <span>
+                    جست‌وجوی منابع روز با موضوع عمومی خدمت، بدون ارسال اطلاعات شخصی به جست‌وجو.
+                  </span>
+                </label>
+              ) : null}
+            </div>
+          ) : null}
+          {brainBusy ? (
+            <p role="status" className="mt-2 px-2 text-xs text-accent">
+              {brainSearch
+                ? "در حال بررسی منابع عمومی و آماده‌سازی پاسخ…"
+                : "در حال آماده‌سازی پاسخ…"}
             </p>
           ) : null}
+          {brainError ? (
+            <p role="alert" className="mt-2 px-2 text-xs text-destructive">
+              {brainError}
+            </p>
+          ) : null}
+          <p className={cn("px-2 text-[10px] text-muted-foreground", started ? "mt-1" : "sr-only")}>
+            پس از پایان ضبط، متن را بررسی و با دکمهٔ جست‌وجو ارسال کن. تسهیل‌رادار فایل صوتی ذخیره
+            نمی‌کند؛ تشخیص گفتار تابع سرویس مرورگر توست.
+          </p>
         </form>
-      )}
-
-      {!started ? (
-        <div className="space-y-2">
-          <p className="text-[11px] text-muted-foreground">یا یکی از این‌ها را امتحان کن:</p>
-          {EXAMPLES.map((example) => (
-            <button
-              key={example}
-              type="button"
-              onClick={() => applyText(example, "typed")}
-              className="w-full rounded-2xl border border-border bg-surface px-4 py-3 text-start text-sm text-foreground/90 transition-colors hover:border-accent/50"
-            >
-              {example}
-            </button>
-          ))}
-        </div>
+      ) : null}
+      {composingNewNeed ? (
+        <button
+          type="button"
+          className="min-h-11 text-sm text-muted-foreground"
+          onClick={() => {
+            setComposingNewNeed(false);
+            setDraft("");
+          }}
+        >
+          انصراف از نیاز جدید
+        </button>
       ) : null}
 
       {analyzing ? (
@@ -396,6 +625,7 @@ export function ConciergeExperience() {
 
       {complete && !analyzing ? (
         <section className="space-y-3">
+          <ReasoningNotice />
           <AuthorityBadge computedBy={confirmed ? "server-authoritative" : trace.computedBy} />
           <RadarTally trace={trace} />
           <div className="flex gap-2">
@@ -431,6 +661,15 @@ function MicIcon() {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-5">
       <rect x="9" y="3" width="6" height="11" rx="3" />
       <path d="M5 11a7 7 0 0 0 14 0M12 18v3" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="size-5">
+      <circle cx="11" cy="11" r="6.5" />
+      <path d="m16 16 4 4" strokeLinecap="round" />
     </svg>
   );
 }

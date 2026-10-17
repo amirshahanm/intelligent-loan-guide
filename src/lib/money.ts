@@ -2,7 +2,7 @@
  * Money + Persian presentation layer.
  *
  * Canonical storage is ALWAYS integer IRR (Rials).
- * Conversion to Toman and Persian numeral formatting happens ONLY here,
+ * Conversion to Toman and Persian-language formatting with Latin digits happens here,
  * at the presentation boundary. Formatted strings are never persisted.
  */
 
@@ -28,15 +28,20 @@ export function toLatinDigits(input: string): string {
     .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
 }
 
+/** Display Latin digits without changing Persian text or numeric values. */
+export function toDisplayDigits(input: string | number): string {
+  return toLatinDigits(String(input));
+}
+
 function groupThousands(n: number): string {
   return Math.abs(n)
     .toString()
     .replace(/\B(?=(\d{3})+(?!\d))/g, "٬");
 }
 
-/** Persian-numeral integer, thousand-separated. */
+/** Latin-digit integer, thousand-separated. */
 export function faNumber(n: number): string {
-  return toPersianDigits(groupThousands(Math.round(n)));
+  return toDisplayDigits(groupThousands(Math.round(n)));
 }
 
 /** Full Toman amount, e.g. «۳۰۰٬۰۰۰٬۰۰۰ تومان». */
@@ -49,13 +54,13 @@ export function formatTomanCompact(irr: IRR): string {
   const t = toToman(irr);
   if (t >= 1_000_000_000) {
     const v = t / 1_000_000_000;
-    return `${toPersianDigits(trimDecimal(v))} میلیارد تومان`;
+    return `${toDisplayDigits(trimDecimal(v))} میلیارد تومان`;
   }
   if (t >= 1_000_000) {
     const v = t / 1_000_000;
-    return `${toPersianDigits(trimDecimal(v))} میلیون تومان`;
+    return `${toDisplayDigits(trimDecimal(v))} میلیون تومان`;
   }
-  if (t >= 1_000) return `${toPersianDigits(trimDecimal(t / 1_000))} هزار تومان`;
+  if (t >= 1_000) return `${toDisplayDigits(trimDecimal(t / 1_000))} هزار تومان`;
   return `${faNumber(t)} تومان`;
 }
 
@@ -65,7 +70,7 @@ function trimDecimal(v: number): string {
 }
 
 export function faPercent(n: number): string {
-  return `${toPersianDigits(Math.round(n))}٪`;
+  return `${toDisplayDigits(Math.round(n))}٪`;
 }
 
 /** Persian relative freshness, e.g. «۱۲ دقیقه پیش». */
@@ -73,18 +78,18 @@ export function faRelativeTime(iso: string, now: Date = new Date()): string {
   const diffMs = now.getTime() - new Date(iso).getTime();
   const mins = Math.max(0, Math.round(diffMs / 60000));
   if (mins < 1) return "همین الان";
-  if (mins < 60) return `${toPersianDigits(mins)} دقیقه پیش`;
+  if (mins < 60) return `${toDisplayDigits(mins)} دقیقه پیش`;
   const hours = Math.round(mins / 60);
-  if (hours < 24) return `${toPersianDigits(hours)} ساعت پیش`;
+  if (hours < 24) return `${toDisplayDigits(hours)} ساعت پیش`;
   const days = Math.round(hours / 24);
-  if (days < 31) return `${toPersianDigits(days)} روز پیش`;
-  return `${toPersianDigits(Math.round(days / 30))} ماه پیش`;
+  if (days < 31) return `${toDisplayDigits(days)} روز پیش`;
+  return `${toDisplayDigits(Math.round(days / 30))} ماه پیش`;
 }
 
 export function faDays(days: number): string {
-  return `${toPersianDigits(days)} روز`;
+  return `${toDisplayDigits(days)} روز`;
 }
 
 export function faMonths(months: number): string {
-  return `${toPersianDigits(months)} ماه`;
+  return `${toDisplayDigits(months)} ماه`;
 }

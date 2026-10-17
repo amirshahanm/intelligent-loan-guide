@@ -56,26 +56,26 @@ export const URGENCY_FA: Record<Urgency, string> = {
 };
 
 export const INCOME_FA: Record<IncomeBand, string> = {
-  under_20: "زیر ۲۰ میلیون تومان",
-  "20_50": "۲۰ تا ۵۰ میلیون تومان",
-  "50_100": "۵۰ تا ۱۰۰ میلیون تومان",
-  over_100: "بیش از ۱۰۰ میلیون تومان",
+  under_20: "زیر 20 میلیون تومان",
+  "20_50": "20 تا 50 میلیون تومان",
+  "50_100": "50 تا 100 میلیون تومان",
+  over_100: "بیش از 100 میلیون تومان",
   unknown: "نامشخص",
 };
 
 export const DEBT_FA: Record<DebtLoad, string> = {
   none: "بدون قسط",
-  light: "زیر ۱۰ میلیون تومان",
-  moderate: "۱۰ تا ۳۰ میلیون تومان",
-  heavy: "بیشتر از ۳۰ میلیون تومان",
+  light: "زیر 10 میلیون تومان",
+  moderate: "10 تا 30 میلیون تومان",
+  heavy: "بیشتر از 30 میلیون تومان",
   unknown: "نامشخص",
 };
 
 export const TURNOVER_FA: Record<BankTurnover, string> = {
-  under_50: "زیر ۵۰ میلیون تومان",
-  "50_150": "۵۰ تا ۱۵۰ میلیون تومان",
-  "150_300": "۱۵۰ تا ۳۰۰ میلیون تومان",
-  over_300: "بیشتر از ۳۰۰ میلیون تومان",
+  under_50: "زیر 50 میلیون تومان",
+  "50_150": "50 تا 150 میلیون تومان",
+  "150_300": "150 تا 300 میلیون تومان",
+  over_300: "بیشتر از 300 میلیون تومان",
   unknown: "نامشخص",
 };
 
@@ -88,6 +88,10 @@ export const ADVERSE_FA: Record<AdverseHistory, string> = {
 };
 
 export const SLOT_FA: Record<SlotKey, string> = {
+  availableCapital: "سرمایهٔ موجود",
+  spendingBudget: "بودجهٔ قابل‌استفاده برای خرید",
+  targetPrice: "مبلغ هدف خرید",
+  monthlyPaymentCapacity: "توان پرداخت ماهانهٔ اعلام‌شده",
   amount: "مبلغ",
   purpose: "هدف",
   employment: "وضعیت شغلی",
