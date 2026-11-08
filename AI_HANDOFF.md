@@ -1,6 +1,6 @@
 # TashilRadar — AI / Contributor Handoff
 
-Last updated: 2026-10-17
+Last updated: 2026-11-08
 
 ## Start here
 
@@ -44,6 +44,38 @@ The most recent prior implementation verification recorded for this working tree
 - Targeted lint for the changed implementation files passed. A repository-wide profile lint failure was previously identified as pre-existing/out of scope; recheck before relying on that classification.
 
 These results predate the handoff-documentation change. Re-run appropriate checks on the exact current commit before claiming fresh verification. Do not present local tests or build output as production acceptance.
+
+## 2026-11-08 update — review fixes and Shahan Auto dealer installment
+
+Founder-approved in session. Restore points before this work: branches
+`backup/regulator-grade-v1-20261108` and `backup/main-20261108`.
+
+- Amount parsing (`src/core/extract.ts`): Persian decimals («۱/۵ میلیارد» was
+  read as 5 billion), compound amounts («۱ میلیارد و ۵۰۰ میلیون», «یک و نیم»),
+  dealer shorthand «۷۲۰ تومن» (= 720 million, lower confidence), price / cash /
+  down-payment classification. Tests: `src/core/persian-amount.test.ts`.
+- Car needs, model names and «وام برای ماشین» route to `purchase_vehicle`;
+  household machines and «ماشین‌آلات» do not.
+- New deterministic core `src/core/installment.ts` (+ `installment.selfcheck.ts`
+  in CI): flat dealer installment and amortized bank payment.
+- Shahan Auto published terms in `src/lib/partners/shahan-auto.ts`: minimum 50%
+  down, 1–24 months, 4.5% per month flat on the financed remainder, Sayad
+  cheque or promissory note (amount negotiable), no guarantor. No commission
+  is modelled or shown anywhere — Founder instruction.
+- Vehicle page: calculator first, three routes (cash, direct dealer, bank),
+  Shahan Auto section linking to https://shahanauto.ir. Listing deep link:
+  `/vehicle?price=<toman or Persian text>&car=<name>&from=shahan-auto` prefills
+  an editable price only; it is not an order or a verified price.
+- Support channels live in `src/lib/contact-channels.ts`; empty values stay
+  hidden. The Founder still needs to supply verified phone / messenger IDs.
+- Gold token `--gold` is now a soft violet (Founder: no gold on navy).
+- Empty radar/opportunities pages start the conversation in place; partners
+  page shows the live partner and a «become a partner» section.
+- CI now also runs `bun test`.
+
+Open Founder questions: confirm the 4.5% is flat on the whole remainder for
+every month (implemented) rather than on the declining balance; who is the
+legal creditor (Shahan Auto or the seller); Persian Gallery terms.
 
 ## Not yet release-approved
 
