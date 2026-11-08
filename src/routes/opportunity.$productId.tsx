@@ -8,6 +8,7 @@ import { useAuthoritativeTrace } from "@/hooks/use-authoritative-trace";
 import { useSession } from "@/lib/session";
 import { track } from "@/lib/analytics";
 import { catalogFact, derived } from "@/core/types";
+import { amortizedMonthlyPayment } from "@/core/installment";
 import { requestHandoff as requestHandoffServer } from "@/lib/handoff.functions";
 import {
   faDays,
@@ -33,13 +34,6 @@ export const Route = createFileRoute("/opportunity/$productId")({
   }),
   component: OpportunityPage,
 });
-
-function monthlyPayment(principalIrr: number, ratePercent: number, months: number) {
-  const r = ratePercent / 100 / 12;
-  if (r === 0) return Math.round(principalIrr / months);
-  const factor = Math.pow(1 + r, months);
-  return Math.round((principalIrr * r * factor) / (factor - 1));
-}
 
 function OpportunityPage() {
   const { productId } = useParams({ from: "/opportunity/$productId" });
@@ -81,7 +75,7 @@ function OpportunityPage() {
   }
 
   const handoff = state.handoffs.find((h) => h.productId === match.productId);
-  const installment = monthlyPayment(match.reachableAmount, match.ratePercent, months);
+  const installment = amortizedMonthlyPayment(match.reachableAmount, match.ratePercent, months);
   const backendReady = Boolean(
     state.backend?.sessionId && state.backend?.sessionCapability && state.backend?.caseId,
   );

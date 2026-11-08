@@ -34,6 +34,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Installment arithmetic self-check
+        run: bun run src/core/installment.selfcheck.ts
+
+      - name: Unit tests
+        run: bun test
+
       - name: Liquidity core self-check
         run: bun run src/core/liquidity.selfcheck.ts
 
