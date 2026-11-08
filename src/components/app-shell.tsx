@@ -99,9 +99,7 @@ export function AppShell({
     >
       <header className="app-shell__header">
         <div className="app-shell__header-inner">
-          <span className="app-shell__founder" dir="ltr">
-            Founded by Shahan
-          </span>
+          <span className="app-shell__founder">از مجموعهٔ شاهان</span>
           <ShellNavigation pathname={pathname} />
           <Link to="/" className="app-shell__brand" aria-label="تسهیل‌رادار، خانه">
             <span>تسهیل</span>
@@ -118,7 +116,7 @@ export function AppShell({
         </div>
       ) : null}
       <main className={cn("app-shell__main", className)}>{children}</main>
-      <footer className="mx-auto w-full max-w-5xl px-5 pb-28 pt-8 text-sm text-muted-foreground md:pb-10">
+      <footer className="mx-auto w-full max-w-5xl px-5 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-4 text-sm text-muted-foreground md:pb-10">
         <details className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
           <summary className="cursor-pointer text-foreground">درباره ما و مجوزها</summary>
           <div className="mt-4 space-y-4 leading-7">

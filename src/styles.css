@@ -135,23 +135,21 @@
   justify-content: center;
   font-size: 1rem;
 }
+/* Wraps on phones instead of hiding factors in a sideways scroll. */
 .credit-factors > div {
-  display: flex;
-  overflow-x: auto;
-  gap: 0.8rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: 0.6rem;
   padding: 0.5rem 0;
 }
 .credit-factors article {
-  flex: 0 0 7.5rem;
   display: grid;
   justify-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem;
-  border-left: 1px solid var(--border);
+  gap: 0.6rem;
+  padding: 0.75rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
   text-align: center;
-}
-.credit-factors article:last-child {
-  border-left: 0;
 }
 .credit-factors article > svg {
   width: 2rem;
@@ -270,12 +268,7 @@
   .credit-summary__facts strong {
     font-size: 1.3rem;
   }
-  .credit-factors > div {
-    justify-content: space-between;
-  }
-  .credit-factors article {
-    flex: 1 0 0;
-  }
+
   .credit-sakha {
     grid-template-columns: 1fr 12rem;
     gap: 2rem;
@@ -444,7 +437,9 @@
 .goods-calculator label {
   font-size: 0.85rem;
 }
-.goods-calculator input[type="number"] {
+.goods-calculator input[type="number"],
+.goods-calculator #goods-rate,
+.goods-calculator .loan-calc__input {
   width: 100%;
   min-width: 0;
   background: var(--background);
@@ -1751,7 +1746,8 @@
 .app-shell__main {
   width: min(100%, 72rem);
   margin-inline: auto;
-  padding: 1.5rem 1rem calc(7rem + env(safe-area-inset-bottom));
+  /* The footer below already reserves room for the mobile bottom menu. */
+  padding: 1.5rem 1rem 1.5rem;
 }
 
 .app-shell--home .app-shell__main {
@@ -1918,7 +1914,8 @@
   z-index: 1;
   top: 60%;
   left: 50%;
-  width: min(55vw, 14rem);
+  /* Leaves a clear gap for the orbit labels on narrow phones. */
+  width: min(50vw, 13rem);
   aspect-ratio: 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
@@ -2230,13 +2227,13 @@
   left: 90%;
 }
 
-.home-radar-service--marriage {
-  top: 78%;
+.home-radar-service--vehicle {
+  top: 69%;
   left: 10%;
 }
 
 .home-radar-service--mobile {
-  top: 78%;
+  top: 69%;
   left: 90%;
 }
 
@@ -2278,11 +2275,16 @@
 }
 
 .home-radar-state__description {
+  width: fit-content;
+  max-width: calc(100% - 1rem);
   min-height: 1.35rem;
-  margin: 0.2rem auto 0;
-  padding-inline: 0.8rem;
+  margin: 0.35rem auto 0;
+  padding: 0.15rem 0.8rem;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--color-background) 72%, transparent);
+  backdrop-filter: blur(6px);
   color: color-mix(in oklch, var(--color-foreground) 54%, transparent);
-  font-size: 0.64rem;
+  font-size: 0.7rem;
   line-height: 1.55;
   text-align: center;
 }

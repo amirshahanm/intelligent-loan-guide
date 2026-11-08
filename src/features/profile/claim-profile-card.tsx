@@ -171,7 +171,7 @@ export function ClaimProfileCard() {
 
       {!canClaim ? (
         <p className="mt-3 text-[11px] leading-5 text-muted-foreground">
-          بعد از اینکه موتور یک Case امن برای پرونده ساخت، امکان اتصال موبایل فعال می‌شود.
+          بعد از اینکه موتور یک پروندهٔ امن سمت سرور ساخت، امکان اتصال موبایل فعال می‌شود.
         </p>
       ) : null}
       {error ? <p className="mt-3 text-[11px] leading-5 text-danger">{error}</p> : null}

@@ -9,7 +9,7 @@ const SERVICES = [
   {
     id: "vehicle-installment",
     label: "خودرو اقساط",
-    radarService: "bank",
+    radarService: "vehicle",
   },
   { id: "cash-loan", label: "وام نقدی", radarService: "bank" },
   { id: "goods-loan", label: "وام کالا", radarService: "mobile" },
@@ -21,7 +21,7 @@ const SERVICES = [
     label: "خرید و فروش اعتبار بانک‌ها",
     radarService: "bank",
   },
-  { id: "vehicle-services", label: "خدمات خودرو", radarService: "bank" },
+  { id: "vehicle-services", label: "خدمات خودرو", radarService: "vehicle" },
   {
     id: "working-capital",
     label: "سرمایه در گردش کسب‌وکار",

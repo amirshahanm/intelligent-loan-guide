@@ -141,6 +141,17 @@ function CreditPage() {
         </div>
       </section>
 
+      <section className="credit-service-panel credit-prep" aria-labelledby="credit-prep-title">
+        <h2 id="credit-prep-title">پیش از اعتبارسنجی آماده شو</h2>
+        <p>راهنمای عمومی است، نه نتیجهٔ پروندهٔ تو:</p>
+        <ol>
+          <li>قسط‌های فعلی را به‌موقع بپرداز؛ سابقهٔ پرداخت مهم‌ترین عامل است.</li>
+          <li>اگر چک برگشتی داری، پیش از درخواست تسهیلات سوءاثر آن را رفع کن.</li>
+          <li>شمارهٔ موبایل باید به نام خودت باشد؛ استعلام هویت به آن نیاز دارد.</li>
+          <li>هم‌زمان برای چند وام درخواست نده؛ اول مسیر مناسب را پیدا کن.</li>
+        </ol>
+      </section>
+
       <section className="credit-service-panel credit-sakha" aria-labelledby="credit-sakha-title">
         <div>
           <h2 id="credit-sakha-title">

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { StartHere } from "@/features/home/start-here";
 import { AppShell } from "@/components/app-shell";
 import { RadarCanvas } from "@/features/radar/radar-canvas";
 import { ReadinessPanel } from "@/features/readiness/readiness-panel";
@@ -112,17 +113,9 @@ function RadarPage() {
 
 function EmptyState() {
   return (
-    <div className="rounded-3xl border border-border bg-surface p-6 text-center">
-      <h1 className="text-base font-bold">هنوز چیزی برای اسکن نیست</h1>
-      <p className="mt-2 text-xs text-muted-foreground">
-        اول بگو چه می‌خواهی تا رادار مسیرهای واقعی را بسنجد.
-      </p>
-      <Link
-        to="/"
-        className="mt-4 inline-block rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground"
-      >
-        شروع گفت‌وگو
-      </Link>
-    </div>
+    <StartHere
+      title="رادار منتظر نیاز توست"
+      text="یک جمله بگو تا رادار مسیرهای واقعی را بسنجد؛ یا از یکی از مسیرهای زیر شروع کن."
+    />
   );
 }

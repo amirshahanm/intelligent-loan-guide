@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, Landmark, Scale, ShieldCheck, Store, FileText } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { ServiceSignal } from "@/components/service-signal";
+import { LoanCalculator } from "@/features/finance/loan-calculator";
 import { ConciergeExperience } from "@/features/concierge/concierge-experience";
 
 export const Route = createFileRoute("/bank-credit")({
@@ -88,6 +89,7 @@ function BankCreditPage() {
           </Link>
         </section>
       )}
+      <LoanCalculator idPrefix="bank" />
       <section className="surface-panel" aria-labelledby="market-request">
         <h2 id="market-request">
           <FileText aria-hidden="true" />

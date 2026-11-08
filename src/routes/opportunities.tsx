@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import * as React from "react";
+import { StartHere } from "@/features/home/start-here";
 import { AppShell } from "@/components/app-shell";
 import { OpportunityCard } from "@/features/opportunity/opportunity-card";
 import { AuthorityBadge, SectionTitle } from "@/components/provenance";
@@ -51,18 +52,10 @@ function OpportunitiesPage() {
   if (state.messages.length === 0) {
     return (
       <AppShell>
-        <div className="rounded-3xl border border-border bg-surface p-6 text-center">
-          <h1 className="text-base font-bold">هنوز فرصتی محاسبه نشده</h1>
-          <p className="mt-2 text-xs text-muted-foreground">
-            برای دیدن فرصت‌ها اول باید بدانم چه می‌خواهی.
-          </p>
-          <Link
-            to="/"
-            className="mt-4 inline-block rounded-full bg-accent px-5 py-2 text-sm font-semibold text-accent-foreground"
-          >
-            شروع گفت‌وگو
-          </Link>
-        </div>
+        <StartHere
+          title="فرصت‌هایت از یک جمله شروع می‌شوند"
+          text="بگو چه می‌خواهی تا مسیرهای مناسب را با دلیل کنار هم بچینم؛ بدون ثبت‌نام."
+        />
       </AppShell>
     );
   }

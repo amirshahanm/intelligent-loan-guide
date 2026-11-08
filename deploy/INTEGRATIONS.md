@@ -27,7 +27,7 @@ vendor download moved from Downloads to ACL-restricted storage outside the repo.
 The server copy is root-owned mode 0600 under a mode-0700 directory. Values were
 not printed, committed, built into assets or included in screenshots.
 
-Actual Germany-host egress was verified as `188.40.20.135`; the API.ir key was
+Actual Germany-host egress was verified (address kept in private ops notes); the API.ir key was
 restricted to that address and the panel shows it as valid. The free Sandbox Echo
 probe from this server returned HTTP 200, success=true, tokenStatus=true.
 This verifies credential/network connectivity only. The application container

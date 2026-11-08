@@ -1,44 +1,38 @@
 import * as React from "react";
-import { ClipboardCheck, Handshake, Heart, Landmark, Smartphone } from "lucide-react";
+import { Car, ClipboardCheck, Handshake, Landmark, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export type HomeRadarServiceId = "credit" | "bank" | "trade" | "marriage" | "mobile";
+export type HomeRadarServiceId = "credit" | "bank" | "trade" | "vehicle" | "mobile";
 
 type RadarPhase = "scan" | "detect" | "connect" | "resolve" | "execute";
 
 const PHASES: ReadonlyArray<{
   id: RadarPhase;
-  english: string;
   label: string;
   description: string;
 }> = [
   {
     id: "scan",
-    english: "Scan",
     label: "اسکن نیاز",
     description: "نیازت را بنویس یا یک سرویس را انتخاب کن.",
   },
   {
     id: "detect",
-    english: "Detect",
     label: "تشخیص حوزه",
     description: "انتخاب تو دریافت شد و حوزهٔ مرتبط مشخص است.",
   },
   {
     id: "connect",
-    english: "Connect",
     label: "اتصال مسیرها",
     description: "مسیرهای مرتبط برای بررسی کنار هم قرار گرفتند.",
   },
   {
     id: "resolve",
-    english: "Resolve",
     label: "جمع‌بندی داده‌ها",
     description: "داده‌های واردشده برای تصمیم بعدی مرتب شدند.",
   },
   {
     id: "execute",
-    english: "Execute",
     label: "آمادهٔ ادامه",
     description: "گام بعدی بر پایهٔ اطلاعات خودت آماده است؛ نه یک تأیید مالی.",
   },
@@ -48,7 +42,7 @@ const RADAR_SERVICES = [
   { id: "credit", label: "اعتبارسنجی", icon: ClipboardCheck },
   { id: "bank", label: "وام‌های بانکی", icon: Landmark },
   { id: "trade", label: "تجارت بین‌الملل", icon: Handshake },
-  { id: "marriage", label: "وام ازدواج", icon: Heart },
+  { id: "vehicle", label: "خرید خودرو", icon: Car },
   { id: "mobile", label: "خرید موبایل", icon: Smartphone },
 ] as const;
 
@@ -66,7 +60,7 @@ const SERVICE_NODE: Record<HomeRadarServiceId, number> = {
   bank: 0,
   trade: 1,
   mobile: 2,
-  marriage: 3,
+  vehicle: 3,
   credit: 4,
 };
 

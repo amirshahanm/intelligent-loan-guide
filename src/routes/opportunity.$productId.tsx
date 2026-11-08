@@ -124,7 +124,11 @@ function OpportunityPage() {
       <ReasoningNotice />
       <header className="surface-panel rounded-3xl p-4">
         <div className="flex items-start gap-3">
-          <FitRing score={match.fitScore} size={64} />
+          <div className="flex flex-col items-center gap-1">
+            <FitRing score={match.fitScore} size={64} />
+            {/* Distinguishes this from the profile's readiness score. */}
+            <span className="text-[10px] text-muted-foreground">درصد تطابق</span>
+          </div>
           <div className="min-w-0">
             <h1 className="text-lg font-extrabold">{match.productName}</h1>
             <p className="text-xs text-muted-foreground">{match.partnerName}</p>

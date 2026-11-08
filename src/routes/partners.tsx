@@ -3,6 +3,10 @@ import * as React from "react";
 import { AppShell } from "@/components/app-shell";
 import { ProvenanceChip, SectionTitle } from "@/components/provenance";
 import { PARTNERS, PRODUCTS } from "@/core/catalog";
+import {
+  SHAHAN_AUTO_INSTALLMENT_TERMS as TERMS,
+  SHAHAN_AUTO_PARTNER,
+} from "@/lib/partners/shahan-auto";
 import { catalogFact } from "@/core/types";
 import { PURPOSE_FA } from "@/core/labels";
 import { faDays, faMonths, faPercent, formatTomanCompact, toDisplayDigits } from "@/lib/money";
@@ -49,25 +53,71 @@ function PartnersPage() {
           موتور استدلال تسهیل‌رادار روی همین مجموعه از محصولات اجرا می‌شود؛ قواعد هر محصول و منبع هر
           عدد شفاف است.
         </p>
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <Tally value={PARTNERS.length} label="تأمین‌کننده" />
-          <Tally value={PRODUCTS.length} label="محصول" />
-          <Tally
-            value={new Set(PRODUCTS.flatMap((p) => p.rules.allowedPurposes)).size}
-            label="هدف پوشش‌داده‌شده"
-          />
-        </div>
+        {PRODUCTS.length > 0 ? (
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <Tally value={PARTNERS.length} label="تأمین‌کننده" />
+            <Tally value={PRODUCTS.length} label="محصول" />
+            <Tally
+              value={new Set(PRODUCTS.flatMap((p) => p.rules.allowedPurposes)).size}
+              label="هدف پوشش‌داده‌شده"
+            />
+          </div>
+        ) : null}
         {PRODUCTS[0] ? (
           <div className="mt-3">
             <ProvenanceChip provenance={catalogFact(PRODUCTS[0].asOf)} />
           </div>
         ) : (
           <p className="mt-3 text-sm text-muted-foreground">
-            هنوز تأمین‌کننده یا محصول مالی تأییدشده‌ای متصل نشده است. نرخ و شرایط پس از دریافت
-            اطلاعات معتبر نمایش داده می‌شود.
+            بانک‌ها و نهادهای مالی پس از دریافت اطلاعات معتبر اینجا اضافه می‌شوند. همکاران فعال فعلی
+            را پایین ببین.
           </p>
         )}
       </header>
+
+      <section className="partner-live" aria-labelledby="partner-live-title">
+        <span className="partner-live__badge">همکار فعال</span>
+        <h2 id="partner-live-title">{SHAHAN_AUTO_PARTNER.name}</h2>
+        <p>قسط مستقیم خودرو از نمایشگاه، با شرایط اعلام‌شده و محاسبهٔ شفاف.</p>
+        <ul>
+          <li>پیش‌پرداخت حداقل {toDisplayDigits(TERMS.minDownPaymentPercent)}٪</li>
+          <li>تا {toDisplayDigits(TERMS.maxMonths)} قسط ماهانه</li>
+          <li>چک صیادی یا سفته</li>
+          <li>بدون ضامن</li>
+        </ul>
+        <Link to="/vehicle" hash="vehicle-calculator" className="partner-live__cta">
+          محاسبهٔ قسط خودرو
+        </Link>
+        <small>
+          {SHAHAN_AUTO_PARTNER.name} از مجموعهٔ شاهان است؛ این همکاری در رتبه‌بندی مسیرها اثری
+          ندارد.
+        </small>
+      </section>
+
+      <section className="partner-join" aria-labelledby="partner-join-title">
+        <h2 id="partner-join-title">همکار تسهیل‌رادار شوید</h2>
+        <p>
+          نمایشگاه خودرو، فروشگاه، لیزینگ یا نهاد مالی هستید؟ مشتری‌هایی که با نیاز روشن و محاسبهٔ
+          شفاف می‌آیند، سریع‌تر به خرید می‌رسند.
+        </p>
+        <div className="partner-join__grid">
+          <div>
+            <strong>مشتری آماده</strong>
+            <span>نیاز، بودجه و پیش‌پرداخت پیش از تماس روشن است.</span>
+          </div>
+          <div>
+            <strong>شرایط خودتان</strong>
+            <span>پیش‌پرداخت، مدت و نوع تضمین را خودتان تعیین می‌کنید.</span>
+          </div>
+          <div>
+            <strong>رتبه‌بندی منصفانه</strong>
+            <span>ترتیب مسیرها فقط به سود کاربر چیده می‌شود.</span>
+          </div>
+        </div>
+        <Link to="/support" className="partner-join__cta">
+          درخواست همکاری
+        </Link>
+      </section>
 
       {PARTNERS.map((partner) => {
         const products = PRODUCTS.filter((p) => p.partnerId === partner.id);

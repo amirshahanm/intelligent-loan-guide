@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 export function LiquidityJourney() {
   const { state, update, hydrated } = useSession();
+  const [showAllFactors, setShowAllFactors] = React.useState(false);
   const input = React.useMemo(
     () => ({
       // Phase 1 CreditResult is simulated and is deliberately not a verified review signal.
@@ -99,7 +100,7 @@ export function LiquidityJourney() {
             <div className="num text-4xl font-black text-accent">
               {toDisplayDigits(result.total)}
             </div>
-            <div className="text-[10px] text-muted-foreground">
+            <div className="num text-[10px] text-muted-foreground">
               از {toDisplayDigits(result.maxScore)}
             </div>
           </div>
@@ -184,54 +185,69 @@ export function LiquidityJourney() {
           </span>
         </div>
         <ul className="mt-4 space-y-3">
-          {result.factors.map((factor) => (
-            <li key={factor.key} className="rounded-2xl bg-elevated/60 p-3">
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold">{factor.label}</span>
-                <span
-                  className={cn(
-                    "num text-xs",
-                    factor.known ? "text-accent" : "text-muted-foreground",
-                  )}
-                >
-                  +{toDisplayDigits(factor.awarded)} / {toDisplayDigits(factor.weight)}
-                </span>
-              </div>
-              <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{factor.reason}</p>
-              {!factor.known && state.liquiditySkippedFactors.includes(factor.key) ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    update((current) => ({
-                      ...current,
-                      liquiditySkippedFactors: current.liquiditySkippedFactors.filter(
-                        (key) => key !== factor.key,
-                      ),
-                    }))
-                  }
-                  className="mt-2 text-[10px] text-signal"
-                >
-                  پاسخ دادن به این فاکتور
-                </button>
-              ) : null}
-              {factor.known && !(factor.key in knownLiquidityFacts(state.slots)) ? (
-                <button
-                  type="button"
-                  onClick={() =>
-                    update((current) => {
-                      const next = { ...current.liquidity };
-                      delete next[factor.key];
-                      return { ...current, liquidity: next };
-                    })
-                  }
-                  className="mt-2 text-[10px] text-signal"
-                >
-                  بازبینی پاسخ
-                </button>
-              ) : null}
-            </li>
-          ))}
+          {[...result.factors]
+            .sort((a, b) => b.weight - a.weight)
+            .slice(0, showAllFactors ? undefined : 3)
+            .map((factor) => (
+              <li key={factor.key} className="rounded-2xl bg-elevated/60 p-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold">{factor.label}</span>
+                  <span
+                    className={cn(
+                      "num text-xs",
+                      factor.known ? "text-accent" : "text-muted-foreground",
+                    )}
+                  >
+                    {toDisplayDigits(factor.awarded)} از {toDisplayDigits(factor.weight)}
+                  </span>
+                </div>
+                <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{factor.reason}</p>
+                {!factor.known && state.liquiditySkippedFactors.includes(factor.key) ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      update((current) => ({
+                        ...current,
+                        liquiditySkippedFactors: current.liquiditySkippedFactors.filter(
+                          (key) => key !== factor.key,
+                        ),
+                      }))
+                    }
+                    className="mt-2 text-[10px] text-signal"
+                  >
+                    پاسخ دادن به این فاکتور
+                  </button>
+                ) : null}
+                {factor.known && !(factor.key in knownLiquidityFacts(state.slots)) ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      update((current) => {
+                        const next = { ...current.liquidity };
+                        delete next[factor.key];
+                        return { ...current, liquidity: next };
+                      })
+                    }
+                    className="mt-2 text-[10px] text-signal"
+                  >
+                    بازبینی پاسخ
+                  </button>
+                ) : null}
+              </li>
+            ))}
         </ul>
+        {result.factors.length > 3 ? (
+          <button
+            type="button"
+            onClick={() => setShowAllFactors((v) => !v)}
+            className="mt-3 w-full rounded-2xl border border-border px-4 py-2 text-xs text-accent"
+            aria-expanded={showAllFactors}
+          >
+            {showAllFactors
+              ? "نمایش سه فاکتور مهم‌تر"
+              : `دیدن ${toDisplayDigits(result.factors.length - 3)} فاکتور دیگر`}
+          </button>
+        ) : null}
       </section>
 
       {result.missingFactors.length ? (

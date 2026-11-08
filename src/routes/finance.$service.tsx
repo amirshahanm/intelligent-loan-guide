@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft, ClipboardList, ShieldCheck } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
+import { LoanCalculator } from "@/features/finance/loan-calculator";
 import { ConciergeExperience } from "@/features/concierge/concierge-experience";
 import { FINANCE_SERVICES, isFinanceServiceId } from "@/features/home/finance-services";
 import { PopularServiceArt } from "@/features/home/popular-service-art";
@@ -99,6 +100,7 @@ function FinanceContent({ service }: { service: keyof typeof FINANCE_SERVICES })
           suggestionLabel="استفاده از هدف انتخاب‌شده در متن نیاز"
         />
       </section>
+      <LoanCalculator idPrefix="finance" />
       <section className="surface-panel" aria-labelledby="finance-next">
         <h2 id="finance-next">وضعیت و قدم بعدی</h2>
         <p>

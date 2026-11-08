@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { ConciergeExperience } from "@/features/concierge/concierge-experience";
-import { formatToman, fromToman, toDisplayDigits } from "@/lib/money";
+import { formatToman, fromToman, toDisplayDigits, toLatinDigits } from "@/lib/money";
+import { computeDealerInstallment } from "@/core/installment";
 
 export const Route = createFileRoute("/goods")({
   head: () => ({
@@ -49,6 +50,29 @@ function GoodsPage() {
     amountNumber > 0 &&
     amountNumber <= 1_000_000_000_000;
   const monthlyPrincipal = validAmount ? Math.ceil(fromToman(amountNumber) / months) : null;
+  // Optional profit the seller states, e.g. «۳.۵». Never a TashilRadar rate.
+  const [rateText, setRateText] = React.useState("");
+  const rate = Number(toLatinDigits(rateText.trim()).replace(/[٫/]/, "."));
+  const validRate = rateText.trim() !== "" && Number.isFinite(rate) && rate > 0 && rate <= 20;
+  const withProfit =
+    validAmount && validRate
+      ? computeDealerInstallment(
+          { priceIrr: fromToman(amountNumber), downPaymentIrr: 0, months },
+          {
+            partnerId: "user_stated_seller",
+            minDownPaymentPercent: 0,
+            minMonths: 1,
+            maxMonths: 60,
+            monthlyProfitBasisPoints: Math.round(rate * 100),
+            method: "flat_on_financed",
+            guarantees: [],
+            promissoryNoteAmount: "negotiable",
+            guarantorRequired: false,
+            source: { kind: "partner_published", statedBy: "user", asOf: "" },
+          },
+        )
+      : null;
+  const profitResult = withProfit?.status === "calculated" ? withProfit : null;
 
   return (
     <AppShell className="goods-page">
@@ -164,13 +188,33 @@ function GoodsPage() {
               onChange={(event) => setMonths(Number(event.target.value))}
               aria-valuetext={`${toDisplayDigits(months)} ماه، انتخاب آموزشی`}
             />
+            <label htmlFor="goods-rate">سود ماهانهٔ اعلام‌شدهٔ فروشنده، درصد، اختیاری</label>
+            <input
+              id="goods-rate"
+              inputMode="decimal"
+              value={rateText}
+              onChange={(event) => setRateText(event.target.value)}
+              placeholder="مثلاً ۳٫۵"
+              aria-invalid={rateText.trim() !== "" && !validRate}
+            />
+            <small>اگر فروشنده سود ماهانه اعلام کرده، اینجا بنویس تا قسط واقعی‌تر ببینی.</small>
           </div>
           <output className="goods-calculator__output" aria-live="polite">
-            <span>سهم ماهانه از اصل مبلغ — آموزشی</span>
+            <span>
+              {profitResult ? "قسط ماهانه با سود اعلام‌شده" : "سهم ماهانه از اصل مبلغ — آموزشی"}
+            </span>
             <strong>
-              {monthlyPrincipal === null ? "مبلغ را وارد کن" : formatToman(monthlyPrincipal)}
+              {profitResult
+                ? formatToman(profitResult.installmentIrr)
+                : monthlyPrincipal === null
+                  ? "مبلغ را وارد کن"
+                  : formatToman(monthlyPrincipal)}
             </strong>
-            <small>اصل مبلغ ÷ تعداد ماه‌ها؛ گرد کردن رو به بالا</small>
+            <small>
+              {profitResult
+                ? `سود کل ${formatToman(profitResult.profitIrr)}؛ جمع پرداختی ${formatToman(profitResult.installmentsTotalIrr)}`
+                : "اصل مبلغ ÷ تعداد ماه‌ها؛ بدون سود. برای قسط واقعی‌تر، سود فروشنده را وارد کن."}
+            </small>
           </output>
         </div>
       </section>

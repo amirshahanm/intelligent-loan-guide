@@ -5,8 +5,22 @@ import { ConciergeExperience } from "@/features/concierge/concierge-experience";
 import { RouteReveal } from "@/features/concierge/route-reveal";
 import { HomeRadar, type HomeRadarServiceId } from "@/features/home/home-radar";
 import { PopularServicesCarousel } from "@/features/home/popular-services-carousel";
+import { HomeJourney } from "@/features/home/home-journey";
 import { isAssessmentComplete } from "@/core/questions";
 import { useSession } from "@/lib/session";
+import { universalNeedFromText } from "@/core/universal-need-extract";
+import type { NeedKind } from "@/core/opportunity-routes";
+
+const RADAR_FOR_NEED: Partial<Record<NeedKind, [HomeRadarServiceId, string]>> = {
+  purchase_vehicle: ["vehicle", "خرید خودرو"],
+  purchase_goods: ["mobile", "خرید موبایل"],
+  trade_import: ["trade", "تجارت بین‌الملل"],
+  trade_export: ["trade", "تجارت بین‌الملل"],
+  cash: ["bank", "وام‌های بانکی"],
+  working_capital: ["bank", "وام‌های بانکی"],
+  equipment: ["bank", "وام‌های بانکی"],
+  purchase_property: ["bank", "وام‌های بانکی"],
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -46,6 +60,17 @@ function HomePage() {
     [],
   );
 
+  // Point the radar at the world the user's own sentence belongs to.
+  React.useEffect(() => {
+    if (!latestIntentText) return;
+    const target = RADAR_FOR_NEED[universalNeedFromText(latestIntentText, state.slots).kind];
+    if (target) {
+      setSelectedService(target[0]);
+      setSelectedLabel(target[1]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [latestIntentText]);
+
   const hasRadarActivity = selectionRevision > 0 || state.intents.length > 0;
   const radarActivityKey = `${selectionRevision}:${state.intents.length}:${state.askedQuestionIds.length}`;
   const canRevealRoute = latestIntentText && isAssessmentComplete(state.slots);
@@ -80,6 +105,8 @@ function HomePage() {
         />
 
         {canRevealRoute ? <RouteReveal slots={state.slots} needText={latestIntentText} /> : null}
+
+        {state.intents.length === 0 ? <HomeJourney /> : null}
       </div>
     </AppShell>
   );
