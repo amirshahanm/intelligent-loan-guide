@@ -55,45 +55,137 @@ const WORD_NUMBERS: Record<string, number> = {
 };
 
 function normalize(text: string): string {
-  return toLatinDigits(text)
-    .replace(/[يى]/g, "ی")
-    .replace(/ك/g, "ک")
-    .replace(/\u200c/g, " ")
-    .replace(/[,٬]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
+  return (
+    toLatinDigits(text)
+      .replace(/[يى]/g, "ی")
+      .replace(/ك/g, "ک")
+      .replace(/\u200c/g, " ")
+      // Persian decimal separators between digits: «۱/۵» and «۱٫۵» mean 1.5.
+      // Only digit/digit pairs are touched; scale words decide money meaning.
+      .replace(/(\d)\s*[/٫]\s*(\d)/g, "$1.$2")
+      .replace(/[,٬]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+  );
+}
+
+const SCALE_MILLION_TOMAN: Record<string, number> = {
+  میلیارد: 1000,
+  میلیون: 1,
+  هزار: 0.001,
+};
+
+const WORD_ALT = [...Object.keys(WORD_NUMBERS), "نیم"]
+  .sort((a, b) => b.length - a.length)
+  .join("|");
+const NO_LETTER_BEFORE = "(?<![\\u0600-\\u06FF\\d.])";
+const NO_LETTER_AFTER = "(?![\\u0600-\\u06FF])";
+const ATOM = `(?:\\d+(?:\\.\\d+)?|(?:${WORD_ALT})${NO_LETTER_AFTER})`;
+/** «۵۰۰», «۱.۵», «سیصد و پنجاه», «یک و نیم», «نیم». */
+const PHRASE = `${ATOM}(?:\\s*و\\s*${ATOM})*`;
+const SCALE_RE = "(میلیارد|میلیون|هزار)(?:ی)?";
+
+/**
+ * One money mention: «۱ میلیارد و ۵۰۰ میلیون», «۱/۵ میلیارد», «یک و نیم میلیارد»,
+ * «نیم میلیارد», «۲ میلیارد و ۳۰۰», «۸۰۰ میلیونی», or dealer shorthand «۷۲۰ تومن».
+ */
+const MENTION = new RegExp(
+  `${NO_LETTER_BEFORE}(${PHRASE})\\s*${SCALE_RE}(?:\\s*و\\s*(${PHRASE})(?:\\s*${SCALE_RE})?)?` +
+    `|${NO_LETTER_BEFORE}(\\d{2,5})\\s*(?:تومن|تومان)(?:ی)?${NO_LETTER_AFTER}`,
+  "g",
+);
+
+/** Sum of a number phrase: digits, number words and «نیم» joined by «و». */
+function phraseValue(raw: string): number | undefined {
+  let total = 0;
+  for (const part of raw.trim().split(/\s*و\s*/)) {
+    if (/^\d/.test(part)) total += parseFloat(part);
+    else if (part === "نیم") total += 0.5;
+    else if (WORD_NUMBERS[part] !== undefined) total += WORD_NUMBERS[part];
+    else return undefined;
+  }
+  return Number.isFinite(total) ? total : undefined;
+}
+
+export type AmountMention = {
+  index: number;
+  length: number;
+  /** Integer IRR. */
+  value: IRR;
+  /** Dealer shorthand («۷۲۰ تومن» = 720 million Toman) is less certain. */
+  shorthand: boolean;
+};
+
+/** Every money mention in the text, in order, as integer IRR. Deterministic. */
+export function findAmountMentions(text: string): AmountMention[] {
+  const t = normalize(text);
+  const mentions: AmountMention[] = [];
+  for (const m of t.matchAll(MENTION)) {
+    const [whole, headRaw, headScale, tailRaw, tailScale, shorthandRaw] = m;
+    let millions: number | undefined;
+    let length = whole.length;
+    if (shorthandRaw) {
+      // Market shorthand omits «million»: «۷۲۰ تومن» means 720 million Toman.
+      millions = Number(shorthandRaw);
+    } else {
+      const head = phraseValue(headRaw);
+      const unit = SCALE_MILLION_TOMAN[headScale];
+      if (head === undefined || unit === undefined) continue;
+      millions = head * unit;
+      let tailUsed = false;
+      if (tailRaw !== undefined) {
+        const tail = phraseValue(tailRaw);
+        if (tail !== undefined) {
+          if (tailScale) {
+            const tailUnit = SCALE_MILLION_TOMAN[tailScale];
+            if (tailUnit !== undefined && tailUnit < unit) {
+              millions += tail * tailUnit;
+              tailUsed = true;
+            }
+          } else if (tailRaw.trim() === "نیم") {
+            // «۲ میلیارد و نیم» = 2.5 billion.
+            millions += 0.5 * unit;
+            tailUsed = true;
+          } else if (headScale === "میلیارد" && tail >= 1 && tail < 1000) {
+            // «۲ میلیارد و ۳۰۰» = 2 billion and 300 million.
+            millions += tail;
+            tailUsed = true;
+          }
+        }
+      }
+      if (!tailUsed && tailRaw !== undefined) {
+        const scaleEnd = whole.search(/(میلیارد|میلیون|هزار)(?:ی)?/);
+        const head = whole.slice(scaleEnd).match(/^(میلیارد|میلیون|هزار)(?:ی)?/);
+        length = scaleEnd + (head ? head[0].length : 0);
+      }
+    }
+    // Keep a trailing currency word inside the mention so context checks see
+    // «… تومان دارم» the same as «… دارم».
+    const currency = t.slice(m.index! + length).match(/^\s*(?:تومان|تومن)(?![\u0600-\u06FF])/);
+    if (currency && !shorthandRaw) length += currency[0].length;
+    if (millions === undefined || !(millions > 0)) continue;
+    const value = millionToman(millions);
+    if (!Number.isSafeInteger(value)) continue;
+    mentions.push({ index: m.index!, length, value, shorthand: Boolean(shorthandRaw) });
+  }
+  return mentions;
 }
 
 /** Extract a Toman amount from free Persian text and return integer IRR. */
 export function extractAmount(text: string): IRR | undefined {
-  const t = normalize(text);
-
-  const scaled = t.match(/(\d+(?:\.\d+)?)\s*(میلیارد|میلیون|هزار)/);
-  if (scaled) {
-    const n = parseFloat(scaled[1]);
-    if (scaled[2] === "میلیارد") return millionToman(n * 1000);
-    if (scaled[2] === "میلیون") return millionToman(n);
-    return millionToman(n / 1000);
-  }
-
-  const wordScaled = t.match(
-    /([\u0600-\u06FF]+)\s*(?:و\s*([\u0600-\u06FF]+)\s*)?(میلیارد|میلیون|هزار)/,
-  );
-  if (wordScaled) {
-    const a = WORD_NUMBERS[wordScaled[1]];
-    const b = wordScaled[2] ? WORD_NUMBERS[wordScaled[2]] : 0;
-    if (a !== undefined) {
-      const n = a + (b ?? 0);
-      if (wordScaled[3] === "میلیارد") return millionToman(n * 1000);
-      if (wordScaled[3] === "میلیون") return millionToman(n);
-      return millionToman(n / 1000);
-    }
-  }
-
-  const bare = t.match(/(\d{6,})/);
+  const first = findAmountMentions(text)[0];
+  if (first) return first.value;
+  const bare = normalize(text).match(/(\d{6,})/);
   if (bare) return Number(bare[1]) * 10; // treated as Toman → IRR
   return undefined;
 }
+
+/**
+ * Vehicle words and common Iranian-market model names. «ماشین» alone is a car,
+ * but «ماشین‌آلات», «ماشین لباسشویی» and similar are equipment or goods.
+ */
+export const VEHICLE_WORD =
+  /خودرو|ماشین(?! ?(?:آلات|لباس ?شویی|ظرف ?شویی|حساب|اداری|دوخت|چاپ|اصلاح|قهوه|تایپ))|اتومبیل|سواری|شاسی ?بلند|کراس ?اوور|هاچ ?بک|سدان|پژو|پراید|سمند|دنا|رانا|تیبا|کوییک|ساینا|شاهین|تارا|هایما|جک|چری|تیگو|آریزو|فونیکس|ام ?وی ?ام|بی ?ام ?و|بنز|تویوتا|کرولا|کمری|هیوندا|هیوندای|النترا|سوناتا|توسان|سانتافه|کیا|سراتو|اسپورتیج|سورنتو|اپتیما|لکسوس|پورشه|مزدا|رنو|ال ?90|دیگنیتی|فیدلیتی|لیفان|برلیانس|ولوو|نیسان|میتسوبیشی|لندکروز|پرادو|هیلوکس|کاپرا|وانت/;
 
 type Rule<T> = { value: T; any: RegExp };
 
@@ -103,7 +195,7 @@ const PURPOSE_RULES: Rule<Purpose>[] = [
     any: /کسب ?و ?کار|مغازه|کارگاه|تولیدی|سرمایه در گردش|شرکت|بیزینس|توسعه کار/,
   },
   { value: "home", any: /مسکن|خانه|آپارتمان|ملک|رهن|ودیعه|اجاره/ },
-  { value: "car", any: /خودرو|ماشین|پراید|لیزینگ خودرو/ },
+  { value: "car", any: VEHICLE_WORD },
   { value: "education", any: /تحصیل|دانشگاه|دانشجو|شهریه/ },
   { value: "marriage", any: /ازدواج|عروسی|جهیزیه/ },
   { value: "debt", any: /بدهی|قسط عقب|چک برگشت|تسویه وام|تجمیع/ },
@@ -182,20 +274,12 @@ export function extractSlots(text: string): ExtractionResult {
   const amount = extractAmount(t);
   // Conservatively classify explicitly labelled amounts. Ambiguous multi-amount
   // text must not silently use its first number as a loan request.
-  const monetaryMentions = [
-    ...t.matchAll(
-      /(?:\d+(?:\.\d+)?|یک|دو|سه|پانصد|دویست|سیصد)\s*(?:میلیارد|میلیون|هزار)(?:\s*تومان)?/g,
-    ),
-  ];
+  const monetaryMentions = findAmountMentions(t);
   let classified = false;
   for (const mention of monetaryMentions) {
-    const value = extractAmount(mention[0]);
-    if (!value || !Number.isSafeInteger(value)) continue;
-    const before = t.slice(Math.max(0, mention.index! - 30), mention.index);
-    const after = t.slice(
-      mention.index! + mention[0].length,
-      mention.index! + mention[0].length + 25,
-    );
+    const value = mention.value;
+    const before = t.slice(Math.max(0, mention.index - 30), mention.index);
+    const after = t.slice(mention.index + mention.length, mention.index + mention.length + 25);
     // An existing loan is a liability, not available cash or a new request.
     // Do not coerce negative amounts into positive financial facts either.
     if (/[-−]\s*$/.test(before) || (/(?:وام|تسهیلات)\s*$/.test(before) && /^\s*دارم/.test(after))) {
@@ -209,23 +293,38 @@ export function extractSlots(text: string): ExtractionResult {
       | "monthlyPaymentCapacity"
       | "amount"
       | undefined;
-    if (/(?:توان پرداخت ماهانه|قسط ماهانه|پرداخت ماهانه)\s*$/.test(before))
+    if (/(?:توان پرداخت ماهانه|قسط ماهانه|پرداخت ماهانه|ماهی)\s*$/.test(before))
       key = "monthlyPaymentCapacity";
-    else if (/(?:بودجه خرید|بودجه قابل استفاده|برای خرید کنار گذاشتم)\s*$/.test(before))
-      key = "spendingBudget";
-    else if (/(?:قیمت|هزینه هدف)\s*$/.test(before)) key = "targetPrice";
+    else if (/^\s*(?:تومان|تومن)?\s*(?:در ماه|ماهانه|ماهیانه)/.test(after))
+      key = "monthlyPaymentCapacity";
     else if (
-      /^\s*(?:دارم|پول دارم|سرمایه دارم)/.test(after) ||
-      /(?:سرمایه موجود|پول موجود)\s*$/.test(before)
+      /(?:بودجه خرید|بودجه قابل استفاده|برای خرید کنار گذاشتم|پیش ?پرداخت)\s*$/.test(before) ||
+      /^\s*(?:تومان|تومن)?\s*(?:پیش ?پرداخت|برای پیش ?پرداخت|پیش می ?دم|پیش میدم)/.test(after)
+    )
+      key = "spendingBudget";
+    else if (
+      /(?:قیمت|قیمتش|هزینه هدف|به قیمت|ارزش)\s*$/.test(before) ||
+      // «ماشین ۸۰۰ میلیونی»: the adjectival «ی» prices the thing being bought.
+      (/(?:میلیارد|میلیون)ی$/.test(t.slice(mention.index, mention.index + mention.length)) &&
+        !/^\s*(?:دارم|نقد)/.test(after)) ||
+      (VEHICLE_WORD.test(before) &&
+        !/^\s*(?:تومان|تومن)?\s*(?:نقد|دارم|پول|وام|تسهیلات)/.test(after))
+    )
+      key = "targetPrice";
+    else if (
+      /^\s*(?:تومان|تومن)?\s*(?:نقد دارم|نقدی دارم|دارم|پول دارم|پول نقد دارم|سرمایه دارم|نقد|پول نقد)/.test(
+        after,
+      ) ||
+      /(?:سرمایه موجود|پول موجود|نقد دارم|نقدی دارم)\s*$/.test(before)
     )
       key = "availableCapital";
     else if (
       /(?:وام|تسهیلات)\s*$/.test(before) ||
-      /^\s*(?:وام|تسهیلات|نیاز دارم|لازم دارم)/.test(after)
+      /^\s*(?:تومان|تومن)?\s*(?:وام|تسهیلات|نیاز دارم|لازم دارم|کم دارم|کسری)/.test(after)
     )
       key = "amount";
     if (key) {
-      slots[key] = fact(value, userStated(0.9));
+      slots[key] = fact(value, userStated(mention.shorthand ? 0.7 : 0.9));
       if (!filled.includes(key)) filled.push(key);
       classified = true;
     }

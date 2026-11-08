@@ -1,4 +1,5 @@
 import type { IntentSlots } from "./types";
+import { VEHICLE_WORD } from "./extract";
 import {
   universalNeedFromLegacySlots,
   type NeedKind,
@@ -54,6 +55,15 @@ const RULES: NeedRule[] = [
     confidence: 0.92,
     pattern:
       /سرمایه در گردش|نقدینگی کسب ?و ?کار|پول برای مغازه|پول برای کارگاه|سرمایه برای شرکت|توسعه کسب ?و ?کار|توسعه کار/,
+  },
+  {
+    // A car named with a loan, installment or purchase word is the Vehicle
+    // vertical of Buy, not a generic cash loan: «پژو ۲۰۷ قسطی», «وام برای ماشین».
+    kind: "purchase_vehicle",
+    confidence: 0.9,
+    pattern: new RegExp(
+      `(?:${VEHICLE_WORD.source}).*(?:قسط|اقساط|بخر|خرید|لیزینگ|وام|تسهیلات|چک|سفته|می ?خوام|میخوام)|(?:قسط|اقساط|خرید|لیزینگ|وام|تسهیلات).*(?:${VEHICLE_WORD.source})`,
+    ),
   },
   {
     kind: "purchase_goods",
