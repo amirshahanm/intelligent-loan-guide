@@ -46,12 +46,24 @@ function budgetSummary(slots: IntentSlots): string {
 export function ConciergeExperience({
   suggestedNeed,
   suggestionLabel = "استفاده از انتخاب‌های خودرو در متن نیاز",
-}: { suggestedNeed?: string; suggestionLabel?: string } = {}) {
+  presetNeed,
+}: {
+  suggestedNeed?: string;
+  suggestionLabel?: string;
+  /** Text placed in the composer when `nonce` changes, e.g. from a calculator. */
+  presetNeed?: { text: string; nonce: number };
+} = {}) {
   const { state, update, hydrated } = useSession();
   const { trace, confirming, confirmed } = useAuthoritativeTrace();
   const navigate = useNavigate();
   const [draft, setDraft] = React.useState("");
   const [draftChannel, setDraftChannel] = React.useState<"typed" | "voice">("typed");
+  React.useEffect(() => {
+    if (!presetNeed?.text) return;
+    setDraft(presetNeed.text);
+    setDraftChannel("typed");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [presetNeed?.nonce]);
   const voicePrefix = React.useRef("");
   const [composingNewNeed, setComposingNewNeed] = React.useState(false);
   const endRef = React.useRef<HTMLDivElement>(null);

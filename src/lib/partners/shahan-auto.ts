@@ -30,3 +30,6 @@ export const SHAHAN_AUTO_INSTALLMENT_TERMS: DealerInstallmentTerms = {
   guarantorRequired: false,
   source: { kind: "partner_published", statedBy: "shahan_auto_owner", asOf: "2026-11-08" },
 };
+
+/** Public Shahan Auto showroom; verified reachable on 2026-11-08. */
+export const SHAHAN_AUTO_PUBLIC_URL = "https://shahanauto.ir";

@@ -1,11 +1,43 @@
 import * as React from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Car, Landmark, ClipboardList, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Car,
+  Landmark,
+  ClipboardList,
+  ExternalLink,
+  HandCoins,
+  BadgeCheck,
+} from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { ConciergeExperience } from "@/features/concierge/concierge-experience";
+import {
+  DealerInstallmentCalculator,
+  parsePriceInput,
+} from "@/features/vehicle/dealer-installment-calculator";
+import {
+  SHAHAN_AUTO_INSTALLMENT_TERMS as TERMS,
+  SHAHAN_AUTO_PARTNER,
+  SHAHAN_AUTO_PUBLIC_URL,
+} from "@/lib/partners/shahan-auto";
+import { toDisplayDigits } from "@/lib/money";
+
+type VehicleSearch = { price?: string; car?: string; from?: string };
 
 export const Route = createFileRoute("/vehicle")({
   head: () => ({ meta: [{ title: "خدمات خودرو — تسهیل‌رادار" }] }),
+  // A partner listing may prefill the calculator. These values are a visible,
+  // editable starting point only; they are never an order or a verified price.
+  validateSearch: (search: Record<string, unknown>): VehicleSearch => ({
+    price:
+      typeof search.price === "string"
+        ? search.price.slice(0, 40)
+        : typeof search.price === "number" && Number.isFinite(search.price)
+          ? String(search.price)
+          : undefined,
+    car: typeof search.car === "string" ? search.car.slice(0, 80) : undefined,
+    from: typeof search.from === "string" ? search.from.slice(0, 30) : undefined,
+  }),
   component: VehiclePage,
 });
 
@@ -15,7 +47,14 @@ const ORIGINS = ["ایرانی", "خارجی", "وارداتی"];
 function VehiclePage() {
   const [vehicleType, setVehicleType] = React.useState(TYPES[0]);
   const [origin, setOrigin] = React.useState<string | null>(null);
-  const [path, setPath] = React.useState<"cash" | "installment" | null>(null);
+  const [path, setPath] = React.useState<"cash" | "dealer" | "installment" | null>(null);
+  const [preset, setPreset] = React.useState<{ text: string; nonce: number } | undefined>();
+  const search = Route.useSearch();
+  const listingPrice = search.price ? parsePriceInput(search.price) : null;
+  const listingLabel =
+    search.car && search.from === "shahan-auto"
+      ? `از آگهی ${SHAHAN_AUTO_PARTNER.name}: ${search.car}`
+      : (search.car ?? null);
 
   return (
     <AppShell className="vehicle-page">
@@ -24,7 +63,7 @@ function VehiclePage() {
         <div className="vehicle-hero__copy">
           <p>همه مسیرها برای خرید خودروی دلخواه</p>
           <h2 id="vehicle-heading">
-            از <span className="vehicle-gold">نقدی</span> تا <span>اقساط بانکی</span>
+            از <span className="vehicle-gold">نقدی</span> تا <span>قسط مستقیم</span>
           </h2>
           <p>سواری، ایرانی، خارجی، وارداتی</p>
           <div className="vehicle-options" aria-label="مبدأ خودرو">
@@ -71,6 +110,16 @@ function VehiclePage() {
         </div>
       </section>
 
+      <DealerInstallmentCalculator
+        initialPriceIrr={listingPrice}
+        initialLabel={listingLabel}
+        onContinue={(text) => {
+          setPath("dealer");
+          setPreset({ text, nonce: Date.now() });
+          document.getElementById("vehicle-start")?.scrollIntoView({ behavior: "smooth" });
+        }}
+      />
+
       <div className="vehicle-paths">
         {(
           [
@@ -79,6 +128,12 @@ function VehiclePage() {
               "خرید خودرو نقدی",
               Car,
               "برای پیدا کردن مسیر خرید، نیاز و محدودیت‌هایت را مشخص کن.",
+            ],
+            [
+              "dealer",
+              "قسط مستقیم نمایشگاه",
+              HandCoins,
+              `حداقل ${toDisplayDigits(TERMS.minDownPaymentPercent)}٪ نقد، باقی تا ${toDisplayDigits(TERMS.maxMonths)} ماه با چک صیادی یا سفته؛ بدون ضامن.`,
             ],
             [
               "installment",
@@ -92,8 +147,15 @@ function VehiclePage() {
             <Icon aria-hidden="true" />
             <h2>{title}</h2>
             <p>{description}</p>
-            <a href="#vehicle-start" onClick={() => setPath(id)}>
-              {id === "cash" ? "بررسی مسیر خرید" : "مشاهده شرایط و شروع"}
+            <a
+              href={id === "dealer" ? "#vehicle-calculator" : "#vehicle-start"}
+              onClick={() => setPath(id)}
+            >
+              {id === "cash"
+                ? "بررسی مسیر خرید"
+                : id === "dealer"
+                  ? "محاسبهٔ قسط"
+                  : "مشاهده شرایط و شروع"}
               <ArrowLeft aria-hidden="true" />
             </a>
           </article>
@@ -121,16 +183,30 @@ function VehiclePage() {
       </section>
 
       <section
-        className="vehicle-section vehicle-availability"
+        className="vehicle-section vehicle-availability vehicle-partner"
         aria-labelledby="vehicle-offers-title"
       >
-        <h2 id="vehicle-offers-title">فرصت‌های ویژه</h2>
-        <ShieldCheck aria-hidden="true" className="vehicle-availability__icon" />
-        <h3>هنوز آگهی تأییدشده‌ای متصل نیست</h3>
+        <h2 id="vehicle-offers-title">
+          <BadgeCheck aria-hidden="true" />
+          خودروهای {SHAHAN_AUTO_PARTNER.name}
+        </h2>
         <p>
-          قیمت، موجودی و شرایط اقساط تا اتصال تأمین‌کنندهٔ معتبر نمایش داده نمی‌شوند. می‌توانی نیازت
-          را برای بررسی مسیر شرح بدهی.
+          {SHAHAN_AUTO_PARTNER.name} همکار تسهیل‌رادار در قسط مستقیم خودرو است. خودروی دلخواهت را
+          آنجا ببین، قیمتش را در ماشین‌حساب بالا بنویس و با همین شرایط ادامه بده.
         </p>
+        <a
+          className="vehicle-partner__link"
+          href={SHAHAN_AUTO_PUBLIC_URL}
+          target="_blank"
+          rel="noopener"
+        >
+          دیدن خودروها در {SHAHAN_AUTO_PARTNER.name}
+          <ExternalLink aria-hidden="true" />
+        </a>
+        <small>
+          نمایش آگهی‌ها مستقیم در همین صفحه پس از اتصال فهرست خودروها فعال می‌شود. این همکاری در
+          رتبه‌بندی مسیرهای تو اثری ندارد.
+        </small>
       </section>
 
       <section className="vehicle-section" aria-labelledby="vehicle-documents-title">
@@ -138,10 +214,22 @@ function VehiclePage() {
           <ClipboardList aria-hidden="true" />
           شرایط و مدارک کلیدی
         </h2>
-        <p>
-          مدارک و شرایط به مسیر و تأمین‌کننده بستگی دارد. بدون پاسخ معتبر، سن مجاز، ضامن، پیش‌پرداخت
-          یا زمان تأیید اعلام نمی‌کنیم.
-        </p>
+        <ul className="vehicle-docs">
+          <li>
+            <strong>قسط مستقیم {SHAHAN_AUTO_PARTNER.name}</strong>
+            <span>
+              پیش‌پرداخت حداقل {toDisplayDigits(TERMS.minDownPaymentPercent)}٪، چک صیادی یا سفته با
+              مبلغ توافقی، بدون ضامن.
+            </span>
+          </li>
+          <li>
+            <strong>اقساط بانکی و لیزینگ</strong>
+            <span>
+              مدارک و شرایط به تأمین‌کننده بستگی دارد. بدون پاسخ معتبر، سن مجاز، ضامن، پیش‌پرداخت یا
+              زمان تأیید اعلام نمی‌کنیم.
+            </span>
+          </li>
+        </ul>
       </section>
 
       <section id="vehicle-start" className="vehicle-start" aria-labelledby="vehicle-start-title">
@@ -154,11 +242,14 @@ function VehiclePage() {
           <p className="vehicle-selection" role="status">
             انتخاب فعلی: {vehicleType}
             {origin ? ` / ${origin}` : ""}
-            {path ? ` / ${path === "cash" ? "خرید نقدی" : "خرید اقساطی"}` : ""}
+            {path
+              ? ` / ${path === "cash" ? "خرید نقدی" : path === "dealer" ? "قسط مستقیم نمایشگاه" : "اقساط بانکی"}`
+              : ""}
           </p>
         </div>
         <ConciergeExperience
-          suggestedNeed={`می‌خواهم خودرو ${vehicleType === "همه سواری‌ها" ? "سواری" : vehicleType}${origin ? ` ${origin}` : ""}${path === "installment" ? " اقساطی" : path === "cash" ? " نقدی" : ""} بخرم.`}
+          suggestedNeed={`می‌خواهم خودرو ${vehicleType === "همه سواری‌ها" ? "سواری" : vehicleType}${origin ? ` ${origin}` : ""}${path === "installment" || path === "dealer" ? " اقساطی" : path === "cash" ? " نقدی" : ""} بخرم.`}
+          presetNeed={preset}
         />
       </section>
     </AppShell>
